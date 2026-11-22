@@ -1,0 +1,212 @@
+/* ==========================================================================
+  MotoAtlas26 — Leaflet Overrides CSS
+  Personalizaciones de Leaflet para el tema Dashboard Dorado
+  ========================================================================== */
+
+/* ── Contenedor del mapa ── */
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--color-canvas);
+}
+
+.map-container.map-fullscreen {
+  height: 100vh;
+  width: 100%;
+  border-radius: 0;
+}
+
+.map-container .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Capas del mapa ── */
+.leaflet-container {
+  font-size: var(--font-size-sm);
+}
+
+.leaflet-container .leaflet-top,
+.leaflet-container .leaflet-bottom {
+  padding: var(--space-2);
+}
+
+.leaflet-container .leaflet-top .leaflet-control,
+.leaflet-container .leaflet-bottom .leaflet-control {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Capas base personalizadas ── */
+.leaflet-container .leaflet-control-layers {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.leaflet-container .leaflet-control-layers .leaflet-control-layers-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.leaflet-container .leaflet-control-layers .leaflet-control-layers-list .leaflet-control {
+  padding: var(--space-2) var(--space-3);
+}
+
+.leaflet-container .leaflet-control-layers .leaflet-control-layers-list .leaflet-control:hover {
+  background: var(--color-card-hover);
+}
+
+.leaflet-container .leaflet-control-layers .leaflet-control-layers-list input {
+  margin: var(--space-1);
+  accent-color: var(--color-primary);
+}
+
+.leaflet-container .leaflet-control-layers .leaflet-control-layers-hide {
+  display: none;
+}
+
+/* ── Marcadores personalizados ── */
+.leaflet-marker-icon,
+.leaflet-marker-icon2,
+.leaflet-marker-shadow {
+  display: block;
+}
+
+.custom-marker-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-primary-contrast);
+  box-shadow: var(--shadow-glow);
+}
+
+.custom-marker-shadow {
+  width: 50px;
+  height: 18px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 50% 50% 3px 3px;
+  display: block;
+}
+
+/* ── Popups ── */
+.leaflet-popup {
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--color-card-border);
+  background: var(--color-card);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  min-width: 200px;
+  box-shadow: var(--shadow-lg);
+}
+
+.leaflet-popup .leaflet-popup-content {
+  color: var(--color-text-primary);
+}
+
+.leaflet-popup .leaflet-popup-content p {
+  margin: var(--space-1) 0;
+}
+
+.leaflet-popup .leaflet-popup-tip {
+  border-top: var(--border-width) solid var(--color-card-border);
+  border-right: var(--border-width) solid transparent;
+  border-left: var(--border-width) solid transparent;
+}
+
+.leaflet-popup .leaflet-popup-tip-container {
+  width: 20px;
+  margin-left: -10px;
+}
+
+.leaflet-popup .leaflet-popup-content .leaflet-popup-close-button {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.leaflet-popup .leaflet-popup-content .leaflet-popup-close-button:focus,
+.leaflet-popup .leaflet-popup-content .leaflet-popup-close-button:hover {
+  color: var(--color-text-primary);
+  opacity: 1;
+}
+
+/* ── Control de escala ── */
+.leaflet-control-scale {
+  font-size: var(--font-size-sm);
+}
+
+.leaflet-control-scale .leaflet-control-scale-line {
+  border: var(--border-width) solid var(--color-card-border);
+  background: var(--color-card);
+}
+
+.leaflet-control-scale .leaflet-control-scale-line:focus,
+.leaflet-control-scale .leaflet-control-line:hover {
+  background: var(--color-card-hover);
+}
+
+/* ── Control de capas ── */
+.leaflet-control-layers {
+  font-size: var(--font-size-sm);
+}
+
+.leaflet-control-layers .leaflet-control-layers-list {
+  max-height: 300px;
+}
+
+.leaflet-control-layers .leaflet-control-layers-list input {
+  accent-color: var(--color-primary);
+}
+
+/* ── Overlay de ruta ── */
+.leaflet-path-route {
+  stroke: var(--color-primary) !important;
+  stroke-width: 3 !important;
+  stroke-opacity: 0.8 !important;
+  fill: none !important;
+}
+
+.leaflet-path-route-hover {
+  stroke-width: 5 !important;
+  stroke-opacity: 1 !important;
+}
+
+/── Leyenda de ruta ── */
+.leaflet-legend {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.leaflet-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  color: var(--color-text-primary);
+}
+
+.leaflet-legend .leaflet-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.leaflet-legend .leaflet-legend-color.gold {
+  background: var(--color-primary);
+}
+
+.leaflet-legend .leaflet-legend-color.orange {
+  background: var(--color-secondary);
+}

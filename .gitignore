@@ -1,0 +1,16 @@
+node_modules/
+dist/
+package-lock.json
+public/
+xEjemplo/
+xNotas/
+*.webp
+*.jpg
+*.png
+PROJECT_CONTEXT.json
+.env
+.env.local
+.lunacode/
+.DS_Store
+.DS_Store
+.lunacode/

@@ -1,0 +1,189 @@
+/* ==========================================================================
+  MotoAtlas26 — Home CSS
+  Estilo específico de la página de inicio
+  ========================================================================== */
+
+/* ── Home Showcase ── */
+.home-showcase {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background: var(--color-canvas);
+}
+
+.home-showcase img {
+  max-width: min(760px, 90vw);
+  max-height: 52vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.home-content {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.home-title {
+  font-size: var(--font-size-5xl);
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.home-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── Moto Hero ── */
+.moto-hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* ── Botón de entrar ── */
+.btn-enter {
+  display: inline-block;
+  padding: var(--space-4) var(--space-8);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-radius: var(--radius-btn);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: var(--space-6);
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.btn-enter:hover {
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.btn-enter:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.btn-enter:active {
+  transform: translateY(0);
+}
+
+/* ── Sección de modelos ── */
+.models-section {
+  padding: var(--space-8) 0;
+}
+
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.model-card {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  padding: var(--space-5) var(--space-4);
+  border: var(--border-width) solid var(--color-card-border);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.model-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.model-card:hover .model-card-icon {
+  background: var(--color-primary);
+  color: var(--color-canvas);
+}
+
+.model-card-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--color-card-border);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-3);
+  transition: all var(--transition-fast);
+}
+
+.model-card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.model-card-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.model-card-stats {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ── CTA principal ── */
+.cta-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--color-canvas);
+  padding: var(--space-5) var(--space-8);
+  border-radius: var(--radius-card);
+  text-align: center;
+  margin-top: var(--space-8);
+}
+
+.cta-primary-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.cta-primary-desc {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+}
+
+/* ── Responsive Home ── */
+@media (max-width: 768px) {
+  .home-showcase {
+    padding: 1rem;
+  }
+  
+  .home-title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .home-subtitle {
+    font-size: var(--font-size-base);
+  }
+}

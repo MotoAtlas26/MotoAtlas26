@@ -1,0 +1,38 @@
+/* ==========================================================================
+   MotoAtlas26 — Entry Point CSS
+   @import de los módulos modulares + @tailwind directives
+   ========================================================================== */
+
+/* ── IMPORTANTE: @import deben ir PRIMERO ── */
+@import './styles/variables.css';
+@import './styles/reset.css';
+@import './styles/layout.css';
+@import './styles/components.css';
+@import './styles/forms.css';
+@import './styles/leaflet-overrides.css';
+@import './styles/home.css';
+@import './styles/utilities.css';
+
+/* ── @tailwind base: configurar capas base ── */
+@tailwind base;
+
+/* ── @tailwind components: componentes reutilizables ── */
+@tailwind components;
+
+/* ── @tailwind utilities: utilidades auxiliares ── */
+@tailwind utilities;
+
+/* ── Override crítico: Leaflet images ── */
+.leaflet-container img {
+  max-width: none !important;
+}
+
+/* ── Reducir movimiento si el usuario lo prefiere ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}

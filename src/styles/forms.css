@@ -1,0 +1,1020 @@
+/* ==========================================================================
+  MotoAtlas26 — Forms CSS
+  Inputs, selects, switches, upload areas, toggle rows
+  ========================================================================== */
+
+/* ── Inputs y Textareas ── */
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-display);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.form-input:focus-visible,
+.form-select:focus-visible,
+.form-textarea:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 0.65rem 2.5rem 0.65rem 0.9rem;
+  background-color: var(--color-card);
+  color: var(--color-text-primary);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-btn);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-select:hover,
+.form-select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.form-select:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+/* ── Select Wrapper con Chevron dinámico ── */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  color: var(--color-text-primary);
+  transition: color var(--transition-fast);
+}
+
+.select-wrapper:hover::after,
+.select-wrapper:focus-within::after {
+  color: var(--color-primary);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ── Select con opciones ── */
+.form-select option {
+  background: var(--color-card);
+  color: var(--color-text-primary);
+}
+
+/* ── Switch ── */
+.form-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.form-switch-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.form-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-card-border);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast);
+}
+
+.form-switch-input:checked + .form-switch-slider {
+  background: var(--color-primary);
+}
+
+.form-switch-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-primary-contrast);
+  border-radius: var(--radius-full);
+  transition: transform var(--transition-fast);
+}
+
+.form-switch-input:checked + .form-switch-slider::after {
+  transform: translateX(20px);
+}
+
+/* ── Toggle Row (Neumorphic Sunken Switch) ── */
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-btn);
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  font-size: 0.875rem;
+}
+
+.toggle-row span {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+
+/* Resalta "Desactivado" cuando el input está desmarcado */
+.toggle-row:has(input:not(:checked)) span:first-child {
+  color: var(--color-text-primary);
+}
+
+/* Resalta "Activado" cuando el input está marcado */
+.toggle-row:has(input:checked) span:last-child {
+  color: var(--color-gold);
+}
+
+/* ── Switch ── */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  height: 30px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+/* ── Slider (Hueco hundido / empotrado) ── */
+.slider {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-card-border);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.75), 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Activado: el hueco interior se tiñe sutilmente con el color del tema */
+.switch input:checked + .slider {
+  background: color-mix(in srgb, var(--color-primary) 25%, var(--color-canvas));
+  border-color: var(--color-primary);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.65), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Slider::before (Botón circular mate con bisel sutil) */
+.slider::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--color-card-hover), var(--color-card));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+/* Activado: se desliza a la derecha y toma el acabado mate del color del tema */
+.switch input:checked + .slider::before {
+  transform: translateX(26px);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary-light);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+/* Focus visible para accesibilidad */
+.switch input:focus-visible + .slider {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Workshop Form Components
+   ========================================================================== */
+
+/* ── Segmented Control ── */
+.segmented-control {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 0.4rem;
+  padding: 0.35rem;
+  background: var(--color-canvas);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-btn);
+}
+
+.segment {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.segment svg {
+  flex-shrink: 0;
+}
+
+.segment:hover {
+  color: var(--color-text-primary);
+  background: var(--color-card-hover);
+}
+
+.segment.active {
+  background: var(--color-gold);
+  color: var(--color-canvas);
+}
+
+.segment input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* ── Form Layout ── */
+.workshop-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.required {
+  color: var(--color-orange);
+}
+
+.form-error {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-error-bg);
+  border: var(--border-width) solid var(--color-error-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-orange-light);
+  font-size: var(--font-size-sm);
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: var(--font-display);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: var(--border-width) solid var(--color-card-border);
+  margin-top: var(--space-2);
+}
+
+/* ── Workshop Type Badges ── */
+.workshop-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.workshop-type-badge.workshop {
+  background: color-mix(in srgb, var(--color-gold) 15%, var(--color-card));
+  color: var(--color-gold);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-gold) 40%, var(--color-card-border));
+}
+
+.workshop-type-badge.owner {
+  background: color-mix(in srgb, var(--color-orange) 15%, var(--color-card));
+  color: var(--color-orange-light);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-orange) 40%, var(--color-card-border));
+}
+
+.workshop-default-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-gold) 15%, var(--color-card));
+  color: var(--color-gold);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-gold) 40%, var(--color-card-border));
+}
+
+/* ── Workshop Cards ── */
+.workshops-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.workshop-card {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  transition: all var(--transition-fast);
+}
+
+.workshop-card:hover {
+  border-color: color-mix(in srgb, var(--color-gold) 50%, var(--color-card-border));
+  box-shadow: var(--shadow-md);
+}
+
+.workshop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+.workshop-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.workshop-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.workshop-name {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.workshop-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.workshop-specialty {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.workshop-phone,
+.workshop-address {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.workshop-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-btn);
+  background: var(--color-canvas);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: var(--color-card-hover);
+}
+
+.btn-icon.danger:hover {
+  border-color: var(--color-orange);
+  color: var(--color-orange-light);
+  background: var(--color-alert-bg);
+}
+
+/* ==========================================================================
+   Motorcycle Form Components
+   ========================================================================== */
+
+/* ── Motorcycle Form ── */
+.motorcycle-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-fieldset {
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  margin: 0;
+}
+
+.form-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.form-legend svg {
+  color: var(--color-gold);
+  flex-shrink: 0;
+}
+
+.form-label-required::after {
+  content: ' *';
+  color: var(--color-orange);
+}
+
+/* ── Motorcycle Cards ── */
+.motorcycles-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.motorcycle-card {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  transition: all var(--transition-fast);
+}
+
+.motorcycle-card:hover {
+  border-color: color-mix(in srgb, var(--color-gold) 50%, var(--color-card-border));
+  box-shadow: var(--shadow-md);
+}
+
+.motorcycle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+.motorcycle-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.motorcycle-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.motorcycle-brand-model {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.motorcycle-year {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gold);
+  background: color-mix(in srgb, var(--color-gold) 15%, var(--color-card));
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-gold) 40%, var(--color-card-border));
+}
+
+.motorcycle-plate {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-canvas);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: var(--border-width) solid var(--color-card-border);
+  font-family: var(--font-mono);
+}
+
+.motorcycle-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.motorcycle-color {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.motorcycle-tires {
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+.motorcycle-mileage {
+  font-weight: 500;
+  color: var(--color-gold);
+}
+
+.motorcycle-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Loading State ── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.loading-state .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Upload Area (formularios) ── */
+.form-upload-area {
+  border: var(--border-width) dashed var(--color-card-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+
+.form-upload-area:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-card-hover);
+}
+
+.form-upload-area.dragover {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.form-upload-area-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--space-3);
+  opacity: 0.5;
+}
+
+.form-upload-area-text {
+  font-size: var(--font-size-sm);
+}
+
+/* ── Botón de formulario ── */
+.form-btn {
+  padding: var(--space-3) var(--space-5);
+  min-width: 120px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+/* ── Labels de formulario ── */
+.form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.form-label-required::after {
+  content: '*';
+  color: var(--color-error-border);
+  margin-left: var(--space-1);
+}
+
+/* ── Input group ── */
+.form-input-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-input-group .form-label {
+  margin-bottom: 0;
+}
+
+.form-input-group .form-input {
+  padding-left: calc(var(--space-4) + var(--border-width));
+}
+
+.form-input-group .form-input:focus-visible + .form-input-label {
+  color: var(--color-primary);
+}
+
+.form-input-group .form-input-label {
+  position: absolute;
+  left: calc(var(--space-4) + var(--border-width));
+  top: calc(var(--space-3) + var(--border-width));
+  pointer-events: none;
+  color: var(--color-text-muted);
+  transition: top var(--transition-fast), color var(--transition-fast);
+  transform-origin: 0 0;
+}
+
+.form-input-group .form-input:focus-visible ~ .form-input-label,
+.form-input-group .form-input:not(:placeholder-shown) ~ .form-input-label {
+  top: calc(var(--space-1) + var(--border-width));
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+}
+
+/* ==========================================================================
+   Theme Toggle Header (Dark/Light Mode in SectionHeader actions)
+   ========================================================================== */
+.theme-toggle-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.theme-toggle-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+/* ── Toggle Row (Label + Switch + Label) ── */
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-btn);
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  font-size: 0.875rem;
+}
+
+.toggle-row span {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+
+/* Resalta "Desactivado" cuando el input está desmarcado */
+.toggle-row:has(input:not(:checked)) span:first-child {
+  color: var(--color-text-primary);
+}
+
+/* Resalta "Activado" cuando el input está marcado */
+.toggle-row:has(input:checked) span:last-child {
+  color: var(--color-gold);
+}
+
+/* ── Switch (Clean pill with sliding circle, no icons) ── */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  height: 30px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+/* ── Slider (Hueco hundido / empotrado) ── */
+.slider {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-card-border);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.75), 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Activado: el hueco interior se tiñe sutilmente con el color del tema */
+.switch input:checked + .slider {
+  background: color-mix(in srgb, var(--color-gold) 22%, var(--color-canvas));
+  border-color: color-mix(in srgb, var(--color-gold) 55%, var(--color-card-border));
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.65), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/── Slider::before (Botón circular mate con bisel sutil) ── */
+.slider::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--color-card-hover), var(--color-card));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+/* Activado: se desliza a la derecha y toma el acabado mate del color del tema */
+.switch input:checked + .slider::before {
+  transform: translateX(26px);
+  background: linear-gradient(145deg, var(--color-gold-light), var(--color-gold));
+  border: 1px solid var(--color-gold-light);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+/* Focus visible para accesibilidad */
+.switch input:focus-visible + .slider {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+
+
+/* ── Workshop Type Badges ── */
+.workshop-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.workshop-type-badge.workshop {
+  background: color-mix(in srgb, var(--color-gold) 15%, var(--color-card));
+  color: var(--color-gold);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-gold) 40%, var(--color-card-border));
+}
+
+.workshop-type-badge.owner {
+  background: color-mix(in srgb, var(--color-orange) 15%, var(--color-card));
+  color: var(--color-orange-light);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-orange) 40%, var(--color-card-border));
+}
+
+.workshop-default-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-gold) 15%, var(--color-card));
+  color: var(--color-gold);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-gold) 40%, var(--color-card-border));
+}
+
+/* ── Workshop Cards ── */
+.workshops-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.workshop-card {
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  transition: all var(--transition-fast);
+}
+
+.workshop-card:hover {
+  border-color: color-mix(in srgb, var(--color-gold) 50%, var(--color-card-border));
+  box-shadow: var(--shadow-md);
+}
+
+.workshop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+.workshop-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.workshop-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.workshop-name {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.workshop-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.workshop-specialty {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.workshop-phone,
+.workshop-address {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.workshop-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: var(--radius-btn);
+  background: var(--color-canvas);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: var(--color-card-hover);
+}
+
+.btn-icon.danger:hover {
+  border-color: var(--color-orange);
+  color: var(--color-orange-light);
+  background: var(--color-alert-bg);
+}
+
+/* ── Loading State ── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.loading-state .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
