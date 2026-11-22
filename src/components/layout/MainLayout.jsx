@@ -23,7 +23,7 @@ export const MainLayout = () => {
       {/* Mobile Header - solo visible < 768px */}
       <header className="mobile-header" role="banner">
         <nav className="mobile-header-nav" aria-label="Navegación principal">
-          <a href="/home" className="mobile-logo" aria-label="MotoAtlas26 Home">
+          <a href="/" className="mobile-logo" aria-label="MotoAtlas26 Home">
             <MotoAtlas26Logo size={32} horizontal={true} />
           </a>
           <button

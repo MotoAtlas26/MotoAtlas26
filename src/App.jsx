@@ -79,8 +79,8 @@ const AppContent = () => {
     <ErrorBoundary>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Navigate to="/home" />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/moto" element={<Moto />} />
           <Route path="/moto/facturas" element={<Facturas />} />
           <Route path="/tracks" element={<TrackList />} />

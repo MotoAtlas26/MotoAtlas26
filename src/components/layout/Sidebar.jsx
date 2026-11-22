@@ -5,7 +5,7 @@ import { MotoAtlas26Logo } from '../shared'
 
 export const Sidebar = ({ isOpen = false, onClose }) => {
   const navItems = [
-    { to: '/home', icon: <HomeIcon size={28} />, label: 'Home' },
+    { to: '/', icon: <HomeIcon size={28} />, label: 'Home' },
     { to: '/moto', icon: <MotoIcon size={28} />, label: 'Moto' },
     { to: '/tracks', icon: <RouteIcon size={28} />, label: 'Tracks' },
     { to: '/settings', icon: <SettingsIcon size={28} />, label: 'Configuración' },
@@ -23,7 +23,7 @@ export const Sidebar = ({ isOpen = false, onClose }) => {
       aria-label="Menú principal MotoAtlas26"
     >
       <div className="sidebar-header">
-        <NavLink to="/home" className="home-logo" onClick={handleNavClick}>
+        <NavLink to="/" end className="home-logo" onClick={handleNavClick}>
           <MotoAtlas26Logo size={40} horizontal={true} />
         </NavLink>
       </div>
@@ -32,7 +32,7 @@ export const Sidebar = ({ isOpen = false, onClose }) => {
         <ul className="sidebar-nav-list">
           {navItems.map((item, i) => (
             <li key={i} className="sidebar-nav-item">
-              <NavLink to={item.to} onClick={handleNavClick}>
+              <NavLink to={item.to} end={item.to === '/'} onClick={handleNavClick}>
                 {({ isActive }) => (
                   <div className={`sidebar-nav-link ${isActive ? 'active' : ''}`}>
                     {item.icon}

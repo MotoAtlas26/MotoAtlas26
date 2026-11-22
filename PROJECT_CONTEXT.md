@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/22/2026, 8:10:11 PM
+> Generado el 11/22/2026, 10:54:18 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -166,8 +166,8 @@
 - Exports: getSavedTheme, initTheme, getThemeById, getThemesList
 
 ## Rutas (React Router)
-- `/` → Navigate to="/home"  (src/App.jsx)
-- `/home` → Home  (src/App.jsx)
+- `/` → Home  (src/App.jsx)
+- `/home` → Navigate to="/" replace  (src/App.jsx)
 - `/moto` → Moto  (src/App.jsx)
 - `/moto/facturas` → Facturas  (src/App.jsx)
 - `/tracks` → TrackList  (src/App.jsx)
