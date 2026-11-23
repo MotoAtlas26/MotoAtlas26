@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/23/2026, 3:50:03 PM
+> Generado el 11/23/2026, 4:41:55 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -13,6 +13,7 @@
     📄 MainLayout.jsx
     📄 Sidebar.jsx
   📁 moto
+    📄 Documentacion.jsx
     📄 Facturas.jsx
     📄 Mantenimiento.jsx
     📄 Moto.jsx
@@ -88,6 +89,10 @@
 - Archivo: src/components/layout/Sidebar.jsx
 - Exports: Sidebar, Sidebar
 
+### Documentacion
+- Archivo: src/components/moto/Documentacion.jsx
+- Exports: Documentacion, Documentacion
+
 ### Facturas
 - Archivo: src/components/moto/Facturas.jsx
 - Exports: Facturas, Facturas
@@ -114,7 +119,7 @@
 
 ### Icons
 - Archivo: src/components/shared/Icons.jsx
-- Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon
+- Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ShieldIcon, FileTextIcon, FileIcon, PhoneIcon, EyeIcon, AlertIcon, CalendarIcon
 
 ### InstallAppButton
 - Archivo: src/components/shared/InstallAppButton.jsx
@@ -248,6 +253,14 @@
 - Importa **{ MotoIcon, RouteIcon, SettingsIcon, HomeIcon }** desde `../shared/Icons`
 - Importa **{ MotoAtlas26Logo }** desde `../shared`
 
+### src/components/moto/Documentacion.jsx
+- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
+- Importa **{ useGPX }** desde `../../context/GPXContext`
+- Importa **{ Modal, SectionHeader, BlobImage }** desde `../shared`
+- Importa **{ formatDate, formatFileSize }** desde `../../utils/formatters`
+- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
+- Importa **{ TrashIcon, EditIcon, EyeIcon, DownloadIcon, AlertIcon, CheckIcon, CalendarIcon, PhoneIcon, ShieldIcon, FileIcon, UploadIcon }** desde `../shared/Icons`
+
 ### src/components/moto/Facturas.jsx
 - Importa **{ Link }** desde `react-router-dom`
 - Importa **{ ImageUpload }** desde `../upload/ImageUpload`
@@ -278,7 +291,8 @@
 - Importa **{ formatFileSize, formatDateTime, getFileIcon }** desde `../../utils/formatters`
 - Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
 - Importa **{ Mantenimiento }** desde `./Mantenimiento`
-- Importa **{ TrashIcon, UploadIcon }** desde `../shared/Icons`
+- Importa **{ Documentacion }** desde `./Documentacion`
+- Importa **{ TrashIcon, UploadIcon, FileTextIcon }** desde `../shared/Icons`
 
 ### src/components/settings/Settings.jsx
 - Importa **{ Link }** desde `react-router-dom`

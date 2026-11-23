@@ -45,6 +45,23 @@ export class MotoAtlas26DB extends Dexie {
       invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
       maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt'
     })
+
+    // Version 7: Add motoDocuments table for Guantera Digital
+    this.version(7).stores({
+      tracks: '++id, name, date, distance, elevationGain, duration, createdAt, updatedAt',
+      trackPoints: '++id, trackId, lat, lng, elevation, timestamp, sequence',
+      images: '++id, type, trackId, motoId, fileName, mimeType, size, blob, description, tags, aspectRatio, colorTheme, createdAt',
+      maintenance: '++id, motoId, type, date, mileage, cost, workshop, description, createdAt',
+      motoProfile: '++id, model, year, vin, purchaseDate, currentMileage, updatedAt',
+      settings: '++id, key, value, updatedAt',
+      uploads: '++id, type, fileName, size, status, localPath, remoteUrl, createdAt',
+      workshops: '++id, type, name, specialty, isDefault, createdAt',
+      motorcycles: '++id, brand, model, year, plate, purchaseDate, createdAt',
+      customThemes: '++id, name, brand, createdAt',
+      invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt',
+      motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt'
+    })
     
     this.tracks.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()
@@ -82,6 +99,16 @@ export class MotoAtlas26DB extends Dexie {
     })
     this.maintenances.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()
+    })
+    this.motoDocuments.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.motoDocuments.hook('updating', (modifications, primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.motoDocuments.hook('deleting', (primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
     })
   }
 
@@ -338,6 +365,39 @@ export class MotoAtlas26DB extends Dexie {
     return await this.maintenances.delete(id)
   }
 
+  // ============ DOCUMENTOS MOTO (GUANTERA DIGITAL) ============
+
+  async saveMotoDocument(documentData) {
+    return await this.motoDocuments.add({
+      ...documentData,
+      createdAt: new Date()
+    })
+  }
+
+  async getMotoDocument(id) {
+    return await this.motoDocuments.get(id)
+  }
+
+  async getMotoDocumentsByMoto(motoId) {
+    return await this.motoDocuments.where('motoId').equals(motoId).reverse().sortBy('createdAt')
+  }
+
+  async getAllMotoDocuments() {
+    return await this.motoDocuments.orderBy('createdAt').reverse().toArray()
+  }
+
+  async getMotoDocumentsByType(docType) {
+    return await this.motoDocuments.where('docType').equals(docType).toArray()
+  }
+
+  async updateMotoDocument(id, updates) {
+    return await this.motoDocuments.update(id, updates)
+  }
+
+  async deleteMotoDocument(id) {
+    return await this.motoDocuments.delete(id)
+  }
+
   // ============ TALLERES Y MANTENIMIENTO PROPIO ============
 
   async getAllWorkshops() {
@@ -473,6 +533,7 @@ export class MotoAtlas26DB extends Dexie {
       this.customThemes,
       this.invoices,
       this.maintenances,
+      this.motoDocuments,
       async () => {
         await Promise.all([
           this.tracks.clear(),
@@ -486,7 +547,8 @@ export class MotoAtlas26DB extends Dexie {
           this.motorcycles.clear(),
           this.customThemes.clear(),
           this.invoices.clear(),
-          this.maintenances.clear()
+          this.maintenances.clear(),
+          this.motoDocuments.clear()
         ])
       }
     )
@@ -500,12 +562,13 @@ export class MotoAtlas26DB extends Dexie {
     const workshops = await this.workshops.count()
     const invoices = await this.invoices.count()
     const maintenances = await this.maintenances.count()
+    const motoDocuments = await this.motoDocuments.count()
 
-    return { tracks, points, images, maintenance, workshops, invoices, maintenances }
+    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments }
   }
 
   async exportAll() {
-    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances] = await Promise.all([
+    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments] = await Promise.all([
       this.tracks.toArray(),
       this.trackPoints.toArray(),
       this.images.toArray(),
@@ -517,11 +580,12 @@ export class MotoAtlas26DB extends Dexie {
       this.motorcycles.toArray(),
       this.customThemes.toArray(),
       this.invoices.toArray(),
-      this.maintenances.toArray()
+      this.maintenances.toArray(),
+      this.motoDocuments.toArray()
     ])
 
     return {
-      version: 6,
+      version: 7,
       exportedAt: new Date().toISOString(),
       tracks,
       trackPoints,
@@ -534,7 +598,8 @@ export class MotoAtlas26DB extends Dexie {
       motorcycles,
       customThemes,
       invoices,
-      maintenances
+      maintenances,
+      motoDocuments
     }
   }
 
@@ -552,6 +617,7 @@ export class MotoAtlas26DB extends Dexie {
       this.customThemes,
       this.invoices,
       this.maintenances,
+      this.motoDocuments,
       async () => {
         await Promise.all([
           this.tracks.bulkPut(data.tracks || []),
@@ -565,7 +631,8 @@ export class MotoAtlas26DB extends Dexie {
           this.motorcycles.bulkPut(data.motorcycles || []),
           this.customThemes.bulkPut(data.customThemes || []),
           this.invoices.bulkPut(data.invoices || []),
-          this.maintenances.bulkPut(data.maintenances || [])
+          this.maintenances.bulkPut(data.maintenances || []),
+          this.motoDocuments.bulkPut(data.motoDocuments || [])
         ])
       }
     )

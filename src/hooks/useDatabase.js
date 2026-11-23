@@ -193,6 +193,35 @@ export function useDatabase() {
     return await db.deleteMaintenanceRecord(id)
   }, [])
 
+  // Moto Documents (Guantera Digital)
+  const saveMotoDocument = useCallback(async (documentData) => {
+    return await db.saveMotoDocument(documentData)
+  }, [])
+
+  const getMotoDocument = useCallback(async (id) => {
+    return await db.getMotoDocument(id)
+  }, [])
+
+  const getMotoDocumentsByMoto = useCallback(async (motoId) => {
+    return await db.getMotoDocumentsByMoto(motoId)
+  }, [])
+
+  const getAllMotoDocuments = useCallback(async () => {
+    return await db.getAllMotoDocuments()
+  }, [])
+
+  const getMotoDocumentsByType = useCallback(async (docType) => {
+    return await db.getMotoDocumentsByType(docType)
+  }, [])
+
+  const updateMotoDocument = useCallback(async (id, updates) => {
+    return await db.updateMotoDocument(id, updates)
+  }, [])
+
+  const deleteMotoDocument = useCallback(async (id) => {
+    return await db.deleteMotoDocument(id)
+  }, [])
+
   // Utilities
   const clearAllData = useCallback(async () => {
     return await db.clearAllData()
@@ -265,6 +294,14 @@ export function useDatabase() {
     getAllMaintenances,
     updateMaintenanceRecord,
     deleteMaintenanceRecord,
+    // Moto Documents (Guantera Digital)
+    saveMotoDocument,
+    getMotoDocument,
+    getMotoDocumentsByMoto,
+    getAllMotoDocuments,
+    getMotoDocumentsByType,
+    updateMotoDocument,
+    deleteMotoDocument,
     // Utilities
     clearAllData,
     getDatabaseSize,

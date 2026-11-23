@@ -8,3 +8,6 @@ PROJECT_CONTEXT.json
 .env.local
 .lunacode/
 .DS_Store
+
+# Local Netlify folder
+.netlify

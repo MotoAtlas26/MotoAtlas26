@@ -6,7 +6,8 @@ import { Modal, SectionHeader, BlobImage } from '../shared'
 import { formatFileSize, formatDateTime, getFileIcon } from '../../utils/formatters'
 import { getMotoModel, getMotoModelsArray } from '../../constants/motoModels'
 import { Mantenimiento } from './Mantenimiento'
-import { TrashIcon, UploadIcon } from '../shared/Icons'
+import { Documentacion } from './Documentacion'
+import { TrashIcon, UploadIcon, FileTextIcon } from '../shared/Icons'
 
 export const Moto = () => {
   const { selectedMoto } = useGPX()
@@ -35,6 +36,12 @@ export const Moto = () => {
               onClick={() => setView(prev => prev === 'mantenimiento' ? 'dashboard' : 'mantenimiento')}
             >
               {view === 'mantenimiento' ? 'Dashboard' : 'Mantenimiento'}
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => setView(prev => prev === 'documentacion' ? 'dashboard' : 'documentacion')}
+            >
+              {view === 'documentacion' ? 'Dashboard' : 'Documentación'}
             </button>
             <Link to="/fileUpload" className="btn-outline">
               Registrar Mantenimiento
@@ -172,6 +179,9 @@ export const Moto = () => {
 
       {/* Vista de Mantenimiento */}
       {view === 'mantenimiento' && <Mantenimiento />}
+
+      {/* Vista de Documentación (Guantera Digital) */}
+      {view === 'documentacion' && <Documentacion />}
 
       {/* Modal de Facturas */}
       <Modal
