@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useGPX } from '../../context/GPXContext'
 import { useAuth } from '../../context/AuthContext'
-import { InstallAppButton, MotoAtlas26Logo } from '../shared'
+import { MotoAtlas26Logo } from '../shared'
 import { CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon } from '../shared/Icons'
 import { getMotoModel } from '../../constants/motoModels'
 
@@ -17,8 +17,7 @@ const FALLBACK_IMAGES = {
 
 export const Home = () => {
   const { selectedMoto, dbReady } = useGPX()
-  const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow, isInstalled } = useAuth()
-  const [showMotoSelector, setShowMotoSelector] = useState(false)
+  const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow } = useAuth()
   const [motoImage, setMotoImage] = useState(null)
   const [imageError, setImageError] = useState(false)
 
@@ -182,81 +181,7 @@ export const Home = () => {
         )}
       </div>
 
-      {/* Moto Selector Button */}
-      <button
-        onClick={() => setShowMotoSelector(true)}
-        className="home-moto-selector-btn"
-      >
-        <div className="home-moto-selector-content">
-          {motoImage && !imageError ? (
-            <img
-              src={motoImage}
-              alt={motoName}
-              className="home-moto-selector-image"
-            />
-          ) : (
-            <div className="home-moto-selector-placeholder">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-            </div>
-          )}
-          <div className="home-moto-selector-text">
-            <div className="home-moto-selector-name">{motoName}</div>
-            <div className="home-moto-selector-brand">{motoBrand}</div>
-          </div>
-        </div>
-      </button>
-
-      {/* Install PWA Button */}
-      {isInstalled && (
-        <InstallAppButton className="home-install-btn" />
-      )}
-
-      {/* Moto Selector Modal */}
-      {showMotoSelector && (
-        <div className="home-modal-overlay" onClick={() => setShowMotoSelector(false)}>
-          <div className="home-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="home-modal-header">
-              <h3 className="home-modal-title">Seleccionar moto</h3>
-              <button className="home-modal-close" onClick={() => setShowMotoSelector(false)} aria-label="Cerrar">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-            </div>
-            <div className="home-modal-content">
-              {Object.entries(FALLBACK_IMAGES).map(([id, img]) => {
-                const model = getMotoModel(id)
-                const isSelected = selectedMoto === id
-                return (
-                  <button
-                    key={id}
-                    onClick={() => {
-                      // TODO: Implement moto selection logic
-                      setShowMotoSelector(false)
-                    }}
-                    className={`home-modal-item ${isSelected ? 'selected' : ''}`}
-                  >
-                    <img src={img} alt={model?.name} className="home-modal-item-image" />
-                    <div className="home-modal-item-info">
-                      <div className="home-modal-item-name">{model?.name}</div>
-                      <div className="home-modal-item-brand">{model?.brand}</div>
-                    </div>
-                    {isSelected && (
-                      <svg className="home-modal-item-check" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   )
 }
