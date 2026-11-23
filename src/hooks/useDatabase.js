@@ -143,6 +143,56 @@ export function useDatabase() {
     return await db.deleteCustomTheme(id)
   }, [])
 
+  // Invoices
+  const saveInvoice = useCallback(async (invoiceData) => {
+    return await db.saveInvoice(invoiceData)
+  }, [])
+
+  const getInvoice = useCallback(async (id) => {
+    return await db.getInvoice(id)
+  }, [])
+
+  const getInvoicesByMoto = useCallback(async (motoId) => {
+    return await db.getInvoicesByMoto(motoId)
+  }, [])
+
+  const getAllInvoices = useCallback(async () => {
+    return await db.getAllInvoices()
+  }, [])
+
+  const updateInvoice = useCallback(async (id, updates) => {
+    return await db.updateInvoice(id, updates)
+  }, [])
+
+  const deleteInvoice = useCallback(async (id) => {
+    return await db.deleteInvoice(id)
+  }, [])
+
+  // Maintenances (new table)
+  const saveMaintenanceRecord = useCallback(async (maintenanceData) => {
+    return await db.saveMaintenanceRecord(maintenanceData)
+  }, [])
+
+  const getMaintenanceRecord = useCallback(async (id) => {
+    return await db.getMaintenanceRecord(id)
+  }, [])
+
+  const getMaintenancesByMoto = useCallback(async (motoId) => {
+    return await db.getMaintenancesByMoto(motoId)
+  }, [])
+
+  const getAllMaintenances = useCallback(async () => {
+    return await db.getAllMaintenances()
+  }, [])
+
+  const updateMaintenanceRecord = useCallback(async (id, updates) => {
+    return await db.updateMaintenanceRecord(id, updates)
+  }, [])
+
+  const deleteMaintenanceRecord = useCallback(async (id) => {
+    return await db.deleteMaintenanceRecord(id)
+  }, [])
+
   // Utilities
   const clearAllData = useCallback(async () => {
     return await db.clearAllData()
@@ -175,7 +225,7 @@ export function useDatabase() {
     getImagesByType,
     getImage,
     deleteImage,
-    // Maintenance
+    // Maintenance (legacy)
     saveMaintenance,
     getAllMaintenance,
     getMaintenanceByMoto,
@@ -201,6 +251,20 @@ export function useDatabase() {
     saveCustomTheme,
     editCustomTheme,
     removeCustomTheme,
+    // Invoices
+    saveInvoice,
+    getInvoice,
+    getInvoicesByMoto,
+    getAllInvoices,
+    updateInvoice,
+    deleteInvoice,
+    // Maintenances (new table)
+    saveMaintenanceRecord,
+    getMaintenanceRecord,
+    getMaintenancesByMoto,
+    getAllMaintenances,
+    updateMaintenanceRecord,
+    deleteMaintenanceRecord,
     // Utilities
     clearAllData,
     getDatabaseSize,

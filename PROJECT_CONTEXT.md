@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/23/2026, 2:39:59 PM
+> Generado el 11/23/2026, 3:50:03 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -14,6 +14,7 @@
     📄 Sidebar.jsx
   📁 moto
     📄 Facturas.jsx
+    📄 Mantenimiento.jsx
     📄 Moto.jsx
   📁 settings
     📄 Settings.jsx
@@ -66,6 +67,7 @@
 📁 utils
   📄 formatters.js
   📄 gpxHelpers.js
+  📄 invoiceParser.js
   📄 themeEngine.js
 ```
 
@@ -90,6 +92,10 @@
 - Archivo: src/components/moto/Facturas.jsx
 - Exports: Facturas, Facturas
 
+### Mantenimiento
+- Archivo: src/components/moto/Mantenimiento.jsx
+- Exports: Mantenimiento
+
 ### Moto
 - Archivo: src/components/moto/Moto.jsx
 - Exports: Moto, Moto
@@ -108,7 +114,7 @@
 
 ### Icons
 - Archivo: src/components/shared/Icons.jsx
-- Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon
+- Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon
 
 ### InstallAppButton
 - Archivo: src/components/shared/InstallAppButton.jsx
@@ -165,6 +171,10 @@
 ### googleDrive
 - Archivo: src/services/googleDrive.js
 - Exports: initGoogleClient, getConnectionStatus, tokenClient, accessToken, currentUser
+
+### invoiceParser
+- Archivo: src/utils/invoiceParser.js
+- Exports: parseInvoiceText, matchWorkshop
 
 ### themeEngine
 - Archivo: src/utils/themeEngine.js
@@ -240,21 +250,35 @@
 
 ### src/components/moto/Facturas.jsx
 - Importa **{ Link }** desde `react-router-dom`
+- Importa **{ ImageUpload }** desde `../upload/ImageUpload`
 - Importa **{ db }** desde `../../services/db`
 - Importa **{ useGPX }** desde `../../context/GPXContext`
 - Importa **{ EmptyState, Modal, SectionHeader, BlobImage }** desde `../shared`
 - Importa **{ formatFileSize, formatDate, getFileIcon }** desde `../../utils/formatters`
-- Importa **{ getMotoModel }** desde `../../constants/motoModels`
-- Importa **{ TrashIcon }** desde `../shared/Icons`
+- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
+- Importa **{ TrashIcon, UploadIcon }** desde `../shared/Icons`
 - Importa **{ useBlobUrl }** desde `../../hooks/useBlobUrl`
+- Importa **invoiceParser** desde `../../utils/invoiceParser`
+
+### src/components/moto/Mantenimiento.jsx
+- Importa **{ Link }** desde `react-router-dom`
+- Importa **{ db }** desde `../../services/db`
+- Importa **{ useGPX }** desde `../../context/GPXContext`
+- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
+- Importa **{ EmptyState, Modal, SectionHeader, BlobImage }** desde `../shared`
+- Importa **{ formatFileSize, formatDate, formatDateTime }** desde `../../utils/formatters`
+- Importa **{ getMotoModelsArray, getDefaultMotoModel }** desde `../../constants/motoModels`
+- Importa **{ TrashIcon, CheckIcon, EditIcon }** desde `../shared/Icons`
 
 ### src/components/moto/Moto.jsx
 - Importa **{ Link }** desde `react-router-dom`
 - Importa **{ ImageUpload }** desde `../upload/ImageUpload`
 - Importa **{ useGPX }** desde `../../context/GPXContext`
-- Importa **{ Modal, SectionHeader }** desde `../shared`
+- Importa **{ Modal, SectionHeader, BlobImage }** desde `../shared`
 - Importa **{ formatFileSize, formatDateTime, getFileIcon }** desde `../../utils/formatters`
-- Importa **{ getMotoModel }** desde `../../constants/motoModels`
+- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
+- Importa **{ Mantenimiento }** desde `./Mantenimiento`
+- Importa **{ TrashIcon, UploadIcon }** desde `../shared/Icons`
 
 ### src/components/settings/Settings.jsx
 - Importa **{ Link }** desde `react-router-dom`

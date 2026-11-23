@@ -29,6 +29,22 @@ export class MotoAtlas26DB extends Dexie {
       motorcycles: '++id, brand, model, year, plate, purchaseDate, createdAt',
       customThemes: '++id, name, brand, createdAt'
     })
+
+    // Version 6: Add invoices and maintenances tables for Moto module
+    this.version(6).stores({
+      tracks: '++id, name, date, distance, elevationGain, duration, createdAt, updatedAt',
+      trackPoints: '++id, trackId, lat, lng, elevation, timestamp, sequence',
+      images: '++id, type, trackId, motoId, fileName, mimeType, size, blob, description, tags, aspectRatio, colorTheme, createdAt',
+      maintenance: '++id, motoId, type, date, mileage, cost, workshop, description, createdAt',
+      motoProfile: '++id, model, year, vin, purchaseDate, currentMileage, updatedAt',
+      settings: '++id, key, value, updatedAt',
+      uploads: '++id, type, fileName, size, status, localPath, remoteUrl, createdAt',
+      workshops: '++id, type, name, specialty, isDefault, createdAt',
+      motorcycles: '++id, brand, model, year, plate, purchaseDate, createdAt',
+      customThemes: '++id, name, brand, createdAt',
+      invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt'
+    })
     
     this.tracks.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()
@@ -36,6 +52,18 @@ export class MotoAtlas26DB extends Dexie {
     })
     this.tracks.hook('updating', (modifications, primKey, obj, trans) => {
       modifications.updatedAt = new Date()
+    })
+    this.invoices.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+    })
+    this.invoices.hook('updating', (primKey, obj, trans) => {
+      obj.updatedAt = new Date()
+    })
+    this.maintenances.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+    })
+    this.maintenances.hook('updating', (primKey, obj, trans) => {
+      obj.updatedAt = new Date()
     })
     this.images.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()
@@ -48,6 +76,12 @@ export class MotoAtlas26DB extends Dexie {
     })
     this.settings.hook('updating', (modifications, primKey, obj, trans) => {
       modifications.updatedAt = new Date()
+    })
+    this.invoices.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+    })
+    this.maintenances.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
     })
   }
 
@@ -229,7 +263,7 @@ export class MotoAtlas26DB extends Dexie {
     return await this.images.delete(id)
   }
 
-  // ============ MANTENIMIENTO ============
+  // ============ MANTENIMIENTO (legacy) ============
 
   async saveMaintenance(record) {
     return await this.maintenance.add({
@@ -244,6 +278,64 @@ export class MotoAtlas26DB extends Dexie {
 
   async getMaintenanceByMoto(motoId) {
     return await this.maintenance.where('motoId').equals(motoId).toArray()
+  }
+
+  // ============ FACTURAS (INVOICES) ============
+
+  async saveInvoice(invoiceData) {
+    return await this.invoices.add({
+      ...invoiceData,
+      createdAt: new Date()
+    })
+  }
+
+  async getInvoice(id) {
+    return await this.invoices.get(id)
+  }
+
+  async getInvoicesByMoto(motoId) {
+    return await this.invoices.where('motoId').equals(motoId).reverse().sortBy('date')
+  }
+
+  async getAllInvoices() {
+    return await this.invoices.orderBy('date').reverse().toArray()
+  }
+
+  async updateInvoice(id, updates) {
+    return await this.invoices.update(id, updates)
+  }
+
+  async deleteInvoice(id) {
+    return await this.invoices.delete(id)
+  }
+
+  // ============ MANTENIMIENTOS (NUEVA TABLA) ============
+
+  async saveMaintenanceRecord(maintenanceData) {
+    return await this.maintenances.add({
+      ...maintenanceData,
+      createdAt: new Date()
+    })
+  }
+
+  async getMaintenanceRecord(id) {
+    return await this.maintenances.get(id)
+  }
+
+  async getMaintenancesByMoto(motoId) {
+    return await this.maintenances.where('motoId').equals(motoId).reverse().sortBy('date')
+  }
+
+  async getAllMaintenances() {
+    return await this.maintenances.orderBy('date').reverse().toArray()
+  }
+
+  async updateMaintenanceRecord(id, updates) {
+    return await this.maintenances.update(id, updates)
+  }
+
+  async deleteMaintenanceRecord(id) {
+    return await this.maintenances.delete(id)
   }
 
   // ============ TALLERES Y MANTENIMIENTO PROPIO ============
@@ -379,6 +471,8 @@ export class MotoAtlas26DB extends Dexie {
       this.workshops,
       this.motorcycles,
       this.customThemes,
+      this.invoices,
+      this.maintenances,
       async () => {
         await Promise.all([
           this.tracks.clear(),
@@ -390,7 +484,9 @@ export class MotoAtlas26DB extends Dexie {
           this.uploads.clear(),
           this.workshops.clear(),
           this.motorcycles.clear(),
-          this.customThemes.clear()
+          this.customThemes.clear(),
+          this.invoices.clear(),
+          this.maintenances.clear()
         ])
       }
     )
@@ -402,12 +498,14 @@ export class MotoAtlas26DB extends Dexie {
     const images = await this.images.count()
     const maintenance = await this.maintenance.count()
     const workshops = await this.workshops.count()
+    const invoices = await this.invoices.count()
+    const maintenances = await this.maintenances.count()
 
-    return { tracks, points, images, maintenance, workshops }
+    return { tracks, points, images, maintenance, workshops, invoices, maintenances }
   }
 
   async exportAll() {
-    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes] = await Promise.all([
+    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances] = await Promise.all([
       this.tracks.toArray(),
       this.trackPoints.toArray(),
       this.images.toArray(),
@@ -417,11 +515,13 @@ export class MotoAtlas26DB extends Dexie {
       this.uploads.toArray(),
       this.workshops.toArray(),
       this.motorcycles.toArray(),
-      this.customThemes.toArray()
+      this.customThemes.toArray(),
+      this.invoices.toArray(),
+      this.maintenances.toArray()
     ])
 
     return {
-      version: 5,
+      version: 6,
       exportedAt: new Date().toISOString(),
       tracks,
       trackPoints,
@@ -432,7 +532,9 @@ export class MotoAtlas26DB extends Dexie {
       uploads,
       workshops,
       motorcycles,
-      customThemes
+      customThemes,
+      invoices,
+      maintenances
     }
   }
 
@@ -448,6 +550,8 @@ export class MotoAtlas26DB extends Dexie {
       this.workshops,
       this.motorcycles,
       this.customThemes,
+      this.invoices,
+      this.maintenances,
       async () => {
         await Promise.all([
           this.tracks.bulkPut(data.tracks || []),
@@ -459,7 +563,9 @@ export class MotoAtlas26DB extends Dexie {
           this.uploads.bulkPut(data.uploads || []),
           this.workshops.bulkPut(data.workshops || []),
           this.motorcycles.bulkPut(data.motorcycles || []),
-          this.customThemes.bulkPut(data.customThemes || [])
+          this.customThemes.bulkPut(data.customThemes || []),
+          this.invoices.bulkPut(data.invoices || []),
+          this.maintenances.bulkPut(data.maintenances || [])
         ])
       }
     )
