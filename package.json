@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "graph:generate": "node xGrapt/generate-project-graph.js",
-    "deploy": "npm run build && netlify deploy --prod --dir=dist --no-build"
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.0",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "^3.4.19",
     "vite": "^5.0.2"
   }

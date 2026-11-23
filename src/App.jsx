@@ -96,7 +96,7 @@ const AppContent = () => {
 export const App = () => {
   return (
     <GPXProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <AppContent />
       </Router>
     </GPXProvider>
