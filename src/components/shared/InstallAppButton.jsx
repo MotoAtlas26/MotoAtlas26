@@ -69,11 +69,15 @@ export const InstallAppButton = ({ variant = 'button', className = '', label = '
   if (isStandalone || installed) {
     if (variant === 'card') {
       return (
-        <div className={`p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3 ${className}`}>
+        <div className={`p-4 rounded-xl text-sm flex items-center gap-3 ${className}`} style={{
+          background: 'var(--color-success-bg)',
+          border: 'var(--border-width) solid var(--color-success-border)',
+          color: 'var(--color-success-border)'
+        }}>
           <span className="text-xl">✅</span>
           <div>
             <div className="font-semibold">MotoAtlas26 instalada</div>
-            <div className="text-xs opacity-80">Estás ejecutando la aplicación nativa PWA</div>
+            <div className="text-xs" style={{ opacity: 0.8 }}>Estás ejecutando la aplicación nativa PWA</div>
           </div>
         </div>
       )
@@ -85,11 +89,15 @@ export const InstallAppButton = ({ variant = 'button', className = '', label = '
   if (!deferredPrompt && !isIOS) {
     if (variant === 'card') {
       return (
-        <div className={`p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-slate-400 text-sm flex items-center gap-3 ${className}`}>
+        <div className={`p-4 rounded-xl text-sm flex items-center gap-3 ${className}`} style={{
+          background: 'var(--color-card)',
+          border: 'var(--border-width) solid var(--color-card-border)',
+          color: 'var(--color-text-muted)'
+        }}>
           <span className="text-xl">📱</span>
           <div>
-            <div className="font-semibold">Aplicación Web Instalable</div>
-            <div className="text-xs opacity-75">MotoAtlas26 soporta instalación PWA en navegadores compatibles (Chrome, Edge, Safari).</div>
+            <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Aplicación Web Instalable</div>
+            <div className="text-xs" style={{ opacity: 0.75 }}>MotoAtlas26 soporta instalación PWA en navegadores compatibles (Chrome, Edge, Safari).</div>
           </div>
         </div>
       )
@@ -100,19 +108,31 @@ export const InstallAppButton = ({ variant = 'button', className = '', label = '
   return (
     <>
       {variant === 'card' ? (
-        <div className={`p-4 rounded-xl bg-slate-800/60 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${className}`}>
+        <div className={`p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${className}`} style={{
+          background: 'var(--color-card)',
+          border: 'var(--border-width) solid var(--color-tertiary-border)'
+        }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-lg">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg" style={{
+              background: 'color-mix(in srgb, var(--color-tertiary) 20%, transparent)',
+              border: 'var(--border-width) solid var(--color-tertiary-border)',
+              color: 'var(--color-tertiary)'
+            }}>
               📱
             </div>
             <div>
-              <div className="font-medium text-slate-100">Instalar MotoAtlas26</div>
-              <div className="text-xs text-slate-400">Accede directamente desde tu pantalla de inicio sin conexión</div>
+              <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Instalar MotoAtlas26</div>
+              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Accede directamente desde tu pantalla de inicio sin conexión</div>
             </div>
           </div>
           <button
             onClick={handleInstallClick}
-            className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors shadow-md shadow-amber-500/20 flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-4 py-2 font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+            style={{
+              background: 'var(--color-tertiary)',
+              color: 'var(--color-tertiary-contrast)',
+              boxShadow: 'var(--shadow-md), color-mix(in srgb, var(--color-tertiary) 20%, transparent)'
+            }}
           >
             <span>📥</span> {label}
           </button>
@@ -120,7 +140,12 @@ export const InstallAppButton = ({ variant = 'button', className = '', label = '
       ) : (
         <button
           onClick={handleInstallClick}
-          className={`px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 ${className}`}
+          className={`px-4 py-2 font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-2 ${className}`}
+          style={{
+            background: 'var(--color-tertiary)',
+            color: 'var(--color-tertiary-contrast)',
+            boxShadow: 'var(--shadow-md), color-mix(in srgb, var(--color-tertiary) 20%, transparent)'
+          }}
         >
           <span>📥</span> {label}
         </button>
@@ -128,39 +153,52 @@ export const InstallAppButton = ({ variant = 'button', className = '', label = '
 
       {/* Modal de instrucciones para iOS */}
       {showIOSModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full text-slate-100 shadow-2xl animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div className="rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in" style={{
+            background: 'var(--color-card)',
+            border: 'var(--border-width) solid var(--color-card-border)',
+            color: 'var(--color-text-primary)'
+          }}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
+              <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--color-tertiary)' }}>
                 <span>🍏</span> Instalar en iOS / Safari
               </h3>
               <button
                 onClick={() => setShowIOSModal(false)}
-                className="text-slate-400 hover:text-slate-200 text-xl font-bold"
+                className="text-xl font-bold" style={{
+                  color: 'var(--color-text-muted)'
+                }}
               >
                 ✕
               </button>
             </div>
-            <p className="text-sm text-slate-300 mb-4">
+            <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
               Para instalar MotoAtlas26 en tu iPhone o iPad:
             </p>
-            <ol className="text-sm text-slate-300 space-y-3 pl-2 mb-6">
+            <ol className="text-sm space-y-3 pl-2 mb-6" style={{ color: 'var(--color-text-secondary)' }}>
               <li className="flex items-start gap-2">
-                <span className="font-bold text-amber-400">1.</span>
+                <span className="font-bold" style={{ color: 'var(--color-tertiary)' }}>1.</span>
                 <span>Toca el botón <strong>Compartir</strong> en la barra inferior del navegador Safari.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="font-bold text-amber-400">2.</span>
+                <span className="font-bold" style={{ color: 'var(--color-tertiary)' }}>2.</span>
                 <span>Desplázate hacia abajo y selecciona <strong>"Añadir a la pantalla de inicio"</strong>.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="font-bold text-amber-400">3.</span>
+                <span className="font-bold" style={{ color: 'var(--color-tertiary)' }}>3.</span>
                 <span>Toca <strong>Añadir</strong> en la esquina superior derecha.</span>
               </li>
             </ol>
             <button
               onClick={() => setShowIOSModal(false)}
-              className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-sm"
+              className="w-full py-2.5 font-bold rounded-lg text-sm"
+              style={{
+                background: 'var(--color-tertiary)',
+                color: 'var(--color-tertiary-contrast)'
+              }}
             >
               Entendido - MotoAtlas26
             </button>

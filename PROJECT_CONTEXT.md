@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/23/2026, 12:50:44 PM
+> Generado el 11/23/2026, 2:39:59 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -28,6 +28,7 @@
     📄 SettingCard.jsx
     📄 StatRow.jsx
     📄 Tabs.jsx
+    📄 ThemeSelect.jsx
     📄 index.js
   📁 tracks
     📄 MapContainer.jsx
@@ -137,6 +138,10 @@
 - Archivo: src/components/shared/Tabs.jsx
 - Exports: Tabs, Tabs
 
+### ThemeSelect
+- Archivo: src/components/shared/ThemeSelect.jsx
+- Exports: ThemeSelect
+
 ### MapContainer
 - Archivo: src/components/tracks/MapContainer.jsx
 - Exports: GPXMapContainer, GPXMapContainer
@@ -215,7 +220,7 @@
 ### src/components/home/Home.jsx
 - Importa **{ useGPX }** desde `../../context/GPXContext`
 - Importa **{ useAuth }** desde `../../context/AuthContext`
-- Importa **{ InstallAppButton, MotoAtlas26Logo }** desde `../shared`
+- Importa **{ MotoAtlas26Logo }** desde `../shared`
 - Importa **{ CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon }** desde `../shared/Icons`
 - Importa **{ getMotoModel }** desde `../../constants/motoModels`
 - Importa **cfmoto800Img** desde `../../assets/motos/800MT-X.webp`
@@ -256,11 +261,11 @@
 - Importa **{ useGPX }** desde `../../context/GPXContext`
 - Importa **{ useDatabase }** desde `../../hooks/useDatabase`
 - Importa **{ useAuth }** desde `../../context/AuthContext`
-- Importa **{ EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton }** desde `../shared`
+- Importa **{ EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect }** desde `../shared`
 - Importa **{ formatBackupName }** desde `../../utils/formatters`
 - Importa **{ getMotoModelsArray, getMotoModel }** desde `../../constants/motoModels`
 - Importa **{ getThemesList, THEMES }** desde `../../constants/themes`
-- Importa **{ applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme }** desde `../../utils/themeEngine`
+- Importa **{ applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme }** desde `../../utils/themeEngine`
 - Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon }** desde `../shared/Icons`
 
 ### src/components/shared/BlobImage.jsx

@@ -1610,22 +1610,27 @@ export const Settings = () => {
         >
           {!isConnected ? (
             <div className="space-y-3">
-              <div className="p-4 rounded-lg bg-slate-800/40 border border-slate-700/50">
+              <div className="p-4 rounded-lg" style={{ background: 'var(--color-card)', border: 'var(--border-width) solid var(--color-card-border)' }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <UserCircleIcon size={24} className="text-amber-500" />
+                  <UserCircleIcon size={24} style={{ color: 'var(--color-tertiary)' }} />
                   <div>
-                    <div className="font-medium text-slate-100">Modo Local Activo</div>
-                    <div className="text-sm text-slate-400">Tus datos se guardan solo en este navegador (IndexedDB)</div>
+                    <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Modo Local Activo</div>
+                    <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Tus datos se guardan solo en este navegador (IndexedDB)</div>
                   </div>
                 </div>
-                <p className="text-sm text-slate-300 mb-4">
+                <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                   Conecta tu Google Drive para acceder a tus rutas, talleres, motos y temas desde cualquier dispositivo. 
-                  Solo MotoAtlas26 puede acceder a sus propios archivos (alcance <code className="text-xs bg-slate-700 px-1 rounded">drive.file</code>.)
+                  Solo MotoAtlas26 puede acceder a sus propios archivos (alcance <code style={{ fontSize: 'var(--font-size-xs)', background: 'var(--color-card-hover)', padding: '0.125rem 0.25rem', borderRadius: 'var(--radius-sm)' }}>drive.file</code>.)
                 </p>
                 <button
                   onClick={connect}
                   disabled={syncStatus === 'syncing'}
-                  className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-sm flex items-center justify-center gap-2"
+                  className="w-full py-2.5 font-bold rounded-lg text-sm flex items-center justify-center gap-2"
+                  style={{ 
+                    background: 'var(--color-tertiary)',
+                    color: 'var(--color-tertiary-contrast)',
+                    border: 'var(--border-width) solid var(--color-tertiary-border)'
+                  }}
                 >
                   <SyncIcon size={16} /> Conectar con Google Drive
                 </button>
@@ -1634,25 +1639,35 @@ export const Settings = () => {
           ) : (
             <div className="space-y-4">
               {/* User Info */}
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-800/40 border border-slate-700/50">
+              <div className="flex items-center gap-4 p-4 rounded-lg" style={{ background: 'var(--color-card)', border: 'var(--border-width) solid var(--color-card-border)' }}>
                 {user?.picture && (
                   <img 
                     src={user.picture} 
                     alt={user.name} 
-                    className="w-12 h-12 rounded-full border-2 border-amber-500/50"
+                    className="w-12 h-12 rounded-full border-2"
+                    style={{ borderColor: 'var(--color-tertiary-border)' }}
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-slate-100 truncate">{user?.name || user?.email}</div>
-                  <div className="text-sm text-slate-400 truncate">{user?.email}</div>
+                  <div className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{user?.name || user?.email}</div>
+                  <div className="text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>{user?.email}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    syncStatus === 'synced' ? 'bg-emerald-500/20 text-emerald-400' :
-                    syncStatus === 'syncing' ? 'bg-amber-500/20 text-amber-400' :
-                    syncStatus === 'error' ? 'bg-red-500/20 text-red-400' :
-                    'bg-slate-600/50 text-slate-400'
-                  }`}>
+                  <span className="px-2 py-1 rounded-full text-xs font-medium" style={{
+                    background: syncStatus === 'synced' ? 'var(--color-success-bg)' :
+                              syncStatus === 'syncing' ? 'var(--color-alert-bg)' :
+                              syncStatus === 'error' ? 'var(--color-error-bg)' :
+                              'var(--color-card-hover)',
+                    color: syncStatus === 'synced' ? 'var(--color-success-border)' :
+                           syncStatus === 'syncing' ? 'var(--color-alert-border)' :
+                           syncStatus === 'error' ? 'var(--color-error-border)' :
+                           'var(--color-text-muted)',
+                    border: 'var(--border-width) solid',
+                    borderColor: syncStatus === 'synced' ? 'var(--color-success-border)' :
+                                 syncStatus === 'syncing' ? 'var(--color-alert-border)' :
+                                 syncStatus === 'error' ? 'var(--color-error-border)' :
+                                 'var(--color-card-border)'
+                  }}>
                     {syncStatus === 'synced' && <CheckCircleIcon size={10} className="inline-block mr-1" />}
                     {syncStatus === 'syncing' && <SyncIcon size={10} className="inline-block mr-1 spin" />}
                     {syncStatus === 'synced' ? 'Sincronizado' :
@@ -1664,7 +1679,7 @@ export const Settings = () => {
 
               {/* Last Sync */}
               {lastSync && (
-                <div className="text-sm text-slate-400 flex items-center gap-2">
+                <div className="text-sm flex items-center gap-2" style={{ color: 'var(--color-text-secondary)' }}>
                   <SyncIcon size={14} />
                   <span>Última sincronización: {formatRelativeTime(lastSync)}</span>
                 </div>
@@ -1675,20 +1690,34 @@ export const Settings = () => {
                 <button
                   onClick={syncNow}
                   disabled={syncStatus === 'syncing'}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-100 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 py-2.5 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+                  style={{ 
+                    background: 'var(--color-card)',
+                    color: 'var(--color-text-primary)',
+                    border: 'var(--border-width) solid var(--color-card-border)'
+                  }}
                 >
                   <SyncIcon size={16} /> {syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar ahora'}
                 </button>
                 <button
                   onClick={disconnect}
-                  className="flex-1 py-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 py-2.5 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+                  style={{ 
+                    background: 'var(--color-error-bg)',
+                    color: 'var(--color-error-border)',
+                    border: 'var(--border-width) solid var(--color-error-border)'
+                  }}
                 >
                   <LogOutIcon size={16} /> Cerrar sesión
                 </button>
               </div>
 
               {authError && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                <div className="p-3 rounded-lg text-sm" style={{ 
+                  background: 'var(--color-error-bg)',
+                  border: 'var(--border-width) solid var(--color-error-border)',
+                  color: 'var(--color-error-border)'
+                }}>
                   {authError}
                 </div>
               )}
