@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/22/2026, 10:54:18 PM
+> Generado el 11/23/2026, 12:50:44 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -75,7 +75,7 @@
 
 ### Home
 - Archivo: src/components/home/Home.jsx
-- Exports: Home, Home
+- Exports: Home
 
 ### MainLayout
 - Archivo: src/components/layout/MainLayout.jsx
@@ -155,7 +155,7 @@
 
 ### themes
 - Archivo: src/constants/themes.js
-- Exports: THEMES
+- Exports: THEMES, getDefaultTheme, getThemesList
 
 ### googleDrive
 - Archivo: src/services/googleDrive.js
@@ -214,12 +214,12 @@
 
 ### src/components/home/Home.jsx
 - Importa **{ useGPX }** desde `../../context/GPXContext`
-- Importa **{ db }** desde `../../services/db`
-- Importa **{ useBlobUrl }** desde `../../hooks/useBlobUrl`
-- Importa **{ getMotoModel, getDefaultMotoModel }** desde `../../constants/motoModels`
 - Importa **{ useAuth }** desde `../../context/AuthContext`
 - Importa **{ InstallAppButton, MotoAtlas26Logo }** desde `../shared`
-- Importa **{ CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, UserCircleIcon, LogOutIcon }** desde `../shared/Icons`
+- Importa **{ CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon }** desde `../shared/Icons`
+- Importa **{ getMotoModel }** desde `../../constants/motoModels`
+- Importa **cfmoto800Img** desde `../../assets/motos/800MT-X.webp`
+- Importa **ktm1290Img** desde `../../assets/motos/KTM-1290-S-Adv-S.webp`
 
 ### src/components/layout/MainLayout.jsx
 - Importa **{ Outlet, useLocation }** desde `react-router-dom`
@@ -259,7 +259,7 @@
 - Importa **{ EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton }** desde `../shared`
 - Importa **{ formatBackupName }** desde `../../utils/formatters`
 - Importa **{ getMotoModelsArray, getMotoModel }** desde `../../constants/motoModels`
-- Importa **{ getThemesList }** desde `../../constants/themes`
+- Importa **{ getThemesList, THEMES }** desde `../../constants/themes`
 - Importa **{ applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme }** desde `../../utils/themeEngine`
 - Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon }** desde `../shared/Icons`
 
@@ -314,6 +314,10 @@
 ### src/constants/colors.js
 - Importa **{ THEMES }** desde `./themes`
 
+### src/constants/motoModels.js
+- Importa **cfmoto800mtx** desde `../assets/motos/800MT-X.webp`
+- Importa **ktm1290** desde `../assets/motos/KTM-1290-S-Adv-S.webp`
+
 ### src/constants/themes.js
 - Importa **{ db }** desde `../services/db`
 
@@ -347,7 +351,7 @@
 - Importa **React** desde `react`
 
 ### src/utils/themeEngine.js
-- Importa **{ getThemeById, THEMES }** desde `../constants/themes`
+- Importa **{ getThemeById, THEMES, getDefaultTheme }** desde `../constants/themes`
 - Importa **{ db }** desde `../services/db`
 
 ---

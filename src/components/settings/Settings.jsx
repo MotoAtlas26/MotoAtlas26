@@ -33,7 +33,7 @@ export const Settings = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark')
   const [selectedMoto, setSelectedMoto] = useState('cfmoto-800mt-x')
   const [activeTab, setActiveTab] = useState('appearance')
-  const [colorTheme, setColorTheme] = useState('cfmoto-gold')
+  const [colorTheme, setColorTheme] = useState('motoatlas26')
   const { 
     fsSupported, 
     fsHasFolder, 
@@ -71,6 +71,10 @@ export const Settings = () => {
   })
   const [deleteCustomThemeConfirm, setDeleteCustomThemeConfirm] = useState(null)
   const [customThemeFormError, setCustomThemeFormError] = useState(null)
+
+  // Available themes state (predefined + custom)
+  const [availableThemes, setAvailableThemes] = useState([])
+  const [loadingThemes, setLoadingThemes] = useState(true)
   
   // Workshops state
   const [workshops, setWorkshops] = useState([])
@@ -165,10 +169,6 @@ export const Settings = () => {
     }
     loadCustomThemes()
   }, [getCustomThemes])
-
-  // Available themes state (for appearance tab) - combines predefined + custom
-  const [availableThemes, setAvailableThemes] = useState([])
-  const [loadingThemes, setLoadingThemes] = useState(true)
 
   const loadAvailableThemes = useCallback(async () => {
     try {
@@ -515,7 +515,7 @@ export const Settings = () => {
 
   // Load and apply color theme on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('colorTheme') || 'cfmoto-gold'
+    const savedTheme = localStorage.getItem('colorTheme') || 'motoatlas26'
     setColorTheme(savedTheme)
     document.documentElement.setAttribute('data-theme', savedTheme)
   }, [])
@@ -561,6 +561,19 @@ export const Settings = () => {
 
   const renderAppearanceTab = () => {
     const selectedTheme = availableThemes.find(t => t.id === colorTheme) || availableThemes[0]
+    
+    // Group 1: Original - only MotoAtlas26
+    const originalTheme = availableThemes.find(t => t.id === 'motoatlas26')
+    
+    // Group 2: Personalizados - custom themes from Dexie, alphabetical by name
+    const customThemesList = availableThemes
+      .filter(t => t.id.startsWith('custom-'))
+      .sort((a, b) => a.name.localeCompare(b.name))
+    
+    // Group 3: Marcas - 13 official brands, alphabetical A-Z (excluding MotoAtlas26)
+    const brandThemes = availableThemes
+      .filter(t => !t.id.startsWith('custom-') && t.id !== 'motoatlas26')
+      .sort((a, b) => a.name.localeCompare(b.name))
     
     const handleThemeChange = async (newThemeId) => {
       setColorTheme(newThemeId)
@@ -634,17 +647,31 @@ export const Settings = () => {
               value={colorTheme}
               onChange={(e) => handleThemeChange(e.target.value)}
             >
-              <optgroup label="Marcas Predefinidas">
-                {availableThemes.filter(t => !t.id.startsWith('custom-')).map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} {t.brand && `(${t.brand})`}
+              {/* Grupo 1: Original - solo MotoAtlas26 */}
+              <optgroup label="Original">
+                {originalTheme && (
+                  <option key={originalTheme.id} value={originalTheme.id}>
+                    {originalTheme.name}
                   </option>
-                ))}
+                )}
               </optgroup>
-              <optgroup label="Temas Personalizados">
-                {availableThemes.filter(t => t.id.startsWith('custom-')).map((t) => (
+              
+              {/* Grupo 2: Personalizados - temas creados por el usuario */}
+              {customThemesList.length > 0 && (
+                <optgroup label="Personalizados">
+                  {customThemesList.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {/* Grupo 3: Marcas - 13 marcas oficiales A-Z */}
+              <optgroup label="Marcas">
+                {brandThemes.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.name} {t.brand && `(${t.brand})`}
+                    {t.name}
                   </option>
                 ))}
               </optgroup>

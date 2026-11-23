@@ -1,17 +1,38 @@
 /**
  * MotoAtlas26 — Single Source of Truth for Themes
- * Cada tema define swatches [Primary, Base, Secondary] y tokens completos para dark/light
+ * Cada tema define swatches [Principal, Secundario, Acento] y tokens completos para dark/light
+ * Orden: MotoAtlas26 (default) + 13 marcas ordenadas alfabéticamente A-Z
  */
 
 import { db } from '../services/db'
 
-export const THEMES = [
-  {
-    id: 'cfmoto-gold',
-    name: 'CFMOTO Gold',
-    brand: 'CFMoto',
-    swatches: ['#D2B474', '#0D0D0F', '#D96B27'], // [Primary, Base, Secondary]
-    dark: {
+/**
+ * Calcula el color de contraste basado en luminancia (WCAG)
+ * @param {string} hex - Color en formato hex
+ * @returns {string} '#0D0D0F' para colores claros, '#FFFFFF' para colores oscuros
+ */
+function getContrastColor(hex) {
+  const clean = hex.replace('#', '')
+  const bigint = parseInt(clean, 16)
+  const r = (bigint >> 16) & 255
+  const g = (bigint >> 8) & 255
+  const b = bigint & 255
+  const a = [r, g, b].map(v => {
+    v /= 255
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  })
+  const lum = a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
+  return lum > 0.5 ? '#0D0D0F' : '#FFFFFF'
+}
+
+/**
+ * Genera tokens de tema base (superficies, texto, alertas) para dark/light
+ * @param {string} mode - 'dark' | 'light'
+ * @returns {Object} Tokens base
+ */
+function getBaseTokens(mode) {
+  if (mode === 'dark') {
+    return {
       // Surfaces
       '--color-canvas': '#0D0D0F',
       '--color-sidebar': '#121214',
@@ -22,22 +43,16 @@ export const THEMES = [
       '--color-text-primary': '#F2F2F3',
       '--color-text-secondary': '#8E9096',
       '--color-text-muted': '#6E726F',
-      // Accents (semantic mapping from swatches)
-      '--color-primary': '#D2B474',      // swatches[0] - Primary accent
-      '--color-primary-light': '#EFE1C6',
-      '--color-primary-dark': '#B8935A',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (gold is light)
-      '--color-secondary': '#D96B27',    // swatches[2] - Secondary accent
-      '--color-secondary-light': '#F07E2E',
-      // Alerts
-      '--color-alert-bg': '#291B14',
-      '--color-alert-border': '#D96B27',
+      // Alerts (base, will be overridden by theme-specific)
+      '--color-alert-bg': '#2E1A0A',
+      '--color-alert-border': '#FF6600',
       '--color-success-bg': '#1A2E1A',
       '--color-success-border': '#2E7D32',
       '--color-error-bg': '#2E1A1A',
       '--color-error-border': '#C62828',
-    },
-    light: {
+    }
+  } else {
+    return {
       // Surfaces (light variants)
       '--color-canvas': '#F8F8FA',
       '--color-sidebar': '#FFFFFF',
@@ -45,533 +60,10 @@ export const THEMES = [
       '--color-card-border': '#E0E0E3',
       '--color-card-hover': '#F0F0F2',
       // Text
-      '--color-text-primary': '#1A1A1C',
-      '--color-text-secondary': '#5E6066',
-      '--color-text-muted': '#8E9096',
-      // Accents (same hue, adjusted for light bg)
-      '--color-primary': '#B8935A',
-      '--color-primary-light': '#D2B474',
-      '--color-primary-dark': '#9A7A4A',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (gold is light)
-      '--color-secondary': '#CC6600',
-      '--color-secondary-light': '#E67300',
+      '--color-text-primary': '#0D0D0F',
+      '--color-text-secondary': '#3E3E42',
+      '--color-text-muted': '#6E726F',
       // Alerts
-      '--color-alert-bg': '#FFF3E0',
-      '--color-alert-border': '#CC6600',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'ktm-snow',
-    name: 'KTM Snow',
-    brand: 'KTM',
-    swatches: ['#FF6600', '#FFFFFF', '#0D0D0F'], // [Primary (Orange), Base (White), Secondary (Dark)]
-    dark: {
-      // Surfaces
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      // Text
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      // Accents - KTM Orange as primary, dark as secondary
-      '--color-primary': '#FF6600',      // swatches[0] - KTM Orange
-      '--color-primary-light': '#FF8533',
-      '--color-primary-dark': '#CC5200',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (orange is light)
-      '--color-secondary': '#0D0D0F',    // swatches[2] - Dark accent
-      '--color-secondary-light': '#1A1A1D',
-      // Alerts
-      '--color-alert-bg': '#2E1A0A',
-      '--color-alert-border': '#FF6600',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      // Surfaces (light variants)
-      '--color-canvas': '#FFFFFF',
-      '--color-sidebar': '#F8F8FA',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      // Text - Dark text for readability on white
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      // Accents - KTM Orange adjusted for light bg, dark as secondary
-      '--color-primary': '#CC5200',      // Darker orange for contrast on white
-      '--color-primary-light': '#E65C00',
-      '--color-primary-dark': '#B34700',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (darker orange)
-      '--color-secondary': '#0D0D0F',    // Dark as secondary accent
-      '--color-secondary-light': '#1A1A1D',
-      // Alerts
-      '--color-alert-bg': '#FFF3E0',
-      '--color-alert-border': '#CC5200',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'ktm-orange',
-    name: 'KTM Orange',
-    brand: 'KTM',
-    swatches: ['#FF6600', '#0D0D0F', '#FFFFFF'], // [Primary (Orange), Base (Dark), Secondary (White)]
-    dark: {
-      // Surfaces
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      // Text
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      // Accents
-      '--color-primary': '#FF6600',
-      '--color-primary-light': '#FF8533',
-      '--color-primary-dark': '#CC5200',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (orange is light)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      // Alerts
-      '--color-alert-bg': '#2E1A0A',
-      '--color-alert-border': '#FF6600',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      // Surfaces
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      // Text
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      // Accents
-      '--color-primary': '#CC5200',
-      '--color-primary-light': '#E65C00',
-      '--color-primary-dark': '#B34700',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (darker orange)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      // Alerts
-      '--color-alert-bg': '#FFF3E0',
-      '--color-alert-border': '#CC5200',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'yamaha-blue',
-    name: 'Yamaha Blue',
-    brand: 'Yamaha',
-    swatches: ['#0033A0', '#0D0D0F', '#FFFFFF'], // [Primary (Blue), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#0033A0',
-      '--color-primary-light': '#0044CC',
-      '--color-primary-dark': '#002680',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (blue is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#1A1A2E',
-      '--color-alert-border': '#0033A0',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#002680',
-      '--color-primary-light': '#0033A0',
-      '--color-primary-dark': '#001F66',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (blue is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#E8EFFF',
-      '--color-alert-border': '#002680',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'honda-red',
-    name: 'Honda Red',
-    brand: 'Honda',
-    swatches: ['#E30012', '#0D0D0F', '#FFFFFF'], // [Primary (Red), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#E30012',
-      '--color-primary-light': '#FF1A1A',
-      '--color-primary-dark': '#B3000E',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (red is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#2E1A1A',
-      '--color-alert-border': '#E30012',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#B3000E',
-      '--color-primary-light': '#D60010',
-      '--color-primary-dark': '#99000C',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (red is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#FDEDEC',
-      '--color-alert-border': '#B3000E',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'suzuki-blue',
-    name: 'Suzuki Blue',
-    brand: 'Suzuki',
-    swatches: ['#00A3E0', '#0D0D0F', '#FFFFFF'], // [Primary (Blue), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#00A3E0',
-      '--color-primary-light': '#33B5E8',
-      '--color-primary-dark': '#0082B3',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (cyan is light)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#1A2E2E',
-      '--color-alert-border': '#00A3E0',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#0082B3',
-      '--color-primary-light': '#0095CC',
-      '--color-primary-dark': '#006E99',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (darker cyan)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#E0F7FF',
-      '--color-alert-border': '#0082B3',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'kawasaki-green',
-    name: 'Kawasaki Green',
-    brand: 'Kawasaki',
-    swatches: ['#00A651', '#0D0D0F', '#FFFFFF'], // [Primary (Green), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#00A651',
-      '--color-primary-light': '#00CC66',
-      '--color-primary-dark': '#008541',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (green is light)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#1A2E1A',
-      '--color-alert-border': '#00A651',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#008541',
-      '--color-primary-light': '#00964A',
-      '--color-primary-dark': '#006B35',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (darker green)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#E8F5E9',
-      '--color-alert-border': '#008541',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'ducati-red',
-    name: 'Ducati Red',
-    brand: 'Ducati',
-    swatches: ['#C3002F', '#0D0D0F', '#FFFFFF'], // [Primary (Red), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#C3002F',
-      '--color-primary-light': '#E60036',
-      '--color-primary-dark': '#9C0026',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (red is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#2E1A1A',
-      '--color-alert-border': '#C3002F',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#9C0026',
-      '--color-primary-light': '#B3002B',
-      '--color-primary-dark': '#80001F',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (red is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#FDEDEC',
-      '--color-alert-border': '#9C0026',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'bmw-blue',
-    name: 'BMW Blue',
-    brand: 'BMW',
-    swatches: ['#0054A6', '#0D0D0F', '#FFFFFF'], // [Primary (Blue), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#0054A6',
-      '--color-primary-light': '#0066CC',
-      '--color-primary-dark': '#004385',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (blue is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#1A1A2E',
-      '--color-alert-border': '#0054A6',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#004385',
-      '--color-primary-light': '#0054A6',
-      '--color-primary-dark': '#00366B',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (blue is dark)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#E8EFFF',
-      '--color-alert-border': '#004385',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'triumph-black',
-    name: 'Triumph Black',
-    brand: 'Triumph',
-    swatches: ['#B8860B', '#0D0D0F', '#FFFFFF'], // [Primary (Gold), Base (Dark), Secondary (White)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#B8860B',
-      '--color-primary-light': '#DAA520',
-      '--color-primary-dark': '#926B09',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (gold is light)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#2E240A',
-      '--color-alert-border': '#B8860B',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#926B09',
-      '--color-primary-light': '#B8860B',
-      '--color-primary-dark': '#7A5707',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (darker gold)
-      '--color-secondary': '#FFFFFF',
-      '--color-secondary-light': '#F2F2F3',
-      '--color-alert-bg': '#FFF8E0',
-      '--color-alert-border': '#926B09',
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
-  },
-  {
-    id: 'harley-orange',
-    name: 'Harley Orange',
-    brand: 'Harley-Davidson',
-    swatches: ['#FF6600', '#0D0D0F', '#C3002F'], // [Primary (Orange), Base (Dark), Secondary (Red)]
-    dark: {
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#FF6600',
-      '--color-primary-light': '#FF8533',
-      '--color-primary-dark': '#CC5200',
-      '--color-primary-contrast': '#0D0D0F',  // Text on primary (orange is light)
-      '--color-secondary': '#C3002F',
-      '--color-secondary-light': '#E60036',
-      '--color-alert-bg': '#2E1A0A',
-      '--color-alert-border': '#FF6600',
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      '--color-primary': '#CC5200',
-      '--color-primary-light': '#E65C00',
-      '--color-primary-dark': '#B34700',
-      '--color-primary-contrast': '#FFFFFF',  // Text on primary (darker orange)
-      '--color-secondary': '#9C0026',
-      '--color-secondary-light': '#B3002B',
       '--color-alert-bg': '#FFF3E0',
       '--color-alert-border': '#CC5200',
       '--color-success-bg': '#E8F5E9',
@@ -580,166 +72,246 @@ export const THEMES = [
       '--color-error-border': '#C62828',
     }
   }
+}
+
+/**
+ * Genera tokens de acento (primary, secondary, tertiary) desde swatches
+ * @param {Array<string>} swatches - Array de 3 colores hex [primary, secondary, tertiary]
+ * @param {string} mode - 'dark' | 'light'
+ * @returns {Object} Tokens de acento con contrastes y border
+ */
+function generateAccentTokens(swatches, mode) {
+  const primary = swatches[0]
+  const secondary = swatches[1]
+  const tertiary = swatches[2]
+
+  const primaryContrast = getContrastColor(primary)
+  const secondaryContrast = getContrastColor(secondary)
+  const tertiaryContrast = getContrastColor(tertiary)
+
+  // Helper to lighten/darken a color
+  const adjustColor = (hex, amount) => {
+    const clean = hex.replace('#', '')
+    const bigint = parseInt(clean, 16)
+    const r = (bigint >> 16) & 255
+    const g = (bigint >> 8) & 255
+    const b = bigint & 255
+    return '#' + [r, g, b].map(c => {
+      const adjusted = Math.round(Math.min(255, Math.max(0, c + amount * 255)))
+      return adjusted.toString(16).padStart(2, '0')
+    }).join('')
+  }
+
+  // Tertiary border: visible outline when tertiary is white or black
+  // Dark mode: rgba(255,255,255,0.22) | Light mode: rgba(0,0,0,0.18)
+  const tertiaryBorder = mode === 'dark' 
+    ? 'rgba(255,255,255,0.22)' 
+    : 'rgba(0,0,0,0.18)'
+
+  return {
+    '--color-primary': primary,
+    '--color-primary-light': adjustColor(primary, mode === 'dark' ? 0.2 : 0.1),
+    '--color-primary-dark': adjustColor(primary, mode === 'dark' ? -0.2 : -0.15),
+    '--color-primary-contrast': primaryContrast,
+    '--color-secondary': secondary,
+    '--color-secondary-light': adjustColor(secondary, mode === 'dark' ? 0.15 : 0.1),
+    '--color-tertiary': tertiary,
+    '--color-tertiary-light': adjustColor(tertiary, mode === 'dark' ? 0.15 : 0.1),
+    '--color-tertiary-contrast': tertiaryContrast,
+    '--color-tertiary-border': tertiaryBorder,
+  }
+}
+
+/**
+ * Crea un tema completo combinando base + acentos
+ */
+function createTheme(id, name, brand, swatches) {
+  return {
+    id,
+    name,
+    brand,
+    swatches,
+    dark: { ...getBaseTokens('dark'), ...generateAccentTokens(swatches, 'dark') },
+    light: { ...getBaseTokens('light'), ...generateAccentTokens(swatches, 'light') },
+  }
+}
+
+// 14 TEMAS OFICIALES - MotoAtlas26 (default) + 13 marcas A-Z
+export const THEMES = [
+  // 1. MotoAtlas26 (DEFAULT)
+  createTheme(
+    'motoatlas26',
+    'MotoAtlas26',
+    'MotoAtlas',
+    ['#D2B474', '#E07A5F', '#3D5A80']
+  ),
+  // 2. Aprilia
+  createTheme(
+    'aprilia',
+    'Aprilia',
+    'Aprilia',
+    ['#E30613', '#111111', '#6A0DAD']
+  ),
+  // 3. BMW
+  createTheme(
+    'bmw',
+    'BMW',
+    'BMW',
+    ['#0066B1', '#003D78', '#E22718']
+  ),
+  // 4. CFMOTO
+  createTheme(
+    'cfmoto',
+    'CFMOTO',
+    'CFMOTO',
+    ['#009BB4', '#000000', '#E6007E']
+  ),
+  // 5. Ducati
+  createTheme(
+    'ducati',
+    'Ducati',
+    'Ducati',
+    ['#D5001C', '#FFFFFF', '#1A1A1A']
+  ),
+  // 6. Harley-Davidson
+  createTheme(
+    'harley-davidson',
+    'Harley-Davidson',
+    'Harley-Davidson',
+    ['#FF6600', '#111111', '#FFFFFF']
+  ),
+  // 7. Honda
+  createTheme(
+    'honda',
+    'Honda',
+    'Honda',
+    ['#CC0000', '#003399', '#FFFFFF']
+  ),
+  // 8. Kawasaki
+  createTheme(
+    'kawasaki',
+    'Kawasaki',
+    'Kawasaki',
+    ['#66CC00', '#111111', '#FFFFFF']
+  ),
+  // 9. KOVE
+  createTheme(
+    'kove',
+    'KOVE',
+    'KOVE',
+    ['#00A9B4', '#FFFFFF', '#D81E28']
+  ),
+  // 10. KTM
+  createTheme(
+    'ktm',
+    'KTM',
+    'KTM',
+    ['#FF6600', '#111111', '#FFFFFF']
+  ),
+  // 11. Suzuki
+  createTheme(
+    'suzuki',
+    'Suzuki',
+    'Suzuki',
+    ['#0055B8', '#FFFFFF', '#DFFF00']
+  ),
+  // 12. Triumph
+  createTheme(
+    'triumph',
+    'Triumph',
+    'Triumph',
+    ['#FF3850', '#000000', '#C5A059']
+  ),
+  // 13. VOGE
+  createTheme(
+    'voge',
+    'VOGE',
+    'VOGE',
+    ['#111111', '#9D9D9E', '#FFEC00']
+  ),
+  // 14. Yamaha
+  createTheme(
+    'yamaha',
+    'Yamaha',
+    'Yamaha',
+    ['#0033A0', '#FFFFFF', '#111111']
+  ),
 ]
 
 /**
- * Genera tokens de tema completos a partir de 3 colores base (swatches)
+ * Genera tokens de tema completos a partir de 3 colores base (swatches) para temas personalizados
  * @param {Object} customTheme - { primaryColor, secondaryColor, tertiaryColor, swatches }
  * @returns {Object} Tema con estructura dark/light completa
  */
 function generateCustomThemeTokens(customTheme) {
   const primary = customTheme.primaryColor || customTheme.swatches?.[0] || '#D2B474'
-  const secondary = customTheme.secondaryColor || customTheme.swatches?.[1] || '#0D0D0F'
-  const tertiary = customTheme.tertiaryColor || customTheme.swatches?.[2] || '#D96B27'
-  
-  // Calculate luminance for contrast color
-  const luminance = (r, g, b) => {
-    const a = [r, g, b].map(v => {
-      v /= 255
-      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
-    })
-    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
-  }
-  
-  const hexToRgb = (hex) => {
-    const clean = hex.replace('#', '')
-    const bigint = parseInt(clean, 16)
-    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255]
-  }
-  
-  const primaryRgb = hexToRgb(primary)
-  const primaryLum = luminance(...primaryRgb)
-  const primaryContrast = primaryLum > 0.5 ? '#0D0D0F' : '#FFFFFF'
-  
-  // Calculate tertiary contrast
-  const tertiaryRgb = hexToRgb(tertiary)
-  const tertiaryLum = luminance(...tertiaryRgb)
-  const tertiaryContrast = tertiaryLum > 0.5 ? '#0D0D0F' : '#FFFFFF'
-  
-  // Helper to lighten/darken a color
-  const adjustColor = (hex, amount) => {
-    const rgb = hexToRgb(hex)
-    return '#' + rgb.map(c => {
-      const adjusted = Math.round(Math.min(255, Math.max(0, c + amount * 255)))
-      return adjusted.toString(16).padStart(2, '0')
-    }).join('')
-  }
-  
+  const secondary = customTheme.secondaryColor || customTheme.swatches?.[1] || '#E07A5F'
+  const tertiary = customTheme.tertiaryColor || customTheme.swatches?.[2] || '#3D5A80'
+
+  const swatches = [primary, secondary, tertiary]
+
   return {
-    id: customTheme.id || `custom-${Date.now()}`,
+    id: `custom-${customTheme.id}`,
     name: customTheme.name,
     brand: customTheme.brand || 'Personalizado',
-    swatches: [primary, secondary, tertiary],
-    dark: {
-      // Surfaces
-      '--color-canvas': '#0D0D0F',
-      '--color-sidebar': '#121214',
-      '--color-card': '#191A1D',
-      '--color-card-border': '#2B2C30',
-      '--color-card-hover': '#25272C',
-      // Text
-      '--color-text-primary': '#F2F2F3',
-      '--color-text-secondary': '#8E9096',
-      '--color-text-muted': '#6E726F',
-      // Accents (semantic mapping from swatches)
-      '--color-primary': primary,
-      '--color-primary-light': adjustColor(primary, 0.2),
-      '--color-primary-dark': adjustColor(primary, -0.2),
-      '--color-primary-contrast': primaryContrast,
-      '--color-secondary': secondary,
-      '--color-secondary-light': adjustColor(secondary, 0.15),
-      '--color-tertiary': tertiary,
-      '--color-tertiary-light': adjustColor(tertiary, 0.15),
-      '--color-tertiary-contrast': tertiaryContrast,
-      // Alerts
-      '--color-alert-bg': '#2E1A0A',
-      '--color-alert-border': secondary,
-      '--color-success-bg': '#1A2E1A',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#2E1A1A',
-      '--color-error-border': '#C62828',
-    },
-    light: {
-      // Surfaces
-      '--color-canvas': '#F8F8FA',
-      '--color-sidebar': '#FFFFFF',
-      '--color-card': '#FFFFFF',
-      '--color-card-border': '#E0E0E3',
-      '--color-card-hover': '#F0F0F2',
-      // Text
-      '--color-text-primary': '#0D0D0F',
-      '--color-text-secondary': '#3E3E42',
-      '--color-text-muted': '#6E726F',
-      // Accents
-      '--color-primary': primary,
-      '--color-primary-light': adjustColor(primary, 0.1),
-      '--color-primary-dark': adjustColor(primary, -0.15),
-      '--color-primary-contrast': primaryContrast,
-      '--color-secondary': secondary,
-      '--color-secondary-light': adjustColor(secondary, 0.1),
-      '--color-tertiary': tertiary,
-      '--color-tertiary-light': adjustColor(tertiary, 0.1),
-      '--color-tertiary-contrast': tertiaryContrast,
-      // Alerts
-      '--color-alert-bg': '#FFF3E0',
-      '--color-alert-border': primary,
-      '--color-success-bg': '#E8F5E9',
-      '--color-success-border': '#2E7D32',
-      '--color-error-bg': '#FDEDEC',
-      '--color-error-border': '#C62828',
-    }
+    swatches,
+    dark: { ...getBaseTokens('dark'), ...generateAccentTokens(swatches, 'dark') },
+    light: { ...getBaseTokens('light'), ...generateAccentTokens(swatches, 'light') },
   }
 }
 
 /**
- * Obtiene un tema por su ID (soporta temas predefinidos y personalizados)
+ * Obtiene un tema por ID (predefinido o personalizado desde Dexie)
  * @param {string} id - ID del tema
- * @returns {Promise<Object|null>} Tema encontrado o null
+ * @returns {Promise<Object|null>} Tema completo o null
  */
 export async function getThemeById(id) {
   // Primero buscar en temas predefinidos
   const predefined = THEMES.find(t => t.id === id)
   if (predefined) return predefined
-  
-  // Si es un tema personalizado (custom-*), buscar en Dexie
+
+  // Si es tema personalizado (custom-<id>), buscar en Dexie
   if (id.startsWith('custom-')) {
+    const customId = id.replace('custom-', '')
     try {
-      const customTheme = await db.customThemes.get(parseInt(id.replace('custom-', '')))
+      const customTheme = await db.customThemes.get(customId)
       if (customTheme) {
         return generateCustomThemeTokens(customTheme)
       }
-    } catch (e) {
-      console.warn('Error loading custom theme:', e)
+    } catch (error) {
+      console.error('Error fetching custom theme:', error)
     }
   }
-  
+
   return null
 }
 
 /**
- * Obtiene lista simplificada para dropdowns (predefinidos + personalizados)
- * @returns {Promise<Array>} [{id, name, brand, swatches}]
+ * Obtiene todos los temas personalizados desde Dexie
+ * @returns {Promise<Array>} Array de temas personalizados formateados
  */
-export async function getThemesList() {
-  const predefined = THEMES.map(t => ({
-    id: t.id,
-    name: t.name,
-    brand: t.brand,
-    swatches: t.swatches
-  }))
-  
+export async function getCustomThemes() {
   try {
-    const customThemes = await db.getAllCustomThemes()
-    const custom = customThemes.map(t => ({
-      id: `custom-${t.id}`,
-      name: t.name,
-      brand: t.brand || 'Personalizado',
-      swatches: t.swatches || [t.primaryColor, t.secondaryColor, t.tertiaryColor]
-    }))
-    return [...predefined, ...custom]
-  } catch (e) {
-    console.warn('Error loading custom themes:', e)
-    return predefined
+    const themes = await db.customThemes.toArray()
+    return themes.map(t => generateCustomThemeTokens(t))
+  } catch (error) {
+    console.error('Error fetching custom themes:', error)
+    return []
   }
 }
 
+/**
+ * Obtiene el tema por defecto (MotoAtlas26)
+ * @returns {Object} Tema por defecto
+ */
+export function getDefaultTheme() {
+  return THEMES[0] // MotoAtlas26
+}
+
+/**
+ * Obtiene la lista de temas predefinidos (para selector)
+ * @returns {Array} Array de temas predefinidos
+ */
+export function getThemesList() {
+  return THEMES
+}
