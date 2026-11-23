@@ -1,10 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" width="280" height="64" fill="none">
-  <rect width="280" height="64" rx="12" fill="#0D0D0F"/>
-  <!-- Isotipo Hexágono + M -->
-  <polygon points="32,8 52,19.5 52,44.5 32,56 12,44.5 12,19.5" stroke="#D2B474" stroke-width="3.6" stroke-linejoin="round"/>
-  <path d="M20 41V24L32 35L44 24V41" stroke="#F2F2F3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Tipografía MOTOATLAS -->
-  <text x="68" y="40" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="25" font-weight="800" letter-spacing="1.5">
-    <tspan fill="#F2F2F3">Moto</tspan><tspan fill="#D2B474">Atlas26</tspan>
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Fondo circular con margen de seguridad para recorte circular de avatares -->
+  <circle cx="256" cy="256" r="256" fill="#0D0D0F"/>
+  
+  <!-- Hexágono exacto del logo real (escalado 8x desde viewBox 64→512) -->
+  <!-- Original: points="32,7 54,19.5 54,44.5 32,57 10,44.5 10,19.5" stroke-width="5" -->
+  <polygon 
+    points="256,56 432,156 432,356 256,456 80,356 80,156" 
+    fill="none" 
+    stroke="#D2B474" 
+    stroke-width="40" 
+    stroke-linejoin="miter"
+  />
+  
+  <!-- M exacta del logo real (escalada 8x desde viewBox 64→512) -->
+  <!-- Original: d="M18 43V22L32 35L46 22V43" stroke-width="5.5" -->
+  <path 
+    d="M144 344V176L256 280L368 176V344" 
+    stroke="#F2F2F3" 
+    stroke-width="44" 
+    stroke-linecap="square" 
+    stroke-linejoin="miter"
+    fill="none"
+  />
 </svg>
