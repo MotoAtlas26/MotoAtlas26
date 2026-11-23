@@ -12,7 +12,9 @@ export const ThemeSelect = ({
   const dropdownRef = useRef(null)
   const buttonRef = useRef(null)
 
-  const selectedOption = options.find(opt => opt.value === value)
+  const selectedOption = options
+    .flatMap(group => Array.isArray(group.options) ? group.options : [group])
+    .find(opt => opt.value === value)
 
   useEffect(() => {
     const handleClickOutside = (e) => {

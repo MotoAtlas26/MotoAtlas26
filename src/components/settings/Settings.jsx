@@ -38,7 +38,7 @@ export const Settings = () => {
   const [colorTheme, setColorTheme] = useState(savedTheme.themeId)
   const [selectedThemeId, setSelectedThemeId] = useState(savedTheme.themeId)
   const [appliedThemeId, setAppliedThemeId] = useState(savedTheme.themeId)
-  const [themeSuccess, setThemeSuccess] = useState(false)
+  
   const { 
     fsSupported, 
     fsHasFolder, 
@@ -606,8 +606,6 @@ export const Settings = () => {
       setColorTheme(selectedThemeId)
       setAppliedThemeId(selectedThemeId)
       await applyThemeToDocument(selectedThemeId, theme)
-      setThemeSuccess(true)
-      setTimeout(() => setThemeSuccess(false), 2000)
     }
     
     const handleModeChange = async (e) => {
@@ -680,13 +678,11 @@ export const Settings = () => {
               ]}
               value={selectedThemeId}
               onChange={handleThemeChange}
-              placeholder="Seleccionar tema"
             />
             <div className="theme-card-footer">
               <button className="btn-accept-theme" onClick={handleAcceptTheme}>
                 Aceptar
               </button>
-              {themeSuccess && <span className="theme-success-message">✓ Tema aplicado</span>}
             </div>
           </div>
         </SettingCard>
