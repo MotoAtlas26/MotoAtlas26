@@ -67,6 +67,9 @@ export const Home = () => {
 
   return (
     <div className="home-showcase">
+      <div className="home-header">
+        <MotoAtlas26Logo size={56} horizontal={true} className="mx-auto mb-6" />
+      </div>
       <div className="moto-hero">
         <img 
           src={displayImage} 
@@ -78,7 +81,6 @@ export const Home = () => {
         />
       </div>
       <div className="home-content">
-        <MotoAtlas26Logo size={48} className="mx-auto mb-4" />
         <h1 className="home-title">{moto.name}</h1>
         <p className="home-subtitle">Tu compañero de ruta para cada aventura</p>
 

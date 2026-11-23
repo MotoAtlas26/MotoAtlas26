@@ -15,6 +15,10 @@
   background: var(--color-canvas);
 }
 
+.home-header {
+  margin-bottom: var(--space-4);
+}
+
 .home-showcase img {
   max-width: min(760px, 90vw);
   max-height: 52vh;
