@@ -59,11 +59,11 @@ function applyTokensToDocument(tokens, themeId, mode) {
 }
 
 /**
- * Calcula el color de contraste basado en luminancia (WCAG)
- * @param {string} hex - Color en formato hex
- * @returns {string} '#0D0D0F' para colores claros, '#FFFFFF' para colores oscuros
+ * Calcula la luminancia relativa WCAG 2.1 de un color hex
+ * @param {string} hex - Color en formato hex (#RRGGBB)
+ * @returns {number} Luminancia relativa (0-1)
  */
-function getContrastColor(hex) {
+function getRelativeLuminance(hex) {
   const clean = hex.replace('#', '')
   const bigint = parseInt(clean, 16)
   const r = (bigint >> 16) & 255
@@ -73,8 +73,71 @@ function getContrastColor(hex) {
     v /= 255
     return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
   })
-  const lum = a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
-  return lum > 0.5 ? '#0D0D0F' : '#FFFFFF'
+  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
+}
+
+/**
+ * Calcula el color de contraste basado en luminancia (WCAG)
+ * @param {string} hex - Color en formato hex
+ * @returns {string} '#111111' para colores claros (L > 0.42), '#FFFFFF' para colores oscuros (L <= 0.42)
+ */
+function getContrastColor(hex) {
+  const lum = getRelativeLuminance(hex)
+  return lum > 0.42 ? '#111111' : '#FFFFFF'
+}
+
+/**
+ * Calcula el color de borde visible para colores extremos
+ * @param {string} hex - Color en formato hex
+ * @param {string} mode - 'dark' | 'light'
+ * @returns {string} CSS border value
+ */
+function getBorderColor(hex, mode) {
+  const lum = getRelativeLuminance(hex)
+  
+  if (mode === 'dark') {
+    // En modo oscuro: si el color es muy oscuro (L < 0.08), usar borde visible
+    if (lum < 0.08) {
+      return '1.5px solid #525866'
+    }
+    return '1px solid rgba(255,255,255,0.14)'
+  } else {
+    // En modo claro: si el color es muy claro (L > 0.85), usar borde visible
+    if (lum > 0.85) {
+      return '1.5px solid #9CA3AF'
+    }
+    return '1px solid rgba(0,0,0,0.12)'
+  }
+}
+
+/**
+ * Calcula color de texto seguro sobre fondo neutro (canvas/card)
+ * Si el color de marca tiene contraste < 3.5:1 sobre el fondo neutro, lo sustituye
+ * @param {string} hex - Color de marca
+ * @param {string} mode - 'dark' | 'light'
+ * @returns {string} Color seguro para texto/iconos sobre fondo neutro
+ */
+function getSafeTextColor(hex, mode) {
+  const lum = getRelativeLuminance(hex)
+  
+  if (mode === 'dark') {
+    // Fondo oscuro (#0D0D0F / #16171B) - luminancia ~0.005
+    // Contraste = (L_text + 0.05) / (L_bg + 0.05)
+    // Para 3.5:1 necesitamos L_text >= 0.175 aprox
+    // Colores muy oscuros (L < 0.15) no tienen suficiente contraste
+    if (lum < 0.15) {
+      return '#F2F2F3' // Blanco suave para modo oscuro
+    }
+    return hex // El color original tiene suficiente contraste
+  } else {
+    // Fondo claro (#F4F5F7 / #FFFFFF) - luminancia ~0.92
+    // Para 3.5:1 necesitamos L_text <= 0.26 aprox
+    // Colores muy claros (L > 0.75) no tienen suficiente contraste
+    if (lum > 0.75) {
+      return '#18191C' // Negro suave para modo claro
+    }
+    return hex // El color original tiene suficiente contraste
+  }
 }
 
 /**
@@ -82,7 +145,7 @@ function getContrastColor(hex) {
  * Orden estricto: swatches[0]=primary, swatches[1]=secondary, swatches[2]=tertiary
  * @param {Array<string>} swatches - Array de 3 colores hex
  * @param {string} mode - 'dark' | 'light'
- * @returns {Object} Tokens con color, contrast y border para cada uno
+ * @returns {Object} Tokens con color, contrast, border y safe-text para cada uno
  */
 function generateMainTokensFromSwatches(swatches, mode = 'dark') {
   const primary = swatches?.[0] || '#D2B474'
@@ -92,6 +155,14 @@ function generateMainTokensFromSwatches(swatches, mode = 'dark') {
   const primaryContrast = getContrastColor(primary)
   const secondaryContrast = getContrastColor(secondary)
   const tertiaryContrast = getContrastColor(tertiary)
+  
+  const primaryBorder = getBorderColor(primary, mode)
+  const secondaryBorder = getBorderColor(secondary, mode)
+  const tertiaryBorder = getBorderColor(tertiary, mode)
+  
+  const primaryText = getSafeTextColor(primary, mode)
+  const secondaryText = getSafeTextColor(secondary, mode)
+  const tertiaryText = getSafeTextColor(tertiary, mode)
   
   // Helper to lighten/darken a color
   const adjustColor = (hex, amount) => {
@@ -106,24 +177,75 @@ function generateMainTokensFromSwatches(swatches, mode = 'dark') {
     }).join('')
   }
   
-  // Tertiary border: visible outline when tertiary is white or black
-  // Dark mode: rgba(255,255,255,0.22) | Light mode: rgba(0,0,0,0.18)
-  const tertiaryBorder = mode === 'dark' 
-    ? 'rgba(255,255,255,0.22)' 
-    : 'rgba(0,0,0,0.18)'
-  
   return {
+    // Primary (Color 1 - Marca principal)
     '--color-primary': primary,
     '--color-primary-light': adjustColor(primary, mode === 'dark' ? 0.2 : 0.1),
     '--color-primary-dark': adjustColor(primary, mode === 'dark' ? -0.2 : -0.15),
     '--color-primary-contrast': primaryContrast,
+    '--color-primary-border': primaryBorder,
+    '--color-primary-text': primaryText,
+    
+    // Secondary (Color 2 - Marca secundaria)
     '--color-secondary': secondary,
     '--color-secondary-light': adjustColor(secondary, mode === 'dark' ? 0.15 : 0.1),
+    '--color-secondary-dark': adjustColor(secondary, mode === 'dark' ? -0.15 : -0.1),
     '--color-secondary-contrast': secondaryContrast,
+    '--color-secondary-border': secondaryBorder,
+    '--color-secondary-text': secondaryText,
+    
+    // Tertiary (Color 3 - Acento / Google Drive / Nube)
     '--color-tertiary': tertiary,
     '--color-tertiary-light': adjustColor(tertiary, mode === 'dark' ? 0.15 : 0.1),
+    '--color-tertiary-dark': adjustColor(tertiary, mode === 'dark' ? -0.15 : -0.1),
     '--color-tertiary-contrast': tertiaryContrast,
     '--color-tertiary-border': tertiaryBorder,
+    '--color-tertiary-text': tertiaryText,
+  }
+}
+
+/**
+ * Genera tokens neutros estrictos según modo
+ * @param {string} mode - 'dark' | 'light'
+ * @returns {Object} Tokens neutros
+ */
+function generateNeutralTokens(mode) {
+  if (mode === 'dark') {
+    return {
+      '--color-canvas': '#0D0D0F',
+      '--color-sidebar': '#121214',
+      '--color-card': '#16171B',
+      '--color-card-border': '#2A2D35',
+      '--color-card-hover': '#1E2026',
+      '--color-input-bg': '#1E2026',
+      '--color-text-primary': '#F2F2F3',
+      '--color-text-secondary': '#A1A7B3',
+      '--color-text-muted': '#6E726F',
+      '--color-alert-bg': '#2E1A0A',
+      '--color-alert-border': '#FF6600',
+      '--color-success-bg': '#1A2E1A',
+      '--color-success-border': '#2E7D32',
+      '--color-error-bg': '#2E1A1A',
+      '--color-error-border': '#C62828',
+    }
+  } else {
+    return {
+      '--color-canvas': '#F4F5F7',
+      '--color-sidebar': '#FFFFFF',
+      '--color-card': '#FFFFFF',
+      '--color-card-border': '#DCDFE4',
+      '--color-card-hover': '#EBEDF0',
+      '--color-input-bg': '#FFFFFF',
+      '--color-text-primary': '#18191C',
+      '--color-text-secondary': '#525866',
+      '--color-text-muted': '#8E9096',
+      '--color-alert-bg': '#FFF3E0',
+      '--color-alert-border': '#CC5200',
+      '--color-success-bg': '#E8F5E9',
+      '--color-success-border': '#2E7D32',
+      '--color-error-bg': '#FDEDEC',
+      '--color-error-border': '#C62828',
+    }
   }
 }
 
@@ -137,13 +259,14 @@ export async function applyThemeToDocument(themeId, mode = 'dark') {
   const theme = await getThemeById(themeId)
   if (!theme) return false
   
-  const tokens = theme[mode]
+  // Generar tokens neutros estrictos según modo
+  const neutralTokens = generateNeutralTokens(mode)
   
   // Siempre generar los 3 tokens principales desde swatches (consistencia predefinidos + personalizados)
   const mainTokens = generateMainTokensFromSwatches(theme.swatches, mode)
   
-  // Merge: tokens del tema (superficies, texto, alertas) + mainTokens calculados (prioridad)
-  const enhancedTokens = { ...tokens, ...mainTokens }
+  // Merge: neutralTokens (base) + mainTokens calculados (prioridad)
+  const enhancedTokens = { ...neutralTokens, ...mainTokens }
   
   // Apply tokens synchronously
   applyTokensToDocument(enhancedTokens, themeId, mode)
@@ -214,13 +337,10 @@ export function initTheme() {
     if (storedCustomTheme) {
       try {
         const customTheme = JSON.parse(storedCustomTheme)
-        const tokens = customTheme[mode]
-        if (tokens) {
-          // Apply main tokens from swatches for consistency
-          const mainTokens = generateMainTokensFromSwatches(customTheme.swatches, mode)
-          applyTokensToDocument({ ...tokens, ...mainTokens }, themeId, mode)
-          return
-        }
+        const neutralTokens = generateNeutralTokens(mode)
+        const mainTokens = generateMainTokensFromSwatches(customTheme.swatches, mode)
+        applyTokensToDocument({ ...neutralTokens, ...mainTokens }, themeId, mode)
+        return
       } catch (e) {
         console.warn('Failed to parse stored custom theme:', e)
       }
@@ -233,43 +353,22 @@ export function initTheme() {
   if (!theme) {
     // Fallback to default theme (motoatlas26)
     const defaultTheme = getDefaultTheme()
-    if (defaultTheme && defaultTheme.dark) {
+    if (defaultTheme) {
+      const neutralTokens = generateNeutralTokens('dark')
       const mainTokens = generateMainTokensFromSwatches(defaultTheme.swatches, 'dark')
-      applyTokensToDocument({ ...defaultTheme.dark, ...mainTokens }, 'motoatlas26', 'dark')
+      applyTokensToDocument({ ...neutralTokens, ...mainTokens }, 'motoatlas26', 'dark')
     } else {
       // Ultimate fallback - hardcoded minimal tokens
-      applyTokensToDocument({
-        '--color-canvas': '#0D0D0F',
-        '--color-sidebar': '#121214',
-        '--color-card': '#191A1D',
-        '--color-card-border': '#2B2C30',
-        '--color-text-primary': '#F2F2F3',
-        '--color-text-secondary': '#8E9096',
-        '--color-primary': '#D2B474',
-        '--color-primary-contrast': '#0D0D0F',
-        '--color-secondary': '#E07A5F',
-        '--color-secondary-contrast': '#FFFFFF',
-        '--color-tertiary': '#3D5A80',
-        '--color-tertiary-contrast': '#FFFFFF',
-        '--color-tertiary-border': 'rgba(255,255,255,0.22)',
-      }, 'motoatlas26', 'dark')
+      const neutralTokens = generateNeutralTokens('dark')
+      const mainTokens = generateMainTokensFromSwatches(['#D2B474', '#E07A5F', '#3D5A80'], 'dark')
+      applyTokensToDocument({ ...neutralTokens, ...mainTokens }, 'motoatlas26', 'dark')
     }
     return
   }
   
-  const tokens = theme[mode]
-  if (!tokens) {
-    // Mode not found, fallback to dark
-    const darkTokens = theme.dark
-    if (darkTokens) {
-      const mainTokens = generateMainTokensFromSwatches(theme.swatches, 'dark')
-      applyTokensToDocument({ ...darkTokens, ...mainTokens }, themeId, 'dark')
-    }
-    return
-  }
-  
+  const neutralTokens = generateNeutralTokens(mode)
   const mainTokens = generateMainTokensFromSwatches(theme.swatches, mode)
-  applyTokensToDocument({ ...tokens, ...mainTokens }, themeId, mode)
+  applyTokensToDocument({ ...neutralTokens, ...mainTokens }, themeId, mode)
 }
 
 /**
@@ -285,60 +384,72 @@ export async function toggleMode(currentThemeId) {
 }
 
 /**
- * Establece el modo explícitamente
- * @param {string} currentThemeId - ID del tema actual
+ * Valida que el tema activo sea compatible con el modo actual
+ * Si no, regenera los tokens para el modo correcto
+ * @param {string} themeId - ID del tema
  * @param {string} mode - 'dark' | 'light'
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
-export async function setMode(currentThemeId, mode) {
-  await applyThemeToDocument(currentThemeId, mode)
-}
-
-/**
- * Verifica si el tema activo actual es un tema personalizado que ya no existe
- * Si es así, vuelve al tema por defecto
- * @returns {Promise<boolean>} true si se restableció al tema por defecto
- */
-export async function validateActiveTheme() {
-  const { themeId, mode } = getSavedTheme()
+export async function validateActiveTheme(themeId, mode) {
+  const theme = await getThemeById(themeId)
+  if (!theme) return false
   
-  if (themeId.startsWith('custom-')) {
-    const customId = parseInt(themeId.replace('custom-', ''))
-    try {
-      const exists = await db.customThemes.get(customId)
-      if (!exists) {
-        // Custom theme was deleted, reset to default
-        await applyThemeToDocument('motoatlas26', mode)
-        return true
-      }
-    } catch (e) {
-      console.warn('Error validating custom theme:', e)
-    }
+  // Verificar si el tema tiene tokens para el modo actual
+  if (!theme[mode]) {
+    // Regenerar tokens para el modo correcto
+    await applyThemeToDocument(themeId, mode)
+    return true
   }
-  
-  return false
+  return true
 }
 
 /**
- * Actualiza el tema activo si se ha editado el tema personalizado actual
+ * Refresca el tema personalizado activo desde Dexie (para sync)
  * @returns {Promise<void>}
  */
 export async function refreshActiveCustomTheme() {
   const { themeId, mode } = getSavedTheme()
-  
   if (themeId.startsWith('custom-')) {
-    const customId = parseInt(themeId.replace('custom-', ''))
     try {
-      const updatedTheme = await db.customThemes.get(customId)
-      if (updatedTheme) {
-        // Re-apply with updated data
-        await applyThemeToDocument(themeId, mode)
+      const customTheme = await db.getSetting('activeCustomTheme')
+      if (customTheme) {
+        const neutralTokens = generateNeutralTokens(mode)
+        const mainTokens = generateMainTokensFromSwatches(customTheme.swatches, mode)
+        applyTokensToDocument({ ...neutralTokens, ...mainTokens }, themeId, mode)
       }
     } catch (e) {
-      console.warn('Error refreshing custom theme:', e)
+      console.debug('Could not refresh custom theme from Dexie:', e.message)
     }
   }
 }
 
-export { getThemeById } from '../constants/themes'
-export { getThemesList } from '../constants/themes'
+/**
+ * Obtiene lista de temas disponibles para UI
+ * @returns {Promise<Array>} Array de temas con id, name, brand, swatches
+ */
+export async function getAvailableThemes() {
+  const predefined = THEMES.map(t => ({
+    id: t.id,
+    name: t.name,
+    brand: t.brand,
+    swatches: t.swatches,
+    group: t.group,
+    isCustom: false
+  }))
+  
+  // Add custom themes from Dexie
+  try {
+    const customThemes = await db.getAllCustomThemes()
+    const custom = customThemes.map(t => ({
+      id: t.id,
+      name: t.name,
+      brand: t.brand || 'Personalizado',
+      swatches: t.swatches,
+      group: 'custom',
+      isCustom: true
+    }))
+    return [...predefined, ...custom]
+  } catch (e) {
+    return predefined
+  }
+}

@@ -193,23 +193,27 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-btn);
   color: var(--color-text-secondary);
+  background-color: transparent;
+  border: var(--border-width) solid transparent;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
 .sidebar-nav-link:hover {
-  background: var(--color-card-hover);
+  background-color: var(--color-card);
   color: var(--color-text-primary);
+  border-color: var(--color-card-border);
 }
 
 .sidebar-nav-link.active {
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-  color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-color: var(--color-primary-border);
   border-left: var(--border-width-thick) solid var(--color-primary);
 }
 
 .sidebar-nav-link.active:hover {
-  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  filter: brightness(1.1);
 }
 
 .sidebar-nav-icon {
