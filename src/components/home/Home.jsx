@@ -7,6 +7,16 @@ import { useAuth } from '../../context/AuthContext'
 import { InstallAppButton, MotoAtlas26Logo } from '../shared'
 import { CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, UserCircleIcon, LogOutIcon } from '../shared/Icons'
 
+// Importación directa de assets (Vite los hashea y garantiza disponibilidad en dist/assets/)
+import cfmoto800Img from '../../assets/motos/800MT-X.webp'
+import ktm1290Img from '../../assets/motos/KTM-1290-S-Adv-S.webp'
+
+// Mapa de fallback por ID de modelo - siempre apunta a asset empaquetado por Vite
+const FALLBACK_IMAGES = {
+  'cfmoto-800mt-x': cfmoto800Img,
+  'ktm-1290-super-adventure-s': ktm1290Img
+}
+
 export const Home = () => {
   const { selectedMoto, dbReady } = useGPX()
   const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow, isInstalled } = useAuth()
@@ -38,7 +48,9 @@ export const Home = () => {
   }, [selectedMoto, dbReady])
 
   // Imagen a mostrar: blob de BD si existe, sino la imagen importada del modelo (Vite hash garantizado)
-  const displayImage = motoImageUrl || moto.fallbackImage
+  // Usamos FALLBACK_IMAGES[selectedMoto] como garantía absoluta (nunca undefined)
+  const fallbackImg = FALLBACK_IMAGES[selectedMoto] || cfmoto800Img
+  const displayImage = motoImageUrl || moto.fallbackImage || fallbackImg
 
   const formatRelativeTime = (date) => {
     const now = new Date()
@@ -56,7 +68,14 @@ export const Home = () => {
   return (
     <div className="home-showcase">
       <div className="moto-hero">
-        <img src={displayImage} alt={moto.name} />
+        <img 
+          src={displayImage} 
+          alt={moto.name}
+          onError={(e) => {
+            // Fallback final: si falla todo (blob corrupto, URL inválida), usa asset CFMOTO importado
+            e.currentTarget.src = cfmoto800Img
+          }}
+        />
       </div>
       <div className="home-content">
         <MotoAtlas26Logo size={48} className="mx-auto mb-4" />
