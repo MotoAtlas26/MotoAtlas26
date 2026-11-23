@@ -125,12 +125,13 @@ function generateAccentTokens(swatches, mode) {
 /**
  * Crea un tema completo combinando base + acentos
  */
-function createTheme(id, name, brand, swatches) {
+function createTheme(id, name, brand, swatches, group) {
   return {
     id,
     name,
     brand,
     swatches,
+    group,
     dark: { ...getBaseTokens('dark'), ...generateAccentTokens(swatches, 'dark') },
     light: { ...getBaseTokens('light'), ...generateAccentTokens(swatches, 'light') },
   }
@@ -138,103 +139,117 @@ function createTheme(id, name, brand, swatches) {
 
 // 14 TEMAS OFICIALES - MotoAtlas26 (default) + 13 marcas A-Z
 export const THEMES = [
-  // 1. MotoAtlas26 (DEFAULT)
+  // 1. MotoAtlas26 (DEFAULT) - Grupo Original
   createTheme(
     'motoatlas26',
     'MotoAtlas26',
     'MotoAtlas',
-    ['#D2B474', '#E07A5F', '#3D5A80']
+    ['#D2B474', '#E07A5F', '#3D5A80'],
+    'original'
   ),
-  // 2. Aprilia
+  // 2. Aprilia - Grupo Marcas
   createTheme(
     'aprilia',
     'Aprilia',
     'Aprilia',
-    ['#E30613', '#111111', '#6A0DAD']
+    ['#E30613', '#111111', '#6A0DAD'],
+    'marcas'
   ),
-  // 3. BMW
+  // 3. BMW - Grupo Marcas
   createTheme(
     'bmw',
     'BMW',
     'BMW',
-    ['#0066B1', '#003D78', '#E22718']
+    ['#0066B1', '#003D78', '#E22718'],
+    'marcas'
   ),
-  // 4. CFMOTO
+  // 4. CFMOTO - Grupo Marcas
   createTheme(
     'cfmoto',
     'CFMOTO',
     'CFMOTO',
-    ['#009BB4', '#000000', '#E6007E']
+    ['#009BB4', '#000000', '#E6007E'],
+    'marcas'
   ),
-  // 5. Ducati
+  // 5. Ducati - Grupo Marcas
   createTheme(
     'ducati',
     'Ducati',
     'Ducati',
-    ['#D5001C', '#FFFFFF', '#1A1A1A']
+    ['#D5001C', '#FFFFFF', '#1A1A1A'],
+    'marcas'
   ),
-  // 6. Harley-Davidson
+  // 6. Harley-Davidson - Grupo Marcas
   createTheme(
     'harley-davidson',
     'Harley-Davidson',
     'Harley-Davidson',
-    ['#FF6600', '#111111', '#FFFFFF']
+    ['#FF6600', '#111111', '#FFFFFF'],
+    'marcas'
   ),
-  // 7. Honda
+  // 7. Honda - Grupo Marcas
   createTheme(
     'honda',
     'Honda',
     'Honda',
-    ['#CC0000', '#003399', '#FFFFFF']
+    ['#CC0000', '#003399', '#FFFFFF'],
+    'marcas'
   ),
-  // 8. Kawasaki
+  // 8. Kawasaki - Grupo Marcas
   createTheme(
     'kawasaki',
     'Kawasaki',
     'Kawasaki',
-    ['#66CC00', '#111111', '#FFFFFF']
+    ['#66CC00', '#111111', '#FFFFFF'],
+    'marcas'
   ),
-  // 9. KOVE
+  // 9. KOVE - Grupo Marcas
   createTheme(
     'kove',
     'KOVE',
     'KOVE',
-    ['#00A9B4', '#FFFFFF', '#D81E28']
+    ['#00A9B4', '#FFFFFF', '#D81E28'],
+    'marcas'
   ),
-  // 10. KTM
+  // 10. KTM - Grupo Marcas
   createTheme(
     'ktm',
     'KTM',
     'KTM',
-    ['#FF6600', '#111111', '#FFFFFF']
+    ['#FF6600', '#111111', '#FFFFFF'],
+    'marcas'
   ),
-  // 11. Suzuki
+  // 11. Suzuki - Grupo Marcas
   createTheme(
     'suzuki',
     'Suzuki',
     'Suzuki',
-    ['#0055B8', '#FFFFFF', '#DFFF00']
+    ['#0055B8', '#FFFFFF', '#DFFF00'],
+    'marcas'
   ),
-  // 12. Triumph
+  // 12. Triumph - Grupo Marcas
   createTheme(
     'triumph',
     'Triumph',
     'Triumph',
-    ['#FF3850', '#000000', '#C5A059']
+    ['#FF3850', '#000000', '#C5A059'],
+    'marcas'
   ),
-  // 13. VOGE
+  // 13. VOGE - Grupo Marcas
   createTheme(
     'voge',
     'VOGE',
     'VOGE',
-    ['#111111', '#9D9D9E', '#FFEC00']
+    ['#111111', '#9D9D9E', '#FFEC00'],
+    'marcas'
   ),
-  // 14. Yamaha
+  // 14. Yamaha - Grupo Marcas
   createTheme(
     'yamaha',
     'Yamaha',
     'Yamaha',
-    ['#0033A0', '#FFFFFF', '#111111']
+    ['#0033A0', '#FFFFFF', '#111111'],
+    'marcas'
   ),
 ]
 
@@ -255,6 +270,7 @@ function generateCustomThemeTokens(customTheme) {
     name: customTheme.name,
     brand: customTheme.brand || 'Personalizado',
     swatches,
+    group: 'personalizados',
     dark: { ...getBaseTokens('dark'), ...generateAccentTokens(swatches, 'dark') },
     light: { ...getBaseTokens('light'), ...generateAccentTokens(swatches, 'light') },
   }

@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import { useGPX } from '../../context/GPXContext'
 import { useDatabase } from '../../hooks/useDatabase'
 import { useAuth } from '../../context/AuthContext'
-import { EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton } from '../shared'
+import { EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect } from '../shared'
 import { formatBackupName } from '../../utils/formatters'
 import { getMotoModelsArray, getMotoModel } from '../../constants/motoModels'
 import { getThemesList, THEMES } from '../../constants/themes'
-import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme } from '../../utils/themeEngine'
+import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme } from '../../utils/themeEngine'
 import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon } from '../shared/Icons'
 
 const TABS = [
@@ -33,7 +33,12 @@ export const Settings = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark')
   const [selectedMoto, setSelectedMoto] = useState('cfmoto-800mt-x')
   const [activeTab, setActiveTab] = useState('appearance')
-  const [colorTheme, setColorTheme] = useState('motoatlas26')
+  // Initialize theme from localStorage (synced with initTheme in main.jsx)
+  const savedTheme = getSavedTheme()
+  const [colorTheme, setColorTheme] = useState(savedTheme.themeId)
+  const [selectedThemeId, setSelectedThemeId] = useState(savedTheme.themeId)
+  const [appliedThemeId, setAppliedThemeId] = useState(savedTheme.themeId)
+  const [themeSuccess, setThemeSuccess] = useState(false)
   const { 
     fsSupported, 
     fsHasFolder, 
@@ -191,6 +196,23 @@ export const Settings = () => {
   useEffect(() => {
     loadAvailableThemes()
   }, [loadAvailableThemes])
+
+  // Validate selectedThemeId against availableThemes after they load
+  useEffect(() => {
+    if (availableThemes.length > 0) {
+      const themeExists = availableThemes.some(t => t.id === selectedThemeId)
+      if (!themeExists) {
+        // Fallback to motoatlas26 if saved theme doesn't exist
+        setSelectedThemeId('motoatlas26')
+        setColorTheme('motoatlas26')
+        setAppliedThemeId('motoatlas26')
+        applyThemeToDocument('motoatlas26', theme)
+      } else {
+        // Sync appliedThemeId with the valid selectedThemeId on initial load
+        setAppliedThemeId(selectedThemeId)
+      }
+    }
+  }, [availableThemes, theme]) // Only run on mount/theme change, NOT on selectedThemeId change
 
   // Reload available themes when switching to Appearance tab
   useEffect(() => {
@@ -517,6 +539,7 @@ export const Settings = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem('colorTheme') || 'motoatlas26'
     setColorTheme(savedTheme)
+    setSelectedThemeId(savedTheme)
     document.documentElement.setAttribute('data-theme', savedTheme)
   }, [])
 
@@ -560,24 +583,31 @@ export const Settings = () => {
   const selectedMotoModel = getMotoModel(selectedMoto)
 
   const renderAppearanceTab = () => {
-    const selectedTheme = availableThemes.find(t => t.id === colorTheme) || availableThemes[0]
+    const selectedTheme = availableThemes.find(t => t.id === selectedThemeId) || availableThemes[0]
     
     // Group 1: Original - only MotoAtlas26
-    const originalTheme = availableThemes.find(t => t.id === 'motoatlas26')
+    const originalTheme = availableThemes.find(t => t.group === 'original')
     
     // Group 2: Personalizados - custom themes from Dexie, alphabetical by name
     const customThemesList = availableThemes
-      .filter(t => t.id.startsWith('custom-'))
+      .filter(t => t.group === 'personalizados')
       .sort((a, b) => a.name.localeCompare(b.name))
     
-    // Group 3: Marcas - 13 official brands, alphabetical A-Z (excluding MotoAtlas26)
+    // Group 3: Marcas - 13 official brands, alphabetical A-Z
     const brandThemes = availableThemes
-      .filter(t => !t.id.startsWith('custom-') && t.id !== 'motoatlas26')
+      .filter(t => t.group === 'marcas')
       .sort((a, b) => a.name.localeCompare(b.name))
     
-    const handleThemeChange = async (newThemeId) => {
-      setColorTheme(newThemeId)
-      await applyThemeToDocument(newThemeId, theme)
+    const handleThemeChange = (newThemeId) => {
+      setSelectedThemeId(newThemeId)
+    }
+    
+    const handleAcceptTheme = async () => {
+      setColorTheme(selectedThemeId)
+      setAppliedThemeId(selectedThemeId)
+      await applyThemeToDocument(selectedThemeId, theme)
+      setThemeSuccess(true)
+      setTimeout(() => setThemeSuccess(false), 2000)
     }
     
     const handleModeChange = async (e) => {
@@ -642,49 +672,21 @@ export const Settings = () => {
           description="Selecciona la paleta de colores principal de la aplicación (incluye temas personalizados)"
         >
           <div className="theme-selector">
-            <select
-              className="form-select"
-              value={colorTheme}
-              onChange={(e) => handleThemeChange(e.target.value)}
-            >
-              {/* Grupo 1: Original - solo MotoAtlas26 */}
-              <optgroup label="Original">
-                {originalTheme && (
-                  <option key={originalTheme.id} value={originalTheme.id}>
-                    {originalTheme.name}
-                  </option>
-                )}
-              </optgroup>
-              
-              {/* Grupo 2: Personalizados - temas creados por el usuario */}
-              {customThemesList.length > 0 && (
-                <optgroup label="Personalizados">
-                  {customThemesList.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              
-              {/* Grupo 3: Marcas - 13 marcas oficiales A-Z */}
-              <optgroup label="Marcas">
-                {brandThemes.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-            <div className="theme-swatch-palette">
-              {selectedTheme && selectedTheme.swatches && selectedTheme.swatches.map((color, i) => (
-                <div key={i} className="swatch-color" style={{ backgroundColor: color }} title={`${selectedTheme.name} - Color ${i+1}`} />
-              ))}
-            </div>
+            <ThemeSelect
+              options={[
+                { label: 'Original', options: originalTheme ? [{ value: originalTheme.id, label: originalTheme.name, swatches: originalTheme.swatches }] : [] },
+                { label: 'Personalizados', options: customThemesList.map(t => ({ value: t.id, label: t.name, swatches: t.swatches })) },
+                { label: 'Marcas', options: brandThemes.map(t => ({ value: t.id, label: t.name, swatches: t.swatches })) }
+              ]}
+              value={selectedThemeId}
+              onChange={handleThemeChange}
+              placeholder="Seleccionar tema"
+            />
             <div className="theme-card-footer">
-              <button className="btn-accept-theme" onClick={() => handleThemeChange(colorTheme)}>
+              <button className="btn-accept-theme" onClick={handleAcceptTheme}>
                 Aceptar
               </button>
+              {themeSuccess && <span className="theme-success-message">✓ Tema aplicado</span>}
             </div>
           </div>
         </SettingCard>
