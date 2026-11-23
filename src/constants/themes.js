@@ -611,6 +611,11 @@ function generateCustomThemeTokens(customTheme) {
   const primaryLum = luminance(...primaryRgb)
   const primaryContrast = primaryLum > 0.5 ? '#0D0D0F' : '#FFFFFF'
   
+  // Calculate tertiary contrast
+  const tertiaryRgb = hexToRgb(tertiary)
+  const tertiaryLum = luminance(...tertiaryRgb)
+  const tertiaryContrast = tertiaryLum > 0.5 ? '#0D0D0F' : '#FFFFFF'
+  
   // Helper to lighten/darken a color
   const adjustColor = (hex, amount) => {
     const rgb = hexToRgb(hex)
@@ -645,6 +650,7 @@ function generateCustomThemeTokens(customTheme) {
       '--color-secondary-light': adjustColor(secondary, 0.15),
       '--color-tertiary': tertiary,
       '--color-tertiary-light': adjustColor(tertiary, 0.15),
+      '--color-tertiary-contrast': tertiaryContrast,
       // Alerts
       '--color-alert-bg': '#2E1A0A',
       '--color-alert-border': secondary,
@@ -673,6 +679,7 @@ function generateCustomThemeTokens(customTheme) {
       '--color-secondary-light': adjustColor(secondary, 0.1),
       '--color-tertiary': tertiary,
       '--color-tertiary-light': adjustColor(tertiary, 0.1),
+      '--color-tertiary-contrast': tertiaryContrast,
       // Alerts
       '--color-alert-bg': '#FFF3E0',
       '--color-alert-border': primary,

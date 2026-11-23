@@ -59,6 +59,46 @@ function applyTokensToDocument(tokens, themeId, mode) {
 }
 
 /**
+ * Calcula el color de contraste basado en luminancia (WCAG)
+ * @param {string} hex - Color en formato hex
+ * @returns {string} '#0D0D0F' para colores claros, '#FFFFFF' para colores oscuros
+ */
+function getContrastColor(hex) {
+  const clean = hex.replace('#', '')
+  const bigint = parseInt(clean, 16)
+  const r = (bigint >> 16) & 255
+  const g = (bigint >> 8) & 255
+  const b = bigint & 255
+  const a = [r, g, b].map(v => {
+    v /= 255
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  })
+  const lum = a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
+  return lum > 0.5 ? '#0D0D0F' : '#FFFFFF'
+}
+
+/**
+ * Genera los 3 tokens principales (primary, secondary, tertiary) desde swatches
+ * Orden estricto: swatches[0]=primary, swatches[1]=secondary(base), swatches[2]=tertiary(accent)
+ * @param {Array<string>} swatches - Array de 3 colores hex
+ * @returns {Object} Tokens con color y contrast para cada uno
+ */
+function generateMainTokensFromSwatches(swatches) {
+  const primary = swatches?.[0] || '#D2B474'
+  const secondary = swatches?.[1] || '#0D0D0F'
+  const tertiary = swatches?.[2] || '#D96B27'
+  
+  return {
+    '--color-primary': primary,
+    '--color-primary-contrast': getContrastColor(primary),
+    '--color-secondary': secondary,
+    '--color-secondary-contrast': getContrastColor(secondary),
+    '--color-tertiary': tertiary,
+    '--color-tertiary-contrast': getContrastColor(tertiary),
+  }
+}
+
+/**
  * Aplica un tema al documento y persiste la selección
  * @param {string} themeId - ID del tema (ej: 'cfmoto-gold', 'custom-1')
  * @param {string} mode - 'dark' | 'light'
@@ -70,8 +110,14 @@ export async function applyThemeToDocument(themeId, mode = 'dark') {
   
   const tokens = theme[mode]
   
+  // Siempre generar los 3 tokens principales desde swatches (consistencia predefinidos + personalizados)
+  const mainTokens = generateMainTokensFromSwatches(theme.swatches)
+  
+  // Merge: tokens del tema (superficies, texto, alertas) + mainTokens calculados (prioridad)
+  const enhancedTokens = { ...tokens, ...mainTokens }
+  
   // Apply tokens synchronously
-  applyTokensToDocument(tokens, themeId, mode)
+  applyTokensToDocument(enhancedTokens, themeId, mode)
   
   // Persist to localStorage (synchronous, immediate)
   localStorage.setItem(STORAGE_KEY_THEME, themeId)
@@ -141,7 +187,9 @@ export function initTheme() {
         const customTheme = JSON.parse(storedCustomTheme)
         const tokens = customTheme[mode]
         if (tokens) {
-          applyTokensToDocument(tokens, themeId, mode)
+          // Apply main tokens from swatches for consistency
+          const mainTokens = generateMainTokensFromSwatches(customTheme.swatches)
+          applyTokensToDocument({ ...tokens, ...mainTokens }, themeId, mode)
           return
         }
       } catch (e) {
@@ -157,7 +205,8 @@ export function initTheme() {
     // Fallback to default theme (cfmoto-gold)
     const defaultTheme = getPredefinedThemeById('cfmoto-gold')
     if (defaultTheme && defaultTheme.dark) {
-      applyTokensToDocument(defaultTheme.dark, 'cfmoto-gold', 'dark')
+      const mainTokens = generateMainTokensFromSwatches(defaultTheme.swatches)
+      applyTokensToDocument({ ...defaultTheme.dark, ...mainTokens }, 'cfmoto-gold', 'dark')
     } else {
       // Ultimate fallback - hardcoded minimal tokens
       applyTokensToDocument({
@@ -168,7 +217,11 @@ export function initTheme() {
         '--color-text-primary': '#F2F2F3',
         '--color-text-secondary': '#8E9096',
         '--color-primary': '#D2B474',
-        '--color-secondary': '#D96B27',
+        '--color-primary-contrast': '#0D0D0F',
+        '--color-secondary': '#0D0D0F',
+        '--color-secondary-contrast': '#FFFFFF',
+        '--color-tertiary': '#D96B27',
+        '--color-tertiary-contrast': '#0D0D0F',
       }, 'cfmoto-gold', 'dark')
     }
     return
@@ -179,12 +232,14 @@ export function initTheme() {
     // Mode not found, fallback to dark
     const darkTokens = theme.dark
     if (darkTokens) {
-      applyTokensToDocument(darkTokens, themeId, 'dark')
+      const mainTokens = generateMainTokensFromSwatches(theme.swatches)
+      applyTokensToDocument({ ...darkTokens, ...mainTokens }, themeId, 'dark')
     }
     return
   }
   
-  applyTokensToDocument(tokens, themeId, mode)
+  const mainTokens = generateMainTokensFromSwatches(theme.swatches)
+  applyTokensToDocument({ ...tokens, ...mainTokens }, themeId, mode)
 }
 
 /**

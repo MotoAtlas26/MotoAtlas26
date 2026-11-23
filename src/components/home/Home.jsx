@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useGPX } from '../../context/GPXContext'
-import { db } from '../../services/db'
-import { useBlobUrl } from '../../hooks/useBlobUrl'
-import { getMotoModel, getDefaultMotoModel } from '../../constants/motoModels'
 import { useAuth } from '../../context/AuthContext'
 import { InstallAppButton, MotoAtlas26Logo } from '../shared'
-import { CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, UserCircleIcon, LogOutIcon } from '../shared/Icons'
+import { CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon } from '../shared/Icons'
+import { getMotoModel } from '../../constants/motoModels'
 
 // Importación directa de assets (Vite los hashea y garantiza disponibilidad en dist/assets/)
 import cfmoto800Img from '../../assets/motos/800MT-X.webp'
@@ -20,163 +18,245 @@ const FALLBACK_IMAGES = {
 export const Home = () => {
   const { selectedMoto, dbReady } = useGPX()
   const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow, isInstalled } = useAuth()
-  const [motoBlob, setMotoBlob] = useState(null)
-  const moto = getMotoModel(selectedMoto)
-  const defaultMoto = getDefaultMotoModel()
-  const motoImageUrl = useBlobUrl(motoBlob)
+  const [showMotoSelector, setShowMotoSelector] = useState(false)
+  const [motoImage, setMotoImage] = useState(null)
+  const [imageError, setImageError] = useState(false)
 
-  // Cargar imagen de la BD cuando cambia la moto seleccionada
-  useEffect(() => {
-    const loadMotoImage = async () => {
-      if (!dbReady) return
-      
-      try {
-        const imageRecord = await db.getMotoImage(selectedMoto)
-        if (imageRecord && imageRecord.blob) {
-          setMotoBlob(imageRecord.blob)
-        } else {
-          // Fallback a archivo estático si no está en BD
-          setMotoBlob(null)
-        }
-      } catch (error) {
-        console.error('Error cargando imagen de moto:', error)
-        setMotoBlob(null)
-      }
-    }
-    
-    loadMotoImage()
-  }, [selectedMoto, dbReady])
-
-  // Imagen a mostrar: blob de BD si existe, sino la imagen importada del modelo (Vite hash garantizado)
-  // Usamos FALLBACK_IMAGES[selectedMoto] como garantía absoluta (nunca undefined)
-  const fallbackImg = FALLBACK_IMAGES[selectedMoto] || cfmoto800Img
-  const displayImage = motoImageUrl || moto.fallbackImage || fallbackImg
-
-  const formatRelativeTime = (date) => {
+  // Formatear tiempo relativo
+  const formatRelativeTime = (dateString) => {
+    const date = new Date(dateString)
     const now = new Date()
-    const diff = now - new Date(date)
-    const minutes = Math.floor(diff / 60000)
-    const hours = Math.floor(diff / 3600000)
-    const days = Math.floor(diff / 86400000)
-    
-    if (minutes < 1) return 'hace un momento'
-    if (minutes < 60) return `hace ${minutes} min`
-    if (hours < 24) return `hace ${hours} h`
-    return `hace ${days} d`
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'hace un momento'
+    if (diffMins < 60) return `hace ${diffMins} min`
+    if (diffHours < 24) return `hace ${diffHours} h`
+    if (diffDays < 7) return `hace ${diffDays} d`
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })
   }
 
+  // Cargar imagen de la moto seleccionada
+  useEffect(() => {
+    if (!selectedMoto) {
+      setMotoImage(null)
+      return
+    }
+
+    const model = getMotoModel(selectedMoto)
+    if (model?.image) {
+      setMotoImage(model.image)
+      return
+    }
+
+    // Fallback a assets empaquetados
+    const fallback = FALLBACK_IMAGES[selectedMoto]
+    if (fallback) {
+      setMotoImage(fallback)
+    } else {
+      setMotoImage(null)
+    }
+  }, [selectedMoto])
+
+  // Manejar error de carga de imagen
+  const handleImageError = () => {
+    setImageError(true)
+    const fallback = FALLBACK_IMAGES[selectedMoto]
+    if (fallback && motoImage !== fallback) {
+      setMotoImage(fallback)
+    }
+  }
+
+  const currentMoto = selectedMoto ? getMotoModel(selectedMoto) : null
+  const motoName = currentMoto?.name || 'CFMOTO 800MT-X'
+  const motoBrand = currentMoto?.brand || 'CFMOTO'
+
   return (
-    <div className="home-showcase">
-      <div className="home-header">
-        <MotoAtlas26Logo size={56} horizontal={true} className="mx-auto mb-6" />
-      </div>
-      <div className="moto-hero">
-        <img 
-          src={displayImage} 
-          alt={moto.name}
-          onError={(e) => {
-            // Fallback final: si falla todo (blob corrupto, URL inválida), usa asset CFMOTO importado
-            e.currentTarget.src = cfmoto800Img
-          }}
-        />
-      </div>
-      <div className="home-content">
-        <h1 className="home-title">{moto.name}</h1>
-        <p className="home-subtitle">Tu compañero de ruta para cada aventura</p>
-
-        {/* Google Drive Status / Connect */}
-        <div className="mt-8 w-full max-w-md mx-auto">
-          {!isConnected ? (
-            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/50 text-center">
-              <CloudOffIcon size={32} className="mx-auto text-slate-500 mb-3" />
-              <h3 className="text-lg font-semibold text-slate-100 mb-2">Sincroniza tus datos en la nube</h3>
-              <p className="text-sm text-slate-400 mb-4">
-                Conecta tu Google Drive para acceder a tus rutas, talleres, motos y temas desde cualquier dispositivo.
-                <br />
-                <span className="text-xs bg-slate-700 px-2 py-0.5 rounded">Alcance drive.file - Solo MotoAtlas26 accede a sus archivos</span>
-              </p>
-              <button
-                onClick={connect}
-                disabled={syncStatus === 'syncing'}
-                className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-sm flex items-center justify-center gap-2 mx-auto transition-colors"
-              >
-                <SyncIcon size={16} /> Conectar con Google Drive
-              </button>
-            </div>
+    <div className="home-container">
+      {/* ── Bloque Superior: Cabecera y Moto Protagonista ── */}
+      <div className="home-hero">
+        <MotoAtlas26Logo width={120} height={120} className="home-logo" />
+        
+        <div className="home-moto-wrapper">
+          {motoImage && !imageError ? (
+            <img
+              src={motoImage}
+              alt={motoName}
+              className="home-moto-image"
+              onError={handleImageError}
+            />
           ) : (
-            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/50">
-              {/* User Header */}
-              <div className="flex items-center gap-3 mb-4">
-                {user?.picture && (
-                  <img 
-                    src={user.picture} 
-                    alt={user.name} 
-                    className="w-10 h-10 rounded-full border-2 border-amber-500/50"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-slate-100 truncate">{user?.name || user?.email}</div>
-                  <div className="text-xs text-slate-400 truncate">{user?.email}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    syncStatus === 'synced' ? 'bg-emerald-500/20 text-emerald-400' :
-                    syncStatus === 'syncing' ? 'bg-amber-500/20 text-amber-400' :
-                    syncStatus === 'error' ? 'bg-red-500/20 text-red-400' :
-                    'bg-slate-600/50 text-slate-400'
-                  }`}>
-                    {syncStatus === 'synced' && <CheckCircleIcon size={10} className="inline-block mr-1" />}
-                    {syncStatus === 'syncing' && <SyncIcon size={10} className="inline-block mr-1 spin" />}
-                    {syncStatus === 'synced' ? 'Sincronizado' :
-                     syncStatus === 'syncing' ? 'Sincronizando...' :
-                     syncStatus === 'error' ? 'Error' : 'Pendiente'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Last Sync */}
-              {lastSync && (
-                <div className="text-xs text-slate-400 flex items-center justify-center gap-1 mb-4">
-                  <SyncIcon size={12} />
-                  <span>Última sincronización: {formatRelativeTime(lastSync)}</span>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  onClick={syncNow}
-                  disabled={syncStatus === 'syncing'}
-                  className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-100 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
-                >
-                  <SyncIcon size={14} /> {syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar ahora'}
-                </button>
-                <button
-                  onClick={disconnect}
-                  className="flex-1 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
-                >
-                  <LogOutIcon size={14} /> Cerrar sesión
-                </button>
-              </div>
-
-              {authError && (
-                <div className="mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs text-center">
-                  {authError}
-                </div>
-              )}
+            <div className="home-moto-placeholder" aria-hidden="true">
+              <svg width="80" height="50" viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 35 Q10 25 20 25 L30 25 Q35 25 35 30 L35 35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+                <circle cx="20" cy="35" r="5" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.4"/>
+                <circle cx="35" cy="35" r="5" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.4"/>
+                <path d="M45 35 Q45 25 55 25 L65 25 Q70 25 70 30 L70 35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+                <circle cx="55" cy="35" r="5" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.4"/>
+                <circle cx="70" cy="35" r="5" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.4"/>
+              </svg>
             </div>
           )}
-
-          {/* PWA Install Button */}
-          {!isInstalled && (
-            <div className="mt-4">
-              <InstallAppButton variant="card" />
-            </div>
-          )}
+          
+          <div className="home-moto-info">
+            <h2 className="home-moto-name">{motoName}</h2>
+            <p className="home-moto-subtitle">Tu compañero de ruta para cada aventura</p>
+          </div>
         </div>
       </div>
+
+      {/* ── Bloque Inferior: Tarjeta de Sincronización Google Drive ── */}
+      <div className="home-sync-card">
+        {!isConnected ? (
+          <>
+            <CloudOffIcon size={36} className="home-sync-icon" />
+            <h3 className="home-sync-title">Sincroniza tus datos en la nube</h3>
+            <p className="home-sync-desc">
+              Conecta tu Google Drive para acceder a tus rutas, talleres, motos y temas desde cualquier dispositivo.
+            </p>
+            <span className="home-sync-note">Alcance drive.file - Solo MotoAtlas26 accede a sus archivos</span>
+            <button
+              onClick={connect}
+              disabled={syncStatus === 'syncing'}
+              className="home-sync-btn home-sync-btn--primary"
+            >
+              <SyncIcon size={16} /> Conectar con Google Drive
+            </button>
+          </>
+        ) : (
+          <>
+            <CloudIcon size={36} className="home-sync-icon" />
+            <div className="home-sync-user">
+              {user?.picture && (
+                <img
+                  src={user.picture}
+                  alt={user.name || ''}
+                  className="home-sync-avatar"
+                />
+              )}
+              <div className="home-sync-user-info">
+                <div className="home-sync-user-name">{user?.name || user?.email}</div>
+                <div className="home-sync-user-email">{user?.email}</div>
+              </div>
+            </div>
+            
+            <div className="home-sync-status">
+              <span className={`home-sync-badge ${syncStatus}`}>
+                {syncStatus === 'synced' && <CheckCircleIcon size={10} className="home-sync-badge-icon" />}
+                {syncStatus === 'syncing' && <SyncIcon size={10} className="home-sync-badge-icon spin" />}
+                {syncStatus === 'synced' ? 'Sincronizado' :
+                 syncStatus === 'syncing' ? 'Sincronizando...' :
+                 syncStatus === 'error' ? 'Error' : 'Pendiente'}
+              </span>
+            </div>
+
+            {lastSync && (
+              <div className="home-sync-last">
+                <SyncIcon size={12} />
+                <span>Última sincronización: {formatRelativeTime(lastSync)}</span>
+              </div>
+            )}
+
+            <div className="home-sync-actions">
+              <button
+                onClick={syncNow}
+                disabled={syncStatus === 'syncing'}
+                className="home-sync-btn home-sync-btn--primary"
+              >
+                <SyncIcon size={14} /> {syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar ahora'}
+              </button>
+              <button
+                onClick={disconnect}
+                className="home-sync-btn home-sync-btn--secondary"
+              >
+                <LogOutIcon size={14} /> Cerrar sesión
+              </button>
+            </div>
+
+            {authError && (
+              <div className="home-sync-error">{authError}</div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Moto Selector Button */}
+      <button
+        onClick={() => setShowMotoSelector(true)}
+        className="home-moto-selector-btn"
+      >
+        <div className="home-moto-selector-content">
+          {motoImage && !imageError ? (
+            <img
+              src={motoImage}
+              alt={motoName}
+              className="home-moto-selector-image"
+            />
+          ) : (
+            <div className="home-moto-selector-placeholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+          )}
+          <div className="home-moto-selector-text">
+            <div className="home-moto-selector-name">{motoName}</div>
+            <div className="home-moto-selector-brand">{motoBrand}</div>
+          </div>
+        </div>
+      </button>
+
+      {/* Install PWA Button */}
+      {isInstalled && (
+        <InstallAppButton className="home-install-btn" />
+      )}
+
+      {/* Moto Selector Modal */}
+      {showMotoSelector && (
+        <div className="home-modal-overlay" onClick={() => setShowMotoSelector(false)}>
+          <div className="home-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="home-modal-header">
+              <h3 className="home-modal-title">Seleccionar moto</h3>
+              <button className="home-modal-close" onClick={() => setShowMotoSelector(false)} aria-label="Cerrar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div className="home-modal-content">
+              {Object.entries(FALLBACK_IMAGES).map(([id, img]) => {
+                const model = getMotoModel(id)
+                const isSelected = selectedMoto === id
+                return (
+                  <button
+                    key={id}
+                    onClick={() => {
+                      // TODO: Implement moto selection logic
+                      setShowMotoSelector(false)
+                    }}
+                    className={`home-modal-item ${isSelected ? 'selected' : ''}`}
+                  >
+                    <img src={img} alt={model?.name} className="home-modal-item-image" />
+                    <div className="home-modal-item-info">
+                      <div className="home-modal-item-name">{model?.name}</div>
+                      <div className="home-modal-item-brand">{model?.brand}</div>
+                    </div>
+                    {isSelected && (
+                      <svg className="home-modal-item-check" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
-export default Home

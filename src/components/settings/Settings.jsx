@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton } from '../shared'
 import { formatBackupName } from '../../utils/formatters'
 import { getMotoModelsArray, getMotoModel } from '../../constants/motoModels'
-import { getThemesList } from '../../constants/themes'
+import { getThemesList, THEMES } from '../../constants/themes'
 import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme } from '../../utils/themeEngine'
 import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon } from '../shared/Icons'
 
@@ -166,23 +166,38 @@ export const Settings = () => {
     loadCustomThemes()
   }, [getCustomThemes])
 
-  // Themes list state (for appearance tab)
-  const [themesList, setThemesList] = useState([])
+  // Available themes state (for appearance tab) - combines predefined + custom
+  const [availableThemes, setAvailableThemes] = useState([])
   const [loadingThemes, setLoadingThemes] = useState(true)
 
-  useEffect(() => {
-    const loadThemes = async () => {
-      try {
-        const themes = await getThemesList()
-        setThemesList(themes)
-      } catch (error) {
-        console.error('Error loading themes:', error)
-      } finally {
-        setLoadingThemes(false)
-      }
+  const loadAvailableThemes = useCallback(async () => {
+    try {
+      const customThemesData = await getCustomThemes()
+      const custom = customThemesData.map(t => ({
+        id: `custom-${t.id}`,
+        name: t.name,
+        brand: t.brand || 'Personalizado',
+        swatches: t.swatches || [t.primaryColor, t.secondaryColor, t.tertiaryColor]
+      }))
+      setAvailableThemes([...THEMES, ...custom])
+    } catch (error) {
+      console.error('Error loading available themes:', error)
+      setAvailableThemes(THEMES)
+    } finally {
+      setLoadingThemes(false)
     }
-    loadThemes()
-  }, [])
+  }, [getCustomThemes])
+
+  useEffect(() => {
+    loadAvailableThemes()
+  }, [loadAvailableThemes])
+
+  // Reload available themes when switching to Appearance tab
+  useEffect(() => {
+    if (activeTab === 'appearance') {
+      loadAvailableThemes()
+    }
+  }, [activeTab, loadAvailableThemes])
 
   const resetForm = () => {
     setFormData({
@@ -349,6 +364,8 @@ export const Settings = () => {
       }
       const data = await getCustomThemes()
       setCustomThemes(data)
+      // Reload available themes for appearance tab
+      await loadAvailableThemes()
       resetCustomThemeForm()
       setShowCustomThemeForm(false)
     } catch (error) {
@@ -384,6 +401,8 @@ export const Settings = () => {
       // If the deleted theme was active, validate and potentially reset
       await validateActiveTheme()
       await refreshActiveCustomTheme()
+      // Reload available themes for appearance tab
+      await loadAvailableThemes()
       
       setDeleteCustomThemeConfirm(null)
     } catch (error) {
@@ -541,7 +560,7 @@ export const Settings = () => {
   const selectedMotoModel = getMotoModel(selectedMoto)
 
   const renderAppearanceTab = () => {
-    const selectedTheme = themesList.find(t => t.id === colorTheme) || themesList[0]
+    const selectedTheme = availableThemes.find(t => t.id === colorTheme) || availableThemes[0]
     
     const handleThemeChange = async (newThemeId) => {
       setColorTheme(newThemeId)
@@ -615,11 +634,20 @@ export const Settings = () => {
               value={colorTheme}
               onChange={(e) => handleThemeChange(e.target.value)}
             >
-              {themesList.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} {t.brand && `(${t.brand})`} {t.id.startsWith('custom-') && '✨'}
-                </option>
-              ))}
+              <optgroup label="Marcas Predefinidas">
+                {availableThemes.filter(t => !t.id.startsWith('custom-')).map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} {t.brand && `(${t.brand})`}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Temas Personalizados">
+                {availableThemes.filter(t => t.id.startsWith('custom-')).map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} {t.brand && `(${t.brand})`}
+                  </option>
+                ))}
+              </optgroup>
             </select>
             <div className="theme-swatch-palette">
               {selectedTheme && selectedTheme.swatches && selectedTheme.swatches.map((color, i) => (
