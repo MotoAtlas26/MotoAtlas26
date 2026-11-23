@@ -3,13 +3,8 @@ dist/
 package-lock.json
 xEjemplo/
 xNotas/
-*.webp
-*.jpg
-*.png
 PROJECT_CONTEXT.json
 .env
 .env.local
 .lunacode/
 .DS_Store
-.DS_Store
-.lunacode/
