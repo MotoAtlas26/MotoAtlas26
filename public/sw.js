@@ -3,7 +3,7 @@
  * Cache-first para assets estáticos, Network-first para navegación
  * Versión: incrementar al cambiar archivos cacheados
  */
-const CACHE_NAME = 'MotoAtlas26-v2';
+const CACHE_NAME = 'motoatlas-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -11,7 +11,9 @@ const STATIC_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png',
-  '/favicon.svg'
+  '/favicon.svg',
+  '/800MT-X.webp',
+  '/KTM-1290-S-Adv-S.webp'
 ];
 
 // Install: cache static assets
@@ -78,9 +80,30 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
-          return cachedResponse;
+          // Para imágenes: verificar que la respuesta cacheada sea realmente una imagen
+          if (request.destination === 'image') {
+            const contentType = cachedResponse.headers.get('content-type');
+            if (contentType && contentType.startsWith('image/')) {
+              return cachedResponse;
+            }
+            // Si no es imagen, borrar del cache y caer al fetch
+            caches.open(CACHE_NAME).then(cache => cache.delete(request));
+          } else {
+            return cachedResponse;
+          }
         }
         return fetch(request).then((networkResponse) => {
+          // Para imágenes: solo cachear si es realmente una imagen
+          if (request.destination === 'image') {
+            const contentType = networkResponse.headers.get('content-type');
+            if (networkResponse.ok && contentType && contentType.startsWith('image/')) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+              return networkResponse;
+            }
+            // Si no es imagen válida, no cachear y devolver error
+            return new Response('', { status: 404, statusText: 'Not an image' });
+          }
           if (networkResponse.ok) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));

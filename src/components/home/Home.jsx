@@ -37,6 +37,9 @@ export const Home = () => {
     loadMotoImage()
   }, [selectedMoto, dbReady])
 
+  // Imagen a mostrar: blob de BD si existe, sino la imagen importada del modelo (Vite hash garantizado)
+  const displayImage = motoImageUrl || moto.fallbackImage
+
   const formatRelativeTime = (date) => {
     const now = new Date()
     const diff = now - new Date(date)
@@ -53,14 +56,10 @@ export const Home = () => {
   return (
     <div className="home-showcase">
       <div className="moto-hero">
-        {motoImageUrl ? (
-          <img src={motoImageUrl} alt={moto.name} />
-        ) : (
-          <img src={moto.fallbackImage || defaultMoto.fallbackImage} alt={moto.name} />
-        )}
+        <img src={displayImage} alt={moto.name} />
       </div>
       <div className="home-content">
-        <MotoAtlas26Logo size="lg" className="mx-auto mb-4" />
+        <MotoAtlas26Logo size={48} className="mx-auto mb-4" />
         <h1 className="home-title">{moto.name}</h1>
         <p className="home-subtitle">Tu compañero de ruta para cada aventura</p>
 

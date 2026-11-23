@@ -3,18 +3,21 @@
  * Used across Home, Moto, Facturas, and Settings components
  */
 
+import cfmoto800mtx from '../assets/motos/800MT-X.webp'
+import ktm1290 from '../assets/motos/KTM-1290-S-Adv-S.webp'
+
 export const MOTO_MODELS = {
   'cfmoto-800mt-x': {
     id: 'cfmoto-800mt-x',
     name: 'CFMOTO 800MT-X',
     colorTheme: { primary: '#E8A838', secondary: '#1A1A1A' },
-    fallbackImage: '/800MT-X.webp'
+    fallbackImage: cfmoto800mtx
   },
   'ktm-1290-super-adventure-s': {
     id: 'ktm-1290-super-adventure-s',
     name: 'KTM 1290 Super Adventure S',
     colorTheme: { primary: '#FF8200', secondary: '#000000' },
-    fallbackImage: '/KTM-1290-S-Adv-S.webp'
+    fallbackImage: ktm1290
   }
 }
 
