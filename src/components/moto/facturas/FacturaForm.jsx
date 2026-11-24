@@ -15,6 +15,7 @@ export const FacturaForm = ({
   workshops,
   selectedMotoId: initialSelectedMotoId,
   onSave,
+  onCancel,
   initialData = {}
 }) => {
   const [
@@ -53,6 +54,8 @@ export const FacturaForm = ({
     itemsManual,
     setItemsManual
   ] = useState([])
+  const [isSaving, setIsSaving] = useState(false)
+  const [validationError, setValidationError] = useState('')
   // Local state for moto selection, initialized from prop
   const [selectedMotoId, setSelectedMotoId] = useState(initialSelectedMotoId || initialData.motoId || '')
 
@@ -175,17 +178,20 @@ export const FacturaForm = ({
   const handleSave = useCallback(async () => {
     // Validation: moto obligatoria, fecha obligatoria, al menos una línea o importe > 0
     if (!selectedMotoId) {
-      alert('Selecciona una moto primero')
+      setValidationError('Selecciona una moto primero')
       return
     }
     if (!date) {
-      alert('La fecha es obligatoria')
+      setValidationError('La fecha es obligatoria')
       return
     }
     if (items.length === 0 && totalAmount <= 0) {
-      alert('Añade al menos una línea de factura o un importe mayor a 0')
+      setValidationError('Añade al menos una línea de factura o un importe mayor a 0')
       return
     }
+
+    setValidationError('')
+    setIsSaving(true)
 
     const invoiceData = {
       motoId: selectedMotoId,
@@ -206,8 +212,15 @@ export const FacturaForm = ({
       fileDataUrl: file ? URL.createObjectURL(file) : null
     }
 
-    await onSave(invoiceData)
-    setOpen(false)
+    try {
+      await onSave(invoiceData)
+      setOpen(false)
+    } catch (error) {
+      console.error('Error guardando factura:', error)
+      setValidationError('Error al guardar la factura. Inténtalo de nuevo.')
+    } finally {
+      setIsSaving(false)
+    }
   }, [selectedMotoId, workshopId, date, odometerKm, invoiceNumber, notes, file, onSave, items, totalAmount])
 
   return (
@@ -370,21 +383,35 @@ export const FacturaForm = ({
         <span style={{ color: 'var(--color-primary)' }}>{totalAmount.toFixed(2)} €</span>
       </div>
 
+      {validationError && (
+        <div className="validation-error" style={{
+          padding: '0.75rem 1rem',
+          background: 'var(--color-error-bg, #fef2f2)',
+          border: '1px solid var(--color-error-border, #fecaca)',
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--color-error, #dc2626)',
+          fontSize: '0.875rem',
+          marginBottom: '1rem'
+        }}>
+          {validationError}
+        </div>
+      )}
+
       <div className="form-actions">
         <button
           type="button"
-          className="btn btn-outline"
+          className="btn btn-secondary"
           onClick={() => onCancel && onCancel()}
         >
           Cancelar
         </button>
         <button
-          type="button"
+          type="submit"
           className="btn btn-primary"
           onClick={handleSave}
-          disabled={!invoiceNumber || !date}
+          disabled={isSaving}
         >
-          {initialData.id ? 'Actualizar' : 'Guardar Factura'}
+          {isSaving ? 'Guardando...' : (initialData.id ? 'Actualizar' : 'Guardar Factura')}
         </button>
       </div>
     </div>

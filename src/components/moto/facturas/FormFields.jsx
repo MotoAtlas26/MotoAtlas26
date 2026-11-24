@@ -18,7 +18,12 @@ export const FormFields = ({
   disabled = false
 }) => {
   return (
-    <div className="form-grid">
+    <div className="form-grid" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: '1rem'
+    }}>
+      {/* Fila 1: Moto | Taller / Origen */}
       <div className="form-group">
         <label>Moto</label>
         <select
@@ -53,6 +58,7 @@ export const FormFields = ({
         </select>
       </div>
 
+      {/* Fila 2: Fecha | Kilómetros actuales */}
       <div className="form-group">
         <label>Fecha</label>
         <input
@@ -76,6 +82,7 @@ export const FormFields = ({
         />
       </div>
 
+      {/* Fila 3: Nº Factura | Notas */}
       <div className="form-group">
         <label>Nº Factura</label>
         <input
@@ -93,8 +100,9 @@ export const FormFields = ({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="form-textarea"
-          rows={3}
+          rows={2}
           placeholder="Notas adicionales..."
+          style={{ minHeight: '60px' }}
         ></textarea>
       </div>
     </div>
