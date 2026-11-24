@@ -927,7 +927,7 @@ export const Settings = () => {
                 <span className="theme-swatch-hex">{selectedTheme.swatches?.[2] || '#D96B27'}</span>
               </div>
             </div>
-            <div className="theme-card-footer">
+            <div className="theme-card-footer" style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
               <button className="btn btn-accept-theme" onClick={handleAcceptTheme}>
                 Aceptar
               </button>
