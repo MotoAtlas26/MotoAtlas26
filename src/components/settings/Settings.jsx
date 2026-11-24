@@ -853,37 +853,42 @@ export const Settings = () => {
       <SectionHeader
         title="Apariencia"
         subtitle="Personaliza la interfaz de la aplicación"
-        actions={
-          <div className="theme-toggle-header">
-            <span className="theme-toggle-label">Modo Oscuro</span>
-            <div className="toggle-row">
-              <span>Desactivado</span>
-              <label className="switch" title="Cambiar entre modo oscuro y claro">
-                <input
-                  type="checkbox"
-                  checked={theme === 'dark'}
-                  onChange={handleModeChange}
-                />
-                <span className="slider" />
-              </label>
-              <span>Activado</span>
-            </div>
-          </div>
-        }
       />
+      
+      {/* Dark Mode Card */}
+      <div className="settings-mode-card">
+        <div className="settings-mode-info">
+          <h3 className="settings-mode-title">Modo de Interfaz</h3>
+          <p className="settings-mode-description">Alterna entre tema oscuro y claro</p>
+        </div>
+        <div className="settings-mode-toggle">
+          <span className="settings-mode-label">Desactivado</span>
+          <label className="switch" title="Cambiar entre modo oscuro y claro">
+            <input
+              type="checkbox"
+              checked={theme === 'dark'}
+              onChange={handleModeChange}
+            />
+            <span className="slider" />
+          </label>
+          <span className="settings-mode-label">Activado</span>
+        </div>
+      </div>
+      
       <div className="settings-grid">
         <SettingCard
           icon="🏍️"
           title="Modelo de Moto"
           description="Selecciona tu motocicleta para personalizar la información."
+          className="appearance-card"
         >
-          <div className="select-wrapper">
+          <div className="appearance-card-selector">
             <select value={selectedMoto} onChange={(e) => handleMotoChange(e.target.value)} className="form-select">
               {motoModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
-          <div className="moto-preview-mini" style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-            <img src={selectedMotoModel.fallbackImage} style={{ maxWidth: '160px' }} alt="Moto" />
+          <div className="appearance-card-preview moto-preview">
+            <img src={selectedMotoModel.fallbackImage} alt="Moto" />
           </div>
         </SettingCard>
 
@@ -891,8 +896,9 @@ export const Settings = () => {
           icon="🎨"
           title="Tema de Colores"
           description="Selecciona la paleta de colores principal de la aplicación (incluye temas personalizados)"
+          className="appearance-card"
         >
-          <div className="theme-selector">
+          <div className="appearance-card-selector">
             <ThemeSelect
               options={[
                 { label: 'Original', options: originalTheme ? [{ value: originalTheme.id, label: originalTheme.name, swatches: originalTheme.swatches }] : [] },
@@ -902,6 +908,25 @@ export const Settings = () => {
               value={selectedThemeId}
               onChange={handleThemeChange}
             />
+          </div>
+          <div className="appearance-card-preview theme-preview">
+            <div className="theme-swatch-row">
+              <div className="theme-swatch-item">
+                <span className="theme-swatch-label">Principal</span>
+                <span className="theme-swatch-color" style={{ backgroundColor: selectedTheme.swatches?.[0] || '#D2B474' }} />
+                <span className="theme-swatch-hex">{selectedTheme.swatches?.[0] || '#D2B474'}</span>
+              </div>
+              <div className="theme-swatch-item">
+                <span className="theme-swatch-label">Secundario</span>
+                <span className="theme-swatch-color" style={{ backgroundColor: selectedTheme.swatches?.[1] || '#0D0D0F' }} />
+                <span className="theme-swatch-hex">{selectedTheme.swatches?.[1] || '#0D0D0F'}</span>
+              </div>
+              <div className="theme-swatch-item">
+                <span className="theme-swatch-label">Terciario</span>
+                <span className="theme-swatch-color" style={{ backgroundColor: selectedTheme.swatches?.[2] || '#D96B27' }} />
+                <span className="theme-swatch-hex">{selectedTheme.swatches?.[2] || '#D96B27'}</span>
+              </div>
+            </div>
             <div className="theme-card-footer">
               <button className="btn btn-accept-theme" onClick={handleAcceptTheme}>
                 Aceptar
