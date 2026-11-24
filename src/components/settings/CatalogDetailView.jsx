@@ -303,11 +303,15 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
 
   return (
     <div className="catalog-detail-view">
-      {/* Header with back button */}
-      <div className="catalog-header">
+      {/* Back button - own row, left aligned */}
+      <div className="catalog-back-row">
         <button className="btn btn-ghost" onClick={onBack}>
           <ChevronLeftIcon size={18} /> Volver a Listados
         </button>
+      </div>
+
+      {/* Header: title left, add button right */}
+      <div className="catalog-header">
         <div className="catalog-title-section">
           <Icon size={28} />
           <div>
@@ -315,16 +319,14 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
             <p className="catalog-description">{config.description}</p>
           </div>
         </div>
-      </div>
 
-      {/* Add new button (when not in form mode) */}
-      {!showForm && (
-        <div className="catalog-toolbar">
+        {/* Add new button (when not in form mode) */}
+        {!showForm && (
           <button className="btn btn-primary" onClick={handleAddNew}>
             <PlusIcon size={18} /> Añadir nuevo
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Form Modal */}
       {showForm && (
@@ -438,9 +440,6 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
             <Icon size={48} />
             <h3>Sin {config.title.toLowerCase()} registrad{config.title.endsWith('s') ? 'os' : 'os'}</h3>
             <p>Añade tu primer elemento para empezar.</p>
-            <button className="btn btn-primary" onClick={handleAddNew}>
-              <PlusIcon size={16} /> Añadir primer{config.title.endsWith('s') ? '' : 'a'}
-            </button>
           </div>
         ) : (
           <div className="catalog-list">
