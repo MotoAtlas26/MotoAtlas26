@@ -8,6 +8,7 @@ import { getMotoModel, getMotoModelsArray } from '../../constants/motoModels'
 import { Mantenimiento } from './Mantenimiento'
 import Documentacion from './Documentacion'
 import { MotoDashboard } from './MotoDashboard'
+import { Facturas } from './Facturas'
 import { TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon } from '../shared/Icons'
 
 export const Moto = () => {
@@ -80,9 +81,7 @@ export const Moto = () => {
       {/* Vista de Facturas */}
       {view === 'facturas' && (
         <div id="panel-facturas" role="tabpanel" aria-labelledby="tab-facturas">
-          <p style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-            Vista de Facturas - Próximamente
-          </p>
+          <Facturas />
         </div>
       )}
 
