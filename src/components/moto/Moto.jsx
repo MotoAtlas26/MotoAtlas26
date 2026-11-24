@@ -35,7 +35,7 @@ export const Moto = () => {
         </div>
         <div className="moto-header-actions">
           <button 
-            className="btn-primary" 
+            className="btn btn-primary" 
             onClick={() => setShowInvoiceModal(true)}
             aria-label="Subir factura"
           >
@@ -44,7 +44,7 @@ export const Moto = () => {
           </button>
           <Link 
             to="/fileUpload" 
-            className="btn-secondary"
+            className="btn btn-secondary"
             aria-label="Registrar mantenimiento"
           >
             <PlusIcon size={18} />

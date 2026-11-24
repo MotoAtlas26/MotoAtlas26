@@ -63,7 +63,7 @@ const InvoiceItemRow = ({ item, onDelete, onUpdate }) => {
       <span className="item-subtotal">{subtotal.toFixed(2)} €</span>
       <button
         type="button"
-        className="btn-danger btn-danger-sm"
+        className="btn btn-danger btn-danger-sm"
         onClick={() => {
           setIsEditing(false)
           onDelete(item.id)
@@ -263,7 +263,7 @@ const InvoiceForm = ({
             ))}
             <button
               type="button"
-              className="btn-primary btn-sm"
+              className="btn btn-primary btn-sm"
               onClick={() => {
                 const newItem = {
                   id: crypto.randomUUID(),
@@ -399,7 +399,7 @@ const InvoiceForm = ({
         </div>
         <button
           type="button"
-          className="btn-primary btn-sm"
+          className="btn btn-primary btn-sm"
           onClick={() => {
             // Add empty row
             const newItem = {
@@ -427,7 +427,7 @@ const InvoiceForm = ({
       <div className="form-actions">
         <button
           type="button"
-          className="btn-outline"
+          className="btn btn-outline"
           onClick={setOpen}
           disabled={open && !initialData.id}
         >
@@ -435,7 +435,7 @@ const InvoiceForm = ({
         </button>
         <button
           type="button"
-          className="btn-primary"
+          className="btn btn-primary"
           onClick={handleSave}
           disabled={!invoiceNumber || !date}
         >
@@ -623,11 +623,11 @@ export const Facturas = () => {
         subtitle="Gestión de facturas y documentación"
         actions={
           <div className="header-actions">
-            <Link to="/moto" className="btn-outline">
+            <Link to="/moto" className="btn btn-outline">
               📂 Volver al Dashboard
             </Link>
             <button
-              className="btn-primary"
+              className="btn btn-primary"
               onClick={openInvoiceFormModal}
             >
               Documentos Subir Factura
@@ -648,7 +648,7 @@ export const Facturas = () => {
                 title="No hay facturas"
                 description="Sube tu primera factura desde el dashboard de la moto"
                 action={
-                  <Link to="/moto/facturas" className="btn-primary">
+                  <Link to="/moto/facturas" className="btn btn-primary">
                     Subir Facturas
                   </Link>
                 }
@@ -769,10 +769,10 @@ export const Facturas = () => {
       >
         <p>¿Estás seguro de eliminar <strong>{showDeleteConfirm?.fileName}</strong>?</p>
         <div className="modal-footer">
-          <button className="btn-outline" onClick={() => setShowDeleteConfirm(null)}>
+          <button className="btn btn-outline" onClick={() => setShowDeleteConfirm(null)}>
             Cancelar
           </button>
-          <button className="btn-danger" onClick={() => handleDeleteInvoice(showDeleteConfirm.id)}>
+          <button className="btn btn-danger" onClick={() => handleDeleteInvoice(showDeleteConfirm.id)}>
             Eliminar
           </button>
         </div>

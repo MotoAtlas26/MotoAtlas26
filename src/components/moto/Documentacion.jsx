@@ -242,7 +242,7 @@ export const Documentacion = () => {
         title="Guantera Digital"
         subtitle="Documentación de tus motos: ITV, Seguro, Permiso, Manuales y más"
         actions={
-          <button className="btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>
+          <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>
             <UploadIcon size={18} style={{ marginRight: 'var(--space-1)' }} /> Añadir Documento
           </button>
         }
@@ -264,7 +264,7 @@ export const Documentacion = () => {
                   Póliza: {insuranceDoc.policyNumber}
                 </span>
               )}
-              <a href={`tel:${insuranceDoc.assistancePhone}`} className="btn-primary" style={{ marginTop: 'var(--space-1)' }}>
+              <a href={`tel:${insuranceDoc.assistancePhone}`} className="btn btn-primary" style={{ marginTop: 'var(--space-1)' }}>
                 <PhoneIcon size={16} style={{ marginRight: 'var(--space-1)' }} /> Llamar Asistencia
               </a>
             </div>
@@ -402,8 +402,8 @@ export const Documentacion = () => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-            <button type="button" className="btn-secondary" onClick={resetForm}>Cancelar</button>
-            <button type="submit" className="btn-primary" disabled={saving}>
+            <button type="button" className="btn btn-secondary" onClick={resetForm}>Cancelar</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? 'Guardando...' : (editingDoc ? 'Actualizar' : 'Guardar')}
             </button>
           </div>
@@ -450,7 +450,7 @@ export const Documentacion = () => {
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
               {filterMotoId ? 'Esta moto no tiene documentos registrados.' : 'No hay documentos que coincidan con los filtros.'}
             </p>
-            <button className="btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>
+            <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>
               <UploadIcon size={18} style={{ marginRight: 'var(--space-1)' }} /> Añadir primer documento
             </button>
           </div>

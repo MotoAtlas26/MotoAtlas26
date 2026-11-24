@@ -179,7 +179,7 @@
   stroke-opacity: 1 !important;
 }
 
-/── Leyenda de ruta ── */
+/* ── Leyenda de ruta ── */
 .leaflet-legend {
   background: var(--color-card);
   border: var(--border-width) solid var(--color-card-border);

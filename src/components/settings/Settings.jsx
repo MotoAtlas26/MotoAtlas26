@@ -680,7 +680,7 @@ export const Settings = () => {
               onChange={handleThemeChange}
             />
             <div className="theme-card-footer">
-              <button className="btn-accept-theme" onClick={handleAcceptTheme}>
+              <button className="btn btn-accept-theme" onClick={handleAcceptTheme}>
                 Aceptar
               </button>
             </div>
@@ -699,13 +699,13 @@ export const Settings = () => {
         actions={
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
             <button 
-              className="btn-gold" 
+              className="btn btn-gold" 
               onClick={() => { resetForm(); setShowWorkshopForm(true); }}
             >
               <WrenchIcon size={16} /> Añadir Taller
             </button>
             <button 
-              className="btn-gold" 
+              className="btn btn-gold" 
               onClick={() => { resetMotorcycleForm(); setShowMotorcycleForm(true); }}
             >
               <MotoIcon size={16} /> Añadir Moto
@@ -836,10 +836,10 @@ export const Settings = () => {
               </div>
 
               <div className="form-actions">
-                <button type="button" className="btn-outline" onClick={() => { setShowWorkshopForm(false); resetForm(); }}>
+                <button type="button" className="btn btn-outline" onClick={() => { setShowWorkshopForm(false); resetForm(); }}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-gold">
+                <button type="submit" className="btn btn-gold">
                   {editingWorkshop ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>
@@ -1112,10 +1112,10 @@ export const Settings = () => {
               </fieldset>
 
               <div className="form-actions">
-                <button type="button" className="btn-outline" onClick={() => { setShowMotorcycleForm(false); resetMotorcycleForm(); }}>
+                <button type="button" className="btn btn-outline" onClick={() => { setShowMotorcycleForm(false); resetMotorcycleForm(); }}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-gold">
+                <button type="submit" className="btn btn-gold">
                   {editingMotorcycle ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>
@@ -1134,8 +1134,8 @@ export const Settings = () => {
             <p>¿Estás seguro de que quieres eliminar <strong>{deleteConfirm.name}</strong>?</p>
             <p className="text-muted">Esta acción no se puede deshacer.</p>
             <div className="form-actions">
-              <button className="btn-outline" onClick={() => setDeleteConfirm(null)}>Cancelar</button>
-              <button className="btn-danger" onClick={handleDelete}>Eliminar</button>
+              <button className="btn btn-outline" onClick={() => setDeleteConfirm(null)}>Cancelar</button>
+              <button className="btn btn-danger" onClick={handleDelete}>Eliminar</button>
             </div>
           </Modal>
         )}
@@ -1151,8 +1151,8 @@ export const Settings = () => {
             <p>¿Estás seguro de que quieres eliminar <strong>{deleteMotorcycleConfirm.brand} {deleteMotorcycleConfirm.model}</strong>?</p>
             <p className="text-muted">Esta acción no se puede deshacer.</p>
             <div className="form-actions">
-              <button className="btn-outline" onClick={() => setDeleteMotorcycleConfirm(null)}>Cancelar</button>
-              <button className="btn-danger" onClick={handleDeleteMotorcycle}>Eliminar</button>
+              <button className="btn btn-outline" onClick={() => setDeleteMotorcycleConfirm(null)}>Cancelar</button>
+              <button className="btn btn-danger" onClick={handleDeleteMotorcycle}>Eliminar</button>
             </div>
           </Modal>
         )}
@@ -1174,7 +1174,7 @@ export const Settings = () => {
               title="Sin motos registradas"
               description="Añade tu primera moto para llevar el control de kilometraje, neumáticos, ITV y especificaciones."
               action={
-                <button className="btn-gold" onClick={() => { resetMotorcycleForm(); setShowMotorcycleForm(true); }}>
+                <button className="btn btn-gold" onClick={() => { resetMotorcycleForm(); setShowMotorcycleForm(true); }}>
                   <MotoIcon size={16} /> Añadir primera moto
                 </button>
               }
@@ -1232,7 +1232,7 @@ export const Settings = () => {
           description="Crea tus propios temas de color con 3 tonos: principal, secundario y terciario"
           actions={
             <button 
-              className="btn-gold" 
+              className="btn btn-gold" 
               onClick={() => { resetCustomThemeForm(); setShowCustomThemeForm(true); }}
             >
               <PlusIcon size={16} /> Añadir Tema
@@ -1250,7 +1250,7 @@ export const Settings = () => {
               title="Sin temas personalizados"
               description="Crea tu primer tema de color personalizado definiendo 3 colores: principal (botones, logo), secundario (alertas, badges) y terciario (detalles)."
               action={
-                <button className="btn-gold" onClick={() => { resetCustomThemeForm(); setShowCustomThemeForm(true); }}>
+                <button className="btn btn-gold" onClick={() => { resetCustomThemeForm(); setShowCustomThemeForm(true); }}>
                   <PlusIcon size={16} /> Crear primer tema
                 </button>
               }
@@ -1489,10 +1489,10 @@ export const Settings = () => {
               </fieldset>
               
               <div className="form-actions">
-                <button type="button" className="btn-outline" onClick={() => { setShowCustomThemeForm(false); resetCustomThemeForm(); }}>
+                <button type="button" className="btn btn-outline" onClick={() => { setShowCustomThemeForm(false); resetCustomThemeForm(); }}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-gold">
+                <button type="submit" className="btn btn-gold">
                   {editingCustomTheme ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>
