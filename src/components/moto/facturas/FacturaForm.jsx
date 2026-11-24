@@ -14,7 +14,7 @@ export const FacturaForm = ({
   setOpen,
   motos,
   workshops,
-  selectedMotoId,
+  selectedMotoId: initialSelectedMotoId,
   onSave,
   initialData = {}
 }) => {
@@ -54,6 +54,8 @@ export const FacturaForm = ({
     itemsManual,
     setItemsManual
   ] = useState([])
+  // Local state for moto selection, initialized from prop
+  const [selectedMotoId, setSelectedMotoId] = useState(initialSelectedMotoId || initialData.motoId || '')
 
   // Reset form when initialData changes (for edit mode)
   useEffect(() => {
@@ -66,6 +68,7 @@ export const FacturaForm = ({
       setFile(initialData.file || null)
       setParsedData(initialData.parsedData || null)
       setItemsManual(initialData.itemsManual || [])
+      setSelectedMotoId(initialData.motoId || '')
     }
   }, [initialData])
 
