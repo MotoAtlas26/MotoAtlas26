@@ -2022,7 +2022,6 @@ export const Settings = () => {
 
         {/* Document Types List */}
         <SettingCard
-          icon="📄"
           title="Tipos de Documento"
           description="Catálogo de tipos de documento para la Guantera Digital"
           actions={
@@ -2030,7 +2029,7 @@ export const Settings = () => {
               className="btn btn-gold" 
               onClick={() => { resetDocumentTypeForm(); setShowDocumentTypeForm(true); }}
             >
-              <PlusIcon size={16} /> Añadir Tipo
+              <PlusIcon size={16} /> Añadir Tipo de Documento
             </button>
           }
         >
@@ -2041,7 +2040,6 @@ export const Settings = () => {
             </div>
           ) : documentTypes.length === 0 ? (
             <EmptyState
-              icon="📄"
               title="Sin tipos de documento"
               description="Añade tu primer tipo de documento para organizar la Guantera Digital."
               action={
@@ -2051,44 +2049,33 @@ export const Settings = () => {
               }
             />
           ) : (
-            <div className="document-types-list">
+            <div className="document-types-table">
+              <div className="document-types-header">
+                <div className="doc-type-col-name">Nombre</div>
+                <div className="doc-type-col-expiration">Vencimiento</div>
+                <div className="doc-type-col-insurance">Datos de Seguro</div>
+                <div className="doc-type-col-actions">Acciones</div>
+              </div>
               {documentTypes.map((docType) => (
-                <div key={docType.id} className="document-type-card">
-                  <div className="document-type-header">
-                    <div className="document-type-main">
-                      <div className="document-type-name-row">
-                        <span className="document-type-name">{docType.name}</span>
-                        <span className="document-type-code">({docType.code})</span>
-                      </div>
-                      <div className="document-type-meta">
-                        {docType.hasExpiration && (
-                          <span className="document-type-badge badge-expiration">
-                            <span className="badge-icon">⏰</span> Requiere vencimiento
-                          </span>
-                        )}
-                        {docType.isInsurance && (
-                          <span className="document-type-badge badge-insurance">
-                            <span className="badge-icon">🛡️</span> Incluye datos de póliza
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="document-type-actions">
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleDocumentTypeEdit(docType)}
-                        title="Editar"
-                      >
-                        <EditIcon size={18} />
-                      </button>
-                      <button 
-                        className="btn-icon danger" 
-                        onClick={() => handleDocumentTypeDeleteConfirm(docType)}
-                        title="Eliminar"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
-                    </div>
+                <div key={docType.id} className="document-type-row">
+                  <div className="doc-type-col-name">{docType.name}</div>
+                  <div className="doc-type-col-expiration">{docType.hasExpiration ? 'Sí' : 'No'}</div>
+                  <div className="doc-type-col-insurance">{docType.isInsurance ? 'Sí' : 'No'}</div>
+                  <div className="doc-type-col-actions">
+                    <button 
+                      className="btn-icon" 
+                      onClick={() => handleDocumentTypeEdit(docType)}
+                      title="Editar"
+                    >
+                      <EditIcon size={18} />
+                    </button>
+                    <button 
+                      className="btn-icon danger" 
+                      onClick={() => handleDocumentTypeDeleteConfirm(docType)}
+                      title="Eliminar"
+                    >
+                      <TrashIcon size={18} />
+                    </button>
                   </div>
                 </div>
               ))}

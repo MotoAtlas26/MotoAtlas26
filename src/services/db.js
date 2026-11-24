@@ -483,8 +483,12 @@ export class MotoAtlas26DB extends Dexie {
   // ============ TIPOS DE DOCUMENTO (GUANTERA DIGITAL) ============
 
   async seedDefaultDocumentTypes() {
-    const count = await this.documentTypes.count()
-    if (count === 0) {
+    // Return existing promise if seeding is already in progress
+    if (_seedingPromise) {
+      return _seedingPromise
+    }
+
+    _seedingPromise = (async () => {
       const defaultTypes = [
         { code: 'itv', name: 'Ficha Técnica / ITV', hasExpiration: true, isInsurance: false },
         { code: 'circulation', name: 'Permiso de Circulación', hasExpiration: false, isInsurance: false },
@@ -492,8 +496,34 @@ export class MotoAtlas26DB extends Dexie {
         { code: 'manual', name: 'Manual de Propietario / Taller (PDF)', hasExpiration: false, isInsurance: false },
         { code: 'other', name: 'Otros documentos', hasExpiration: false, isInsurance: false }
       ]
-      await this.documentTypes.bulkAdd(defaultTypes.map(t => ({ ...t, createdAt: new Date() })))
-    }
+
+      // Check which codes already exist
+      const existingCodes = new Set()
+      for (const dt of defaultTypes) {
+        const existing = await this.documentTypes.where('code').equals(dt.code).first()
+        if (existing) {
+          existingCodes.add(dt.code)
+        }
+      }
+
+      // Insert only missing ones
+      const toInsert = defaultTypes.filter(dt => !existingCodes.has(dt.code))
+      if (toInsert.length > 0) {
+        await this.documentTypes.bulkAdd(toInsert.map(t => ({ ...t, createdAt: new Date() })))
+      }
+
+      // Clean up any duplicates by code (keep the first one)
+      for (const dt of defaultTypes) {
+        const allWithCode = await this.documentTypes.where('code').equals(dt.code).toArray()
+        if (allWithCode.length > 1) {
+          // Keep the first, delete the rest
+          const toDelete = allWithCode.slice(1).map(d => d.id)
+          await this.documentTypes.bulkDelete(toDelete)
+        }
+      }
+    })()
+
+    return _seedingPromise
   }
 
   async getAllDocumentTypes() {
@@ -769,6 +799,9 @@ export class MotoAtlas26DB extends Dexie {
     )
   }
 }
+
+// Module-level singleton promise lock to prevent duplicate seeding in StrictMode
+let _seedingPromise = null
 
 export const db = new MotoAtlas26DB()
 
