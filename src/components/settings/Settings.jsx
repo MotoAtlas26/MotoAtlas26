@@ -9,7 +9,7 @@ import { formatBackupName } from '../../utils/formatters'
 import { getMotoModelsArray, getMotoModel } from '../../constants/motoModels'
 import { getThemesList, THEMES } from '../../constants/themes'
 import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme } from '../../utils/themeEngine'
-import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ChevronLeftIcon, CircleIcon, ShieldIcon } from '../shared/Icons'
+import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon } from '../shared/Icons'
 
 const TABS = [
   { id: 'appearance', label: 'Apariencia' },
@@ -914,1230 +914,132 @@ export const Settings = () => {
   )
 }
 
-  const renderListsTab = () => (
-    <section className="settings-section">
-      <SectionHeader 
-        title="Listados" 
-        subtitle="Gestiona tus talleres, proveedores, modelos de motos y neumáticos"
-        actions={
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+  const renderListsTab = () => {
+    // Si hay un catálogo seleccionado, renderizar solo la vista de detalle
+    if (activeCatalog !== null) {
+      const dbProps = {
+        getWorkshops, saveWorkshop, editWorkshop, removeWorkshop,
+        getMotorcycles, saveMotorcycle, editMotorcycle, removeMotorcycle,
+        getCustomThemes, saveCustomTheme, editCustomTheme, removeCustomTheme,
+        getAllTires, saveTire, updateTire, deleteTire,
+        getAllDocumentTypes, saveDocumentType, updateDocumentType, deleteDocumentType
+      }
+      return (
+        <CatalogDetailView 
+          catalogKey={activeCatalog} 
+          onBack={() => setActiveCatalog(null)} 
+          dbProps={dbProps}
+        />
+      )
+    }
+
+    // Vista principal de Listados: 5 tarjetas limpias en grid
+    return (
+      <section className="settings-section">
+        <SectionHeader 
+          title="Listados" 
+          subtitle="Gestiona tus catálogos: motos, talleres, neumáticos, tipos de documento y temas"
+        />
+
+        <div className="settings-grid">
+          {/* 1. Garaje / Motos */}
+          <SettingCard
+            icon={<MotoIcon size={24} />}
+            title="Garaje"
+            description="Registra tus motos para llevar el control de kilometraje y mantenimiento."
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {motorcycles.length} moto{motorcycles.length !== 1 ? 's' : ''} registrada{motorcycles.length !== 1 ? 's' : ''}
+              </span>
+            </div>
             <button 
-              className="btn btn-gold" 
-              onClick={() => { resetForm(); setShowWorkshopForm(true); }}
+              className="btn btn-primary w-full" 
+              onClick={() => setActiveCatalog('garaje')}
             >
-              <WrenchIcon size={16} /> Añadir Taller
+              Abrir listado <ChevronRightIcon size={16} />
             </button>
+          </SettingCard>
+
+          {/* 2. Talleres */}
+          <SettingCard
+            icon={<WrenchIcon size={24} />}
+            title="Talleres"
+            description="Gestiona tus talleres de confianza para mantenimiento y reparaciones."
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {workshops.length} taller{workshops.length !== 1 ? 'es' : ''} registrado{workshops.length !== 1 ? 's' : ''}
+              </span>
+            </div>
             <button 
-              className="btn btn-gold" 
-              onClick={() => { resetMotorcycleForm(); setShowMotorcycleForm(true); }}
+              className="btn btn-primary w-full" 
+              onClick={() => setActiveCatalog('talleres')}
             >
-              <MotoIcon size={16} /> Añadir Moto
+              Abrir listado <ChevronRightIcon size={16} />
             </button>
-          </div>
-        }
-      />
-      <div className="settings-grid">
-        {/* Workshops Form Modal */}
-        {showWorkshopForm && (
-          <Modal 
-            isOpen={showWorkshopForm} 
-            onClose={() => { setShowWorkshopForm(false); resetForm(); }}
-            title={editingWorkshop ? 'Editar Taller / Proveedor' : 'Nuevo Taller / Proveedor'}
-            size="lg"
+          </SettingCard>
+
+          {/* 3. Neumáticos */}
+          <SettingCard
+            icon={<CircleIcon size={24} />}
+            title="Neumáticos"
+            description="Catálogo de neumáticos con medidas y presiones recomendadas."
           >
-            <form onSubmit={handleSubmit} className="workshop-form">
-              {formError && <div className="form-error">{formError}</div>}
-              
-              <div className="form-group">
-                <label className="form-label">Tipo de proveedor <span className="required">*</span></label>
-                <div className="segmented-control">
-                  {typeOptions.map((option) => (
-                    <label key={option.value} className={`segment ${formData.type === option.value ? 'active' : ''}`}>
-                      <input
-                        type="radio"
-                        name="providerType"
-                        value={option.value}
-                        checked={formData.type === option.value}
-                        onChange={() => handleTypeChange(option.value)}
-                        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-                      />
-                      <span>{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Nombre / Etiqueta <span className="required">*</span></label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder={formData.type === 'owner' ? 'Mantenimiento propio' : 'Ej: Talleres MotoSport, Concesionario KTM Madrid...'}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Especialidad <span className="required">*</span></label>
-                <div className="select-wrapper">
-                  <select
-                    className="form-select"
-                    value={formData.specialty}
-                    onChange={(e) => setFormData(prev => ({ ...prev, specialty: e.target.value }))}
-                    required
-                  >
-                    <option value="">Selecciona una especialidad</option>
-                    <option value="official">Concesionario Oficial</option>
-                    <option value="multibrand">Taller Multimarca</option>
-                    <option value="tires-suspension">Neumáticos y Suspensiones</option>
-                    <option value="electrical">Electricidad / Electrónica</option>
-                    <option value="owner">Automantenimiento</option>
-                  </select>
-                </div>
-              </div>
-
-              {formData.type === 'workshop' && (
-                <>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label className="form-label">Teléfono / WhatsApp</label>
-                      <input
-                        type="tel"
-                        className="form-input"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="+34 600 000 000"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">CIF / NIF</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={formData.cif}
-                        onChange={(e) => setFormData(prev => ({ ...prev, cif: e.target.value }))}
-                        placeholder="B12345678"
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Dirección / Localidad</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={formData.address}
-                      onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Calle Mayor 123, 28001 Madrid"
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="form-group">
-                <label className="form-label">Notas / Contacto</label>
-                <textarea
-                  className="form-textarea"
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Mecánico de referencia, horarios, observaciones..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="form-group toggle-row">
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={formData.isDefault}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
-                  />
-                  <span className="slider" />
-                </label>
-                <span className="toggle-label">Proveedor habitual por defecto</span>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => { setShowWorkshopForm(false); resetForm(); }}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn-gold">
-                  {editingWorkshop ? 'Actualizar' : 'Guardar'}
-                </button>
-              </div>
-            </form>
-          </Modal>
-        )}
-
-        {/* Motorcycle Form Modal */}
-        {showMotorcycleForm && (
-          <Modal 
-            isOpen={showMotorcycleForm} 
-            onClose={() => { setShowMotorcycleForm(false); resetMotorcycleForm(); }}
-            title={editingMotorcycle ? 'Editar Moto' : 'Nueva Moto'}
-            size="xl"
-          >
-            <form onSubmit={handleMotorcycleSubmit} className="motorcycle-form">
-              {motorcycleFormError && <div className="form-error">{motorcycleFormError}</div>}
-              
-              {/* Bloque 1 — Identificación y Compra */}
-              <fieldset className="form-fieldset">
-                <legend className="form-legend">
-                  <MotoIcon size={18} /> Identificación y Compra
-                </legend>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label form-label-required">Marca</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.brand}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, brand: e.target.value }))}
-                      placeholder="Ej: CFMoto, KTM, Honda"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label form-label-required">Modelo</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.model}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, model: e.target.value }))}
-                      placeholder="Ej: 800MT-X, 1290 Super Adventure"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Año de matriculación</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={motorcycleFormData.year}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, year: e.target.value }))}
-                      placeholder="2024"
-                      min="1900"
-                      max={new Date().getFullYear() + 1}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Color</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.color}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, color: e.target.value }))}
-                      placeholder="Ej: Negro, Azul, Rojo"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Matrícula</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.plate}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, plate: e.target.value }))}
-                      placeholder="Ej: 1234 ABC"
-                      style={{ textTransform: 'uppercase' }}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Bastidor / VIN</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.vin}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, vin: e.target.value }))}
-                      placeholder="Opcional"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Fecha de compra</label>
-                    <input
-                      type="date"
-                      className="form-input"
-                      value={motorcycleFormData.purchaseDate}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, purchaseDate: e.target.value }))}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Origen de compra <span className="required">*</span></label>
-                    <div className="segmented-control">
-                      <label className={`segment ${motorcycleFormData.purchaseOrigin === 'dealer' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          name="purchaseOrigin"
-                          value="dealer"
-                          checked={motorcycleFormData.purchaseOrigin === 'dealer'}
-                          onChange={() => setMotorcycleFormData(prev => ({ ...prev, purchaseOrigin: 'dealer' }))}
-                          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-                        />
-                        <span>Concesionario</span>
-                      </label>
-                      <label className={`segment ${motorcycleFormData.purchaseOrigin === 'private' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          name="purchaseOrigin"
-                          value="private"
-                          checked={motorcycleFormData.purchaseOrigin === 'private'}
-                          onChange={() => setMotorcycleFormData(prev => ({ ...prev, purchaseOrigin: 'private' }))}
-                          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-                        />
-                        <span>Segunda mano</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {motorcycleFormData.purchaseOrigin && (
-                  <div className="form-group">
-                    <label className="form-label">Nombre del concesionario / vendedor</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.sellerName}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, sellerName: e.target.value }))}
-                      placeholder="Opcional"
-                    />
-                  </div>
-                )}
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Kilometraje inicial (km)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={motorcycleFormData.initialMileage}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, initialMileage: e.target.value }))}
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Kilometraje actual (km)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={motorcycleFormData.currentMileage}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, currentMileage: e.target.value }))}
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* Bloque 2 — Neumáticos */}
-              <fieldset className="form-fieldset">
-                <legend className="form-legend">
-                  <WrenchIcon size={18} /> Neumáticos
-                </legend>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Neumático delantero — Medida</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.frontTireSize}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, frontTireSize: e.target.value }))}
-                      placeholder="Ej: 90/90-21"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Marca / Modelo</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.frontTireBrand}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, frontTireBrand: e.target.value }))}
-                      placeholder="Ej: Michelin Anakee Wild"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Neumático trasero — Medida</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.rearTireSize}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, rearTireSize: e.target.value }))}
-                      placeholder="Ej: 150/70-18"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Marca / Modelo</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={motorcycleFormData.rearTireBrand}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, rearTireBrand: e.target.value }))}
-                      placeholder="Ej: Michelin Anakee Wild"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* Bloque 3 — Especificaciones e ITV (Opcional) */}
-              <fieldset className="form-fieldset">
-                <legend className="form-legend">
-                  <CheckCircleIcon size={18} /> Especificaciones e ITV (Opcional)
-                </legend>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Fecha próxima ITV</label>
-                    <input
-                      type="date"
-                      className="form-input"
-                      value={motorcycleFormData.nextITVDate}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, nextITVDate: e.target.value }))}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Cilindrada (cc)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={motorcycleFormData.displacement}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, displacement: e.target.value }))}
-                      placeholder="Ej: 799"
-                      min="0"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Capacidad del depósito (L)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={motorcycleFormData.tankCapacity}
-                      onChange={(e) => setMotorcycleFormData(prev => ({ ...prev, tankCapacity: e.target.value }))}
-                      placeholder="Ej: 19.5"
-                      min="0"
-                      step="0.1"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => { setShowMotorcycleForm(false); resetMotorcycleForm(); }}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn-gold">
-                  {editingMotorcycle ? 'Actualizar' : 'Guardar'}
-                </button>
-              </div>
-            </form>
-          </Modal>
-        )}
-
-        {/* Delete Confirmation Modal - Workshops */}
-        {deleteConfirm && (
-          <Modal 
-            isOpen={!!deleteConfirm} 
-            onClose={() => setDeleteConfirm(null)}
-            title="Confirmar eliminación"
-            size="sm"
-          >
-            <p>¿Estás seguro de que quieres eliminar <strong>{deleteConfirm.name}</strong>?</p>
-            <p className="text-muted">Esta acción no se puede deshacer.</p>
-            <div className="form-actions">
-              <button className="btn btn-outline" onClick={() => setDeleteConfirm(null)}>Cancelar</button>
-              <button className="btn btn-danger" onClick={handleDelete}>Eliminar</button>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {tires.length} neumático{tires.length !== 1 ? 's' : ''} registrado{tires.length !== 1 ? 's' : ''}
+              </span>
             </div>
-          </Modal>
-        )}
-
-        {/* Delete Confirmation Modal - Motorcycles */}
-        {deleteMotorcycleConfirm && (
-          <Modal 
-            isOpen={!!deleteMotorcycleConfirm} 
-            onClose={() => setDeleteMotorcycleConfirm(null)}
-            title="Confirmar eliminación"
-            size="sm"
-          >
-            <p>¿Estás seguro de que quieres eliminar <strong>{deleteMotorcycleConfirm.brand} {deleteMotorcycleConfirm.model}</strong>?</p>
-            <p className="text-muted">Esta acción no se puede deshacer.</p>
-            <div className="form-actions">
-              <button className="btn btn-outline" onClick={() => setDeleteMotorcycleConfirm(null)}>Cancelar</button>
-              <button className="btn btn-danger" onClick={handleDeleteMotorcycle}>Eliminar</button>
-            </div>
-          </Modal>
-        )}
-
-        {/* Motorcycles List */}
-        <SettingCard
-          icon={<MotoIcon size={20} />}
-          title="Garaje"
-          description="Gestiona tus motos: datos de compra, neumáticos, especificaciones e ITV"
-        >
-          {loadingMotorcycles ? (
-            <div className="loading-state">
-              <RefreshCwIcon size={24} spin />
-              <span>Cargando motos...</span>
-            </div>
-          ) : motorcycles.length === 0 ? (
-            <EmptyState
-              icon={<MotoIcon size={32} />}
-              title="Sin motos registradas"
-              description="Añade tu primera moto para llevar el control de kilometraje, neumáticos, ITV y especificaciones."
-              action={
-                <button className="btn btn-gold" onClick={() => { resetMotorcycleForm(); setShowMotorcycleForm(true); }}>
-                  <MotoIcon size={16} /> Añadir primera moto
-                </button>
-              }
-            />
-          ) : (
-            <div className="motorcycles-list">
-              {motorcycles.map((moto) => (
-                <div key={moto.id} className="motorcycle-card">
-                  <div className="motorcycle-header">
-                    <div className="motorcycle-main">
-                      <div className="motorcycle-name-row">
-                        <span className="motorcycle-brand-model">{moto.brand} {moto.model}</span>
-                        {moto.year && <span className="motorcycle-year">{moto.year}</span>}
-                        {moto.plate && <span className="motorcycle-plate">{moto.plate}</span>}
-                      </div>
-                      <div className="motorcycle-meta">
-                        {moto.color && <span className="motorcycle-color">🎨 {moto.color}</span>}
-                        {(moto.frontTireSize || moto.rearTireSize) && (
-                          <span className="motorcycle-tires">
-                            🔧 {moto.frontTireSize || '—'} / {moto.rearTireSize || '—'}
-                          </span>
-                        )}
-                        {moto.currentMileage && (
-                          <span className="motorcycle-mileage">📍 {moto.currentMileage.toLocaleString()} km</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="motorcycle-actions">
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleEditMotorcycle(moto)}
-                        title="Editar"
-                      >
-                        <EditIcon size={18} />
-                      </button>
-                      <button 
-                        className="btn-icon danger" 
-                        onClick={() => handleDeleteMotorcycleConfirm(moto)}
-                        title="Eliminar"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </SettingCard>
-
-        {/* Custom Themes List */}
-        <SettingCard
-          icon={<PaletteIcon size={20} />}
-          title="Temas de Colores Personalizados"
-          description="Crea tus propios temas de color con 3 tonos: principal, secundario y terciario"
-          actions={
             <button 
-              className="btn btn-gold" 
-              onClick={() => { resetCustomThemeForm(); setShowCustomThemeForm(true); }}
+              className="btn btn-primary w-full" 
+              onClick={() => setActiveCatalog('neumaticos')}
             >
-              <PlusIcon size={16} /> Añadir Tema
+              Abrir listado <ChevronRightIcon size={16} />
             </button>
-          }
-        >
-          {loadingCustomThemes ? (
-            <div className="loading-state">
-              <RefreshCwIcon size={24} spin />
-              <span>Cargando temas...</span>
-            </div>
-          ) : customThemes.length === 0 ? (
-            <EmptyState
-              icon={<PaletteIcon size={32} />}
-              title="Sin temas personalizados"
-              description="Crea tu primer tema de color personalizado definiendo 3 colores: principal (botones, logo), secundario (alertas, badges) y terciario (detalles)."
-              action={
-                <button className="btn btn-gold" onClick={() => { resetCustomThemeForm(); setShowCustomThemeForm(true); }}>
-                  <PlusIcon size={16} /> Crear primer tema
-                </button>
-              }
-            />
-          ) : (
-            <div className="custom-themes-list">
-              {customThemes.map((theme) => (
-                <div key={theme.id} className="custom-theme-card">
-                  <div className="custom-theme-header">
-                    <div className="custom-theme-main">
-                      <div className="custom-theme-name-row">
-                        <span className="custom-theme-name">{theme.name}</span>
-                        {theme.brand && (
-                          <span className="custom-theme-brand">{theme.brand}</span>
-                        )}
-                      </div>
-                      <div className="custom-theme-swatches">
-                        {theme.swatches && theme.swatches.map((color, index) => (
-                          <div 
-                            key={index} 
-                            className="swatch-circle" 
-                            style={{ backgroundColor: color }}
-                            title={`Color ${index + 1}: ${color}`}
-                          >
-                            <span className="swatch-number">{index + 1}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="custom-theme-actions">
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleEditCustomTheme(theme)}
-                        title="Editar"
-                      >
-                        <EditIcon size={18} />
-                      </button>
-                      <button 
-                        className="btn-icon danger" 
-                        onClick={() => handleDeleteCustomThemeConfirm(theme)}
-                        title="Eliminar"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </SettingCard>
+          </SettingCard>
 
-        {/* Custom Theme Form Modal */}
-        {showCustomThemeForm && (
-          <Modal 
-            isOpen={showCustomThemeForm} 
-            onClose={() => { setShowCustomThemeForm(false); resetCustomThemeForm(); }}
-            title={editingCustomTheme ? 'Editar Tema Personalizado' : 'Nuevo Tema Personalizado'}
-            size="lg"
+          {/* 4. Tipos de Documento */}
+          <SettingCard
+            icon={<ShieldIcon size={24} />}
+            title="Tipos de Documento"
+            description="Define tipos de documentos para facturas, seguros, ITV y más."
           >
-            <form onSubmit={handleCustomThemeSubmit} className="custom-theme-form">
-              {customThemeFormError && <div className="form-error">{customThemeFormError}</div>}
-              
-              <div className="form-group">
-                <label className="form-label">Nombre del tema <span className="required">*</span></label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={customThemeFormData.name}
-                  onChange={(e) => setCustomThemeFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ej: Ténéré Rally, GS Trophy, Mi Tema"
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Marca (opcional)</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={customThemeFormData.brand}
-                  onChange={(e) => setCustomThemeFormData(prev => ({ ...prev, brand: e.target.value }))}
-                  placeholder="Ej: Yamaha, BMW, KTM"
-                />
-              </div>
-              
-              <fieldset className="form-fieldset">
-                <legend>
-                  <PaletteIcon size={18} /> Selector de Colores (Orden estricto: 1 → 2 → 3)
-                </legend>
-                
-                <div className="color-picker-grid">
-                  {/* Color 1: Primary */}
-                  <div className="color-picker-item">
-                    <div className="color-picker-label">
-                      <span className="color-number">1</span>
-                      <span>Color Principal</span>
-                      <span className="color-desc">Botones, logo, pestaña activa, interruptores</span>
-                    </div>
-                    <div className="color-input-wrapper">
-                      <input
-                        type="color"
-                        className="color-input"
-                        value={customThemeFormData.primaryColor}
-                        onChange={(e) => setCustomThemeFormData(prev => ({ ...prev, primaryColor: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        className="color-hex-input"
-                        value={customThemeFormData.primaryColor}
-                        onChange={(e) => {
-                          const val = e.target.value
-                          if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                            setCustomThemeFormData(prev => ({ ...prev, primaryColor: val }))
-                          }
-                        }}
-                        placeholder="#RRGGBB"
-                        maxLength={7}
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Color 2: Secondary */}
-                  <div className="color-picker-item">
-                    <div className="color-picker-label">
-                      <span className="color-number">2</span>
-                      <span>Color Secundario</span>
-                      <span className="color-desc">Alertas, badges destacados, acentos de ruta</span>
-                    </div>
-                    <div className="color-input-wrapper">
-                      <input
-                        type="color"
-                        className="color-input"
-                        value={customThemeFormData.secondaryColor}
-                        onChange={(e) => setCustomThemeFormData(prev => ({ ...prev, secondaryColor: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        className="color-hex-input"
-                        value={customThemeFormData.secondaryColor}
-                        onChange={(e) => {
-                          const val = e.target.value
-                          if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                            setCustomThemeFormData(prev => ({ ...prev, secondaryColor: val }))
-                          }
-                        }}
-                        placeholder="#RRGGBB"
-                        maxLength={7}
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Color 3: Tertiary */}
-                  <div className="color-picker-item">
-                    <div className="color-picker-label">
-                      <span className="color-number">3</span>
-                      <span>Color Terciario</span>
-                      <span className="color-desc">Detalles complementarios y contraste</span>
-                    </div>
-                    <div className="color-input-wrapper">
-                      <input
-                        type="color"
-                        className="color-input"
-                        value={customThemeFormData.tertiaryColor}
-                        onChange={(e) => setCustomThemeFormData(prev => ({ ...prev, tertiaryColor: e.target.value }))}
-                      />
-                      <input
-                        type="text"
-                        className="color-hex-input"
-                        value={customThemeFormData.tertiaryColor}
-                        onChange={(e) => {
-                          const val = e.target.value
-                          if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                            setCustomThemeFormData(prev => ({ ...prev, tertiaryColor: val }))
-                          }
-                        }}
-                        placeholder="#RRGGBB"
-                        maxLength={7}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Live Preview */}
-                <div className="color-preview">
-                  <span className="preview-label">Vista previa en vivo:</span>
-                  <div className="preview-swatches">
-                    <div className="preview-swatch">
-                      <div 
-                        className="preview-circle" 
-                        style={{ backgroundColor: customThemeFormData.primaryColor }}
-                      >
-                        <span className="preview-number">1</span>
-                      </div>
-                      <span className="preview-hex">{customThemeFormData.primaryColor}</span>
-                    </div>
-                    <div className="preview-swatch">
-                      <div 
-                        className="preview-circle" 
-                        style={{ backgroundColor: customThemeFormData.secondaryColor }}
-                      >
-                        <span className="preview-number">2</span>
-                      </div>
-                      <span className="preview-hex">{customThemeFormData.secondaryColor}</span>
-                    </div>
-                    <div className="preview-swatch">
-                      <div 
-                        className="preview-circle" 
-                        style={{ backgroundColor: customThemeFormData.tertiaryColor }}
-                      >
-                        <span className="preview-number">3</span>
-                      </div>
-                      <span className="preview-hex">{customThemeFormData.tertiaryColor}</span>
-                    </div>
-                  </div>
-                  <div className="preview-button">
-                    <button 
-                      type="button" 
-                      className="btn-gold preview-btn"
-                      style={{ 
-                        backgroundColor: customThemeFormData.primaryColor,
-                        color: (() => {
-                          const hex = customThemeFormData.primaryColor.replace('#', '')
-                          const r = parseInt(hex.substr(0,2), 16)
-                          const g = parseInt(hex.substr(2,2), 16)
-                          const b = parseInt(hex.substr(4,2), 16)
-                          const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
-                          return lum > 128 ? '#0D0D0F' : '#FFFFFF'
-                        })()
-                      }}
-                    >
-                      Botón de muestra (contraste automático)
-                    </button>
-                  </div>
-                </div>
-              </fieldset>
-              
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => { setShowCustomThemeForm(false); resetCustomThemeForm(); }}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn-gold">
-                  {editingCustomTheme ? 'Actualizar' : 'Guardar'}
-                </button>
-              </div>
-            </form>
-          </Modal>
-        )}
-
-        {/* Tire Form Modal */}
-        {showTireForm && (
-          <Modal 
-            isOpen={showTireForm} 
-            onClose={() => { setShowTireForm(false); resetTireForm(); }}
-            title={editingTire ? 'Editar Neumático' : 'Nuevo Neumático'}
-            size="lg"
-          >
-            <form onSubmit={handleTireSubmit} className="tire-form">
-              {tireFormError && <div className="form-error">{tireFormError}</div>}
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Marca <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={tireFormData.brand}
-                    onChange={(e) => setTireFormData(prev => ({ ...prev, brand: e.target.value }))}
-                    placeholder="Ej: Michelin, Pirelli, Metzeler, Continental, Bridgestone, Dunlop"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Modelo <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={tireFormData.model}
-                    onChange={(e) => setTireFormData(prev => ({ ...prev, model: e.target.value }))}
-                    placeholder="Ej: Anakee Adventure, Scorpion Trail III, Tourance Next 2, TKC 70"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Medida Delantero <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={tireFormData.frontSize}
-                    onChange={(e) => setTireFormData(prev => ({ ...prev, frontSize: e.target.value }))}
-                    placeholder="Ej: 90/90-21, 110/80 R19"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Medida Trasero <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={tireFormData.rearSize}
-                    onChange={(e) => setTireFormData(prev => ({ ...prev, rearSize: e.target.value }))}
-                    placeholder="Ej: 150/70 R18, 150/70 R17"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Presión Delantero (bar)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    className="form-input"
-                    value={tireFormData.recommendedFrontBar}
-                    onChange={(e) => setTireFormData(prev => ({ ...prev, recommendedFrontBar: e.target.value }))}
-                    placeholder="Ej: 2.3"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Presión Trasero (bar)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    className="form-input"
-                    value={tireFormData.recommendedRearBar}
-                    onChange={(e) => setTireFormData(prev => ({ ...prev, recommendedRearBar: e.target.value }))}
-                    placeholder="Ej: 2.5"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Notas</label>
-                <textarea
-                  className="form-textarea"
-                  value={tireFormData.notes}
-                  onChange={(e) => setTireFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Observaciones, uso recomendado, durabilidad..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => { setShowTireForm(false); resetTireForm(); }}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn-gold">
-                  {editingTire ? 'Actualizar' : 'Guardar'}
-                </button>
-              </div>
-            </form>
-          </Modal>
-        )}
-
-        {/* Delete Tire Confirmation Modal */}
-        {deleteTireConfirm && (
-          <Modal 
-            isOpen={!!deleteTireConfirm} 
-            onClose={() => setDeleteTireConfirm(null)}
-            title="Eliminar Neumático"
-            size="sm"
-          >
-            <div className="confirm-dialog">
-              <p>¿Estás seguro de que quieres eliminar <strong>{deleteTireConfirm.brand} {deleteTireConfirm.model}</strong>?</p>
-              <p className="confirm-warning">Esta acción no se puede deshacer.</p>
-              <div className="confirm-actions">
-                <button className="btn-outline" onClick={() => setDeleteTireConfirm(null)}>Cancelar</button>
-                <button className="btn-danger" onClick={handleTireDelete}>Eliminar</button>
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {documentTypes.length} tipo{documentTypes.length !== 1 ? 's' : ''} registrado{documentTypes.length !== 1 ? 's' : ''}
+              </span>
             </div>
-          </Modal>
-        )}
-
-        {/* Delete Custom Theme Confirmation Modal */}
-        {deleteCustomThemeConfirm && (
-          <Modal 
-            isOpen={!!deleteCustomThemeConfirm} 
-            onClose={() => setDeleteCustomThemeConfirm(null)}
-            title="Eliminar Tema Personalizado"
-            size="sm"
-          >
-            <div className="confirm-dialog">
-              <p>¿Estás seguro de que quieres eliminar <strong>{deleteCustomThemeConfirm.name}</strong>?</p>
-              <p className="confirm-warning">Esta acción no se puede deshacer. Si este tema está activo, se volverá al tema por defecto.</p>
-              <div className="confirm-actions">
-                <button className="btn-outline" onClick={() => setDeleteCustomThemeConfirm(null)}>Cancelar</button>
-                <button className="btn-danger" onClick={handleDeleteCustomTheme}>Eliminar</button>
-              </div>
-            </div>
-          </Modal>
-        )}
-
-        {/* Workshops List */}
-        <SettingCard
-          icon="🔧"
-          title="Talleres"
-          description="Gestiona tus proveedores de mantenimiento habituales"
-        >
-          {loadingWorkshops ? (
-            <div className="loading-state">
-              <RefreshCwIcon size={24} spin />
-              <span>Cargando talleres...</span>
-            </div>
-          ) : workshops.length === 0 ? (
-            <EmptyState
-              icon="🔧"
-              title="Sin talleres registrados"
-              description="Añade tu primer taller, concesionario o registra tu mantenimiento propio para tener un historial completo."
-              action={
-                <button className="btn-gold" onClick={() => { resetForm(); setShowWorkshopForm(true); }}>
-                  <WrenchIcon size={16} /> Añadir primer taller
-                </button>
-              }
-            />
-          ) : (
-            <div className="workshops-list">
-              {workshops.map((workshop) => (
-                <div key={workshop.id} className="workshop-card">
-                  <div className="workshop-header">
-                    <div className="workshop-main">
-                      <div className="workshop-name-row">
-                        <span className="workshop-name">{workshop.name}</span>
-                        <span className={`workshop-type-badge ${workshop.type}`}>
-                          {getTypeIcon(workshop.type)}
-                          {getTypeLabel(workshop.type)}
-                        </span>
-                        {workshop.isDefault && (
-                          <span className="workshop-default-badge">
-                            <CheckCircleIcon size={12} /> Habitual
-                          </span>
-                        )}
-                      </div>
-                      <div className="workshop-meta">
-                        <span className="workshop-specialty">{getSpecialtyLabel(workshop.specialty)}</span>
-                        {workshop.type === 'workshop' && (
-                          <>
-                            {workshop.phone && <span className="workshop-phone">{workshop.phone}</span>}
-                            {workshop.address && <span className="workshop-address">{workshop.address}</span>}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="workshop-actions">
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleEdit(workshop)}
-                        title="Editar"
-                      >
-                        <EditIcon size={18} />
-                      </button>
-                      <button 
-                        className="btn-icon danger" 
-                        onClick={() => handleDeleteConfirm(workshop)}
-                        title="Eliminar"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </SettingCard>
-
-        {/* Tires List */}
-        <SettingCard
-          icon="🛞"
-          title="Neumáticos"
-          description="Catálogo de neumáticos con medidas y presiones recomendadas"
-          actions={
             <button 
-              className="btn btn-gold" 
-              onClick={() => { resetTireForm(); setShowTireForm(true); }}
+              className="btn btn-primary w-full" 
+              onClick={() => setActiveCatalog('documentTypes')}
             >
-              <PlusIcon size={16} /> Añadir Neumático
+              Abrir listado <ChevronRightIcon size={16} />
             </button>
-          }
-        >
-          {loadingTires ? (
-            <div className="loading-state">
-              <RefreshCwIcon size={24} spin />
-              <span>Cargando neumáticos...</span>
-            </div>
-          ) : tires.length === 0 ? (
-            <EmptyState
-              icon="🛞"
-              title="Sin neumáticos registrados"
-              description="Añade tu primer neumático al catálogo para tener un registro de medidas y presiones recomendadas."
-              action={
-                <button className="btn-gold" onClick={() => { resetTireForm(); setShowTireForm(true); }}>
-                  <PlusIcon size={16} /> Añadir primer neumático
-                </button>
-              }
-            />
-          ) : (
-            <div className="tires-list">
-              {tires.map((tire) => (
-                <div key={tire.id} className="tire-card">
-                  <div className="tire-header">
-                    <div className="tire-main">
-                      <div className="tire-name-row">
-                        <span className="tire-brand">{tire.brand}</span>
-                        <span className="tire-model">{tire.model}</span>
-                      </div>
-                      <div className="tire-meta">
-                        <span className="tire-sizes">
-                          <span className="tire-size-label">Del:</span> {tire.frontSize}
-                          <span className="tire-size-separator">/</span>
-                          <span className="tire-size-label">Tras:</span> {tire.rearSize}
-                        </span>
-                        {(tire.recommendedFrontBar || tire.recommendedRearBar) && (
-                          <span className="tire-pressure">
-                            <span className="tire-pressure-label">Presión:</span>
-                            {tire.recommendedFrontBar && <span>Del {tire.recommendedFrontBar} bar</span>}
-                            {tire.recommendedFrontBar && tire.recommendedRearBar && <span className="tire-pressure-separator">/</span>}
-                            {tire.recommendedRearBar && <span>Tras {tire.recommendedRearBar} bar</span>}
-                          </span>
-                        )}
-                        {tire.notes && (
-                          <span className="tire-notes">{tire.notes}</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="tire-actions">
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleTireEdit(tire)}
-                        title="Editar"
-                      >
-                        <EditIcon size={18} />
-                      </button>
-                      <button 
-                        className="btn-icon danger" 
-                        onClick={() => handleTireDeleteConfirm(tire)}
-                        title="Eliminar"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </SettingCard>
+          </SettingCard>
 
-        {/* Document Types List */}
-        <SettingCard
-          title="Tipos de Documento"
-          description="Catálogo de tipos de documento para la Guantera Digital"
-        >
-          {/* Inline Form */}
-          <div className="document-type-form" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-card)', border: 'var(--border-width) solid var(--color-card-border)', borderRadius: 'var(--radius-card)' }}>
-            <h4 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-              {editingDocumentType ? 'Editar Tipo de Documento' : 'Añadir Tipo de Documento'}
-            </h4>
-            {documentTypeFormError && <div className="form-error" style={{ marginBottom: 'var(--space-3)' }}>{documentTypeFormError}</div>}
-            <form onSubmit={handleDocumentTypeSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', alignItems: 'flex-end' }}>
-              <div className="form-group" style={{ flex: '1 1 280px', minWidth: '280px' }}>
-                <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)', fontSize: 'var(--font-size-sm)', fontWeight: 500, color: 'var(--color-text-primary)' }}>Nombre <span className="required" style={{ color: 'var(--color-error)' }}>*</span></label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={documentTypeFormData.name}
-                  onChange={(e) => setDocumentTypeFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ej. Ficha Técnica / ITV"
-                  required
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div className="form-group" style={{ flex: '1 1 280px', minWidth: '280px' }}>
-                <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)', fontSize: 'var(--font-size-sm)', fontWeight: 500, color: 'var(--color-text-primary)' }}>Tipo de control / vencimiento <span className="required" style={{ color: 'var(--color-error)' }}>*</span></label>
-                <div className="select-wrapper" style={{ width: '100%' }}>
-                  <select
-                    className="form-select"
-                    value={documentTypeFormData.controlType}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      let hasExpiration = false;
-                      let isInsurance = false;
-                      if (value === 'expiration') hasExpiration = true;
-                      if (value === 'insurance') { hasExpiration = true; isInsurance = true; }
-                      setDocumentTypeFormData(prev => ({ ...prev, controlType: value, hasExpiration, isInsurance }));
-                    }}
-                    required
-                    style={{ width: '100%' }}
-                  >
-                    <option value="none">Sin fecha de vencimiento</option>
-                    <option value="expiration">Con fecha de vencimiento</option>
-                    <option value="insurance">Seguro (Vencimiento y Asistencia)</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-                <button type="submit" className="btn btn-gold" style={{ height: '42px' }}>
-                  {editingDocumentType ? 'Guardar' : 'Añadir Tipo'}
-                </button>
-                {editingDocumentType && (
-                  <button type="button" className="btn btn-outline" onClick={resetDocumentTypeForm} style={{ height: '42px' }}>Cancelar</button>
-                )}
-              </div>
-            </form>
-          </div>
-
-          {/* List */}
-          {loadingDocumentTypes ? (
-            <div className="loading-state">
-              <RefreshCwIcon size={24} spin />
-              <span>Cargando tipos de documento...</span>
+          {/* 5. Temas Personalizados */}
+          <SettingCard
+            icon={<PaletteIcon size={24} />}
+            title="Temas Personalizados"
+            description="Crea tus propios temas de color para la aplicación."
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {customThemes.length} tema{customThemes.length !== 1 ? 's' : ''} personalizado{customThemes.length !== 1 ? 's' : ''}
+              </span>
             </div>
-          ) : documentTypes.length === 0 ? (
-            <EmptyState
-              title="Sin tipos de documento"
-              description="Añade tu primer tipo de documento para organizar la Guantera Digital."
-              action={
-                <button className="btn-gold" onClick={() => { resetDocumentTypeForm(); }}>
-                  <PlusIcon size={16} /> Añadir primer tipo
-                </button>
-              }
-            />
-          ) : (
-            <div className="document-types-list">
-              {documentTypes.map((docType) => (
-                <div key={docType.id} className="document-type-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4)', borderBottom: 'var(--border-width) solid var(--color-card-border)', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-                  <div className="document-type-main" style={{ flex: 1, minWidth: 0 }}>
-                    <div className="document-type-name" style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontSize: 'var(--font-size-base)', marginBottom: 'var(--space-1)' }}>{docType.name}</div>
-                    <div className="document-type-subtitle" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                      {docType.isInsurance ? 'Seguro y asistencia' : docType.hasExpiration ? 'Con fecha de vencimiento' : 'Sin vencimiento'}
-                    </div>
-                  </div>
-                  <div className="document-type-actions" style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
-                    <button 
-                      className="btn-icon" 
-                      onClick={() => handleDocumentTypeEdit(docType)}
-                      title="Editar"
-                      style={{ width: '36px', height: '36px' }}
-                    >
-                      <EditIcon size={18} />
-                    </button>
-                    <button 
-                      className="btn-icon danger" 
-                      onClick={() => handleDocumentTypeDeleteConfirm(docType)}
-                      title="Eliminar"
-                      style={{ width: '36px', height: '36px' }}
-                    >
-                      <TrashIcon size={18} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </SettingCard>
-
-      </div>
-    </section>
-  )
+            <button 
+              className="btn btn-primary w-full" 
+              onClick={() => setActiveCatalog('customThemes')}
+            >
+              Abrir listado <ChevronRightIcon size={16} />
+            </button>
+          </SettingCard>
+        </div>
+      </section>
+    )
+  }
 
   const renderMiscTab = () => (
     <section className="settings-section">

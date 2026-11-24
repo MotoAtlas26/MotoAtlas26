@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/24/2026, 12:11:42 PM
+> Generado el 11/24/2026, 12:48:17 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -18,6 +18,7 @@
     📄 Mantenimiento.jsx
     📄 Moto.jsx
   📁 settings
+    📄 CatalogDetailView.jsx
     📄 Settings.jsx
   📁 shared
     📄 BlobImage.jsx
@@ -105,6 +106,10 @@
 - Archivo: src/components/moto/Moto.jsx
 - Exports: Moto, Moto
 
+### CatalogDetailView
+- Archivo: src/components/settings/CatalogDetailView.jsx
+- Exports: CatalogDetailView, CatalogDetailView
+
 ### Settings
 - Archivo: src/components/settings/Settings.jsx
 - Exports: Settings, Settings
@@ -119,7 +124,7 @@
 
 ### Icons
 - Archivo: src/components/shared/Icons.jsx
-- Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ShieldIcon, FileTextIcon, FileIcon, PhoneIcon, EyeIcon, AlertIcon, CalendarIcon
+- Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ShieldIcon, ChevronRightIcon, FileTextIcon, FileIcon, PhoneIcon, EyeIcon, AlertIcon, CalendarIcon, ChevronLeftIcon, CircleIcon
 
 ### InstallAppButton
 - Archivo: src/components/shared/InstallAppButton.jsx
@@ -294,17 +299,21 @@
 - Importa **{ Documentacion }** desde `./Documentacion`
 - Importa **{ TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon }** desde `../shared/Icons`
 
+### src/components/settings/CatalogDetailView.jsx
+- Importa **{ MotoIcon, WrenchIcon, PaletteIcon, PlusIcon, EditIcon, TrashIcon, ChevronLeftIcon, ShieldIcon, CircleIcon }** desde `../shared/Icons`
+
 ### src/components/settings/Settings.jsx
 - Importa **{ Link }** desde `react-router-dom`
 - Importa **{ useGPX }** desde `../../context/GPXContext`
 - Importa **{ useDatabase }** desde `../../hooks/useDatabase`
 - Importa **{ useAuth }** desde `../../context/AuthContext`
 - Importa **{ EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect }** desde `../shared`
+- Importa **CatalogDetailView** desde `./CatalogDetailView`
 - Importa **{ formatBackupName }** desde `../../utils/formatters`
 - Importa **{ getMotoModelsArray, getMotoModel }** desde `../../constants/motoModels`
 - Importa **{ getThemesList, THEMES }** desde `../../constants/themes`
 - Importa **{ applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme }** desde `../../utils/themeEngine`
-- Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon }** desde `../shared/Icons`
+- Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon }** desde `../shared/Icons`
 
 ### src/components/shared/BlobImage.jsx
 - Importa **React** desde `react`
