@@ -6,16 +6,6 @@ import { formatDate, formatFileSize } from '../../utils/formatters'
 import { getMotoModel, getMotoModelsArray } from '../../constants/motoModels'
 import { TrashIcon, EditIcon, EyeIcon, DownloadIcon, AlertIcon, CheckIcon, CalendarIcon, PhoneIcon, ShieldIcon, FileIcon, UploadIcon } from '../shared/Icons'
 
-const DOC_TYPES = [
-  { value: 'itv', label: 'Ficha Técnica / ITV', icon: '📋' },
-  { value: 'circulation', label: 'Permiso de Circulación', icon: '📄' },
-  { value: 'insurance', label: 'Póliza / Recibo de Seguro', icon: '🛡️' },
-  { value: 'manual', label: 'Manual de Propietario / Taller (PDF)', icon: '📖' },
-  { value: 'other', label: 'Otros documentos', icon: '📁' }
-]
-
-const getDocTypeInfo = (type) => DOC_TYPES.find(t => t.value === type) || DOC_TYPES[4]
-
 const getDaysUntil = (dateStr) => {
   if (!dateStr) return null
   const today = new Date()
@@ -44,10 +34,12 @@ export const Documentacion = () => {
     getMotoDocumentsByMoto,
     getAllMotoDocuments,
     updateMotoDocument,
-    deleteMotoDocument
+    deleteMotoDocument,
+    getAllDocumentTypes
   } = useDatabase()
-
-  const [documents, setDocuments] = useState([])
+const [documents, setDocuments] = useState([])
+  const [documentTypes, setDocumentTypes] = useState([])
+  const [loadingDocTypes, setLoadingDocTypes] = useState(true)
   const [filterMotoId, setFilterMotoId] = useState(selectedMoto || '')
   const [filterType, setFilterType] = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -82,6 +74,25 @@ export const Documentacion = () => {
 
   useEffect(() => { loadDocuments() }, [loadDocuments])
 
+  // Load document types from database
+  useEffect(() => {
+    const loadDocTypes = async () => {
+      try {
+        const types = await getAllDocumentTypes()
+        setDocumentTypes(types)
+        // Set default docType to first available type if current is not in list
+        if (types.length > 0 && !types.find(t => t.code === formData.docType)) {
+          setFormData(prev => ({ ...prev, docType: types[0].code }))
+        }
+      } catch (err) {
+        console.error('Error loading document types:', err)
+      } finally {
+        setLoadingDocTypes(false)
+      }
+    }
+    loadDocTypes()
+  }, [getAllDocumentTypes, formData.docType])
+
   // Find insurance doc for roadside assistance card
   const insuranceDoc = documents.find(d => d.docType === 'insurance' && d.assistancePhone)
   const itvDoc = documents.find(d => d.docType === 'itv' && d.expirationDate)
@@ -109,14 +120,17 @@ export const Documentacion = () => {
         })
       }
 
+      // Get selected document type to know which fields to save
+      const selectedDocType = documentTypes.find(t => t.code === formData.docType)
+
       const docData = {
         motoId: formData.motoId,
         docType: formData.docType,
         title: formData.title,
-        expirationDate: formData.expirationDate || null,
-        policyNumber: formData.policyNumber || null,
-        assistancePhone: formData.assistancePhone || null,
-        insurerName: formData.insurerName || null,
+        expirationDate: selectedDocType?.hasExpiration ? (formData.expirationDate || null) : null,
+        policyNumber: selectedDocType?.isInsurance ? (formData.policyNumber || null) : null,
+        assistancePhone: selectedDocType?.isInsurance ? (formData.assistancePhone || null) : null,
+        insurerName: selectedDocType?.isInsurance ? (formData.insurerName || null) : null,
         notes: formData.notes || null,
         fileName,
         fileMimeType,
@@ -139,9 +153,10 @@ export const Documentacion = () => {
   }
 
   const resetForm = () => {
+    const defaultDocType = documentTypes.length > 0 ? documentTypes[0].code : 'itv'
     setFormData({
       motoId: selectedMoto || '',
-      docType: 'itv',
+      docType: defaultDocType,
       title: '',
       expirationDate: '',
       policyNumber: '',
@@ -333,7 +348,7 @@ export const Documentacion = () => {
             style={{ minWidth: '180px' }}
           >
             <option value="">Todos los tipos</option>
-            {DOC_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
+            {documentTypes.map(t => <option key={t.code} value={t.code}>{t.name}</option>)}
           </select>
         </div>
       </div>
@@ -351,7 +366,7 @@ export const Documentacion = () => {
             <div>
               <label className="form-label">Tipo de documento *</label>
               <select value={formData.docType} onChange={e => setFormData(prev => ({ ...prev, docType: e.target.value }))} className="form-input" required>
-                {DOC_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
+                {documentTypes.map(t => <option key={t.code} value={t.code}>{t.name}</option>)}
               </select>
             </div>
           </div>
@@ -361,33 +376,42 @@ export const Documentacion = () => {
             <input type="text" value={formData.title} onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))} className="form-input" placeholder="Ej: ITV 2024, Póliza MAPFRE, Manual taller..." required />
           </div>
 
-          <div>
-            <label className="form-label">Fecha de vencimiento / Próxima ITV</label>
-            <input type="date" value={formData.expirationDate} onChange={e => setFormData(prev => ({ ...prev, expirationDate: e.target.value }))} className="form-input" />
-          </div>
-
-          {/* Insurance-specific fields */}
-          {formData.docType === 'insurance' && (
-            <div style={{ background: 'var(--color-secondary-light)', borderRadius: 'var(--radius-card)', padding: 'var(--space-3)', border: '1px solid var(--color-card-border)' }}>
-              <h4 style={{ margin: '0 0 var(--space-3)', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <ShieldIcon size={20} /> Datos del Seguro
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
-                <div>
-                  <label className="form-label">Aseguradora</label>
-                  <input type="text" value={formData.insurerName} onChange={e => setFormData(prev => ({ ...prev, insurerName: e.target.value }))} className="form-input" placeholder="Ej: MAPFRE, AXA, Allianz..." />
-                </div>
-                <div>
-                  <label className="form-label">Nº de Póliza</label>
-                  <input type="text" value={formData.policyNumber} onChange={e => setFormData(prev => ({ ...prev, policyNumber: e.target.value }))} className="form-input" placeholder="Ej: POL-2024-123456" />
-                </div>
-                <div>
-                  <label className="form-label">Tel. Asistencia en Carretera</label>
-                  <input type="tel" value={formData.assistancePhone} onChange={e => setFormData(prev => ({ ...prev, assistancePhone: e.target.value }))} className="form-input" placeholder="Ej: 900 123 456" />
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Dynamic fields based on selected document type */}
+          {(() => {
+            const selectedDocType = documentTypes.find(t => t.code === formData.docType)
+            if (!selectedDocType) return null
+            return (
+              <>
+                {selectedDocType.hasExpiration && (
+                  <div>
+                    <label className="form-label">Fecha de vencimiento / Próxima ITV</label>
+                    <input type="date" value={formData.expirationDate} onChange={e => setFormData(prev => ({ ...prev, expirationDate: e.target.value }))} className="form-input" />
+                  </div>
+                )}
+                {selectedDocType.isInsurance && (
+                  <div style={{ background: 'var(--color-secondary-light)', borderRadius: 'var(--radius-card)', padding: 'var(--space-3)', border: '1px solid var(--color-card-border)' }}>
+                    <h4 style={{ margin: '0 0 var(--space-3)', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <ShieldIcon size={20} /> Datos del Seguro
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
+                      <div>
+                        <label className="form-label">Aseguradora</label>
+                        <input type="text" value={formData.insurerName} onChange={e => setFormData(prev => ({ ...prev, insurerName: e.target.value }))} className="form-input" placeholder="Ej: MAPFRE, AXA, Allianz..." />
+                      </div>
+                      <div>
+                        <label className="form-label">Nº de Póliza</label>
+                        <input type="text" value={formData.policyNumber} onChange={e => setFormData(prev => ({ ...prev, policyNumber: e.target.value }))} className="form-input" placeholder="Ej: POL-2024-123456" />
+                      </div>
+                      <div>
+                        <label className="form-label">Tel. Asistencia en Carretera</label>
+                        <input type="tel" value={formData.assistancePhone} onChange={e => setFormData(prev => ({ ...prev, assistancePhone: e.target.value }))} className="form-input" placeholder="Ej: 900 123 456" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
 
           <div>
             <label className="form-label">Notas</label>
@@ -420,7 +444,7 @@ export const Documentacion = () => {
                 <strong>{getMotoModel(viewerDoc.motoId)?.name || viewerDoc.motoId}</strong>
                 <span style={{ marginLeft: 'var(--space-3)', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Tipo: </span>
                 <span style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
-                  {getDocTypeInfo(viewerDoc.docType).icon} {getDocTypeInfo(viewerDoc.docType).label}
+                  {(documentTypes.find(t => t.code === viewerDoc.docType) || { name: viewerDoc.docType }).name}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -458,7 +482,7 @@ export const Documentacion = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-3)', padding: 'var(--space-3)' }}>
             {documents.map(doc => {
               const moto = getMotoModel(doc.motoId)
-              const typeInfo = getDocTypeInfo(doc.docType)
+              const docType = documentTypes.find(t => t.code === doc.docType) || { name: doc.docType, hasExpiration: false, isInsurance: false }
               const daysLeft = doc.expirationDate ? getDaysUntil(doc.expirationDate) : null
               const status = daysLeft !== null ? getExpirationStatus(daysLeft) : null
 
@@ -476,7 +500,7 @@ export const Documentacion = () => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <span style={{ fontSize: '1.5rem' }}>{typeInfo.icon}</span>
+                      <FileIcon size={24} style={{ color: 'var(--color-primary)' }} />
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{doc.title}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{moto?.name || doc.motoId}</div>
@@ -491,7 +515,7 @@ export const Documentacion = () => {
                       color: status?.color || 'var(--color-text-secondary)',
                       textTransform: 'uppercase'
                     }}>
-                      {typeInfo.label}
+                      {docType.name}
                     </span>
                   </div>
 

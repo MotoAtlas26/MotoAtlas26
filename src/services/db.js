@@ -80,6 +80,25 @@ export class MotoAtlas26DB extends Dexie {
       motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt',
       tires: '++id, brand, model, frontSize, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt'
     })
+
+    // Version 9: Add documentTypes table for Guantera Digital document type catalog
+    this.version(9).stores({
+      tracks: '++id, name, date, distance, elevationGain, duration, createdAt, updatedAt',
+      trackPoints: '++id, trackId, lat, lng, elevation, timestamp, sequence',
+      images: '++id, type, trackId, motoId, fileName, mimeType, size, blob, description, tags, aspectRatio, colorTheme, createdAt',
+      maintenance: '++id, motoId, type, date, mileage, cost, workshop, description, createdAt',
+      motoProfile: '++id, model, year, vin, purchaseDate, currentMileage, updatedAt',
+      settings: '++id, key, value, updatedAt',
+      uploads: '++id, type, fileName, size, status, localPath, remoteUrl, createdAt',
+      workshops: '++id, type, name, specialty, isDefault, createdAt',
+      motorcycles: '++id, brand, model, year, plate, purchaseDate, createdAt',
+      customThemes: '++id, name, brand, createdAt',
+      invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt',
+      motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      tires: '++id, brand, model, frontSize, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt',
+      documentTypes: '++id, code, name, hasExpiration, isInsurance, createdAt'
+    })
     
     this.tracks.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()
@@ -136,6 +155,16 @@ export class MotoAtlas26DB extends Dexie {
       window.dispatchEvent(new CustomEvent('db:changed'))
     })
     this.tires.hook('deleting', (primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.documentTypes.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.documentTypes.hook('updating', (modifications, primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.documentTypes.hook('deleting', (primKey, obj, trans) => {
       window.dispatchEvent(new CustomEvent('db:changed'))
     })
   }
@@ -451,6 +480,41 @@ export class MotoAtlas26DB extends Dexie {
     return await this.tires.delete(id)
   }
 
+  // ============ TIPOS DE DOCUMENTO (GUANTERA DIGITAL) ============
+
+  async seedDefaultDocumentTypes() {
+    const count = await this.documentTypes.count()
+    if (count === 0) {
+      const defaultTypes = [
+        { code: 'itv', name: 'Ficha Técnica / ITV', hasExpiration: true, isInsurance: false },
+        { code: 'circulation', name: 'Permiso de Circulación', hasExpiration: false, isInsurance: false },
+        { code: 'insurance', name: 'Póliza / Recibo de Seguro', hasExpiration: true, isInsurance: true },
+        { code: 'manual', name: 'Manual de Propietario / Taller (PDF)', hasExpiration: false, isInsurance: false },
+        { code: 'other', name: 'Otros documentos', hasExpiration: false, isInsurance: false }
+      ]
+      await this.documentTypes.bulkAdd(defaultTypes.map(t => ({ ...t, createdAt: new Date() })))
+    }
+  }
+
+  async getAllDocumentTypes() {
+    return await this.documentTypes.orderBy('name').toArray()
+  }
+
+  async saveDocumentType(data) {
+    return await this.documentTypes.add({
+      ...data,
+      createdAt: new Date()
+    })
+  }
+
+  async updateDocumentType(id, updates) {
+    return await this.documentTypes.update(id, updates)
+  }
+
+  async deleteDocumentType(id) {
+    return await this.documentTypes.delete(id)
+  }
+
   // ============ TALLERES Y MANTENIMIENTO PROPIO ============
 
   async getAllWorkshops() {
@@ -588,6 +652,7 @@ export class MotoAtlas26DB extends Dexie {
       this.maintenances,
       this.motoDocuments,
       this.tires,
+      this.documentTypes,
       async () => {
         await Promise.all([
           this.tracks.clear(),
@@ -603,7 +668,8 @@ export class MotoAtlas26DB extends Dexie {
           this.invoices.clear(),
           this.maintenances.clear(),
           this.motoDocuments.clear(),
-          this.tires.clear()
+          this.tires.clear(),
+          this.documentTypes.clear()
         ])
       }
     )
@@ -619,12 +685,13 @@ export class MotoAtlas26DB extends Dexie {
     const maintenances = await this.maintenances.count()
     const motoDocuments = await this.motoDocuments.count()
     const tires = await this.tires.count()
+    const documentTypes = await this.documentTypes.count()
 
-    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments, tires }
+    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments, tires, documentTypes }
   }
 
   async exportAll() {
-    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments, tires] = await Promise.all([
+    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments, tires, documentTypes] = await Promise.all([
       this.tracks.toArray(),
       this.trackPoints.toArray(),
       this.images.toArray(),
@@ -638,11 +705,12 @@ export class MotoAtlas26DB extends Dexie {
       this.invoices.toArray(),
       this.maintenances.toArray(),
       this.motoDocuments.toArray(),
-      this.tires.toArray()
+      this.tires.toArray(),
+      this.documentTypes.toArray()
     ])
 
     return {
-      version: 8,
+      version: 9,
       exportedAt: new Date().toISOString(),
       tracks,
       trackPoints,
@@ -657,7 +725,8 @@ export class MotoAtlas26DB extends Dexie {
       invoices,
       maintenances,
       motoDocuments,
-      tires
+      tires,
+      documentTypes
     }
   }
 
@@ -677,6 +746,7 @@ export class MotoAtlas26DB extends Dexie {
       this.maintenances,
       this.motoDocuments,
       this.tires,
+      this.documentTypes,
       async () => {
         await Promise.all([
           this.tracks.bulkPut(data.tracks || []),
@@ -692,7 +762,8 @@ export class MotoAtlas26DB extends Dexie {
           this.invoices.bulkPut(data.invoices || []),
           this.maintenances.bulkPut(data.maintenances || []),
           this.motoDocuments.bulkPut(data.motoDocuments || []),
-          this.tires.bulkPut(data.tires || [])
+          this.tires.bulkPut(data.tires || []),
+          this.documentTypes.bulkPut(data.documentTypes || [])
         ])
       }
     )
@@ -704,6 +775,7 @@ export const db = new MotoAtlas26DB()
 export async function initDB() {
   try {
     await db.open()
+    await db.seedDefaultDocumentTypes()
     console.log('MotoAtlas26DB inicializada correctamente')
     return true
   } catch (error) {

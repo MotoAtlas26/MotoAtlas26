@@ -239,6 +239,23 @@ export function useDatabase() {
     return await db.deleteTire(id)
   }, [])
 
+  // Document Types (Guantera Digital)
+  const getAllDocumentTypes = useCallback(async () => {
+    return await db.getAllDocumentTypes()
+  }, [])
+
+  const saveDocumentType = useCallback(async (data) => {
+    return await db.saveDocumentType(data)
+  }, [])
+
+  const updateDocumentType = useCallback(async (id, updates) => {
+    return await db.updateDocumentType(id, updates)
+  }, [])
+
+  const deleteDocumentType = useCallback(async (id) => {
+    return await db.deleteDocumentType(id)
+  }, [])
+
   // Utilities
   const clearAllData = useCallback(async () => {
     return await db.clearAllData()
@@ -324,6 +341,11 @@ export function useDatabase() {
     getAllTires,
     updateTire,
     deleteTire,
+    // Document Types (Guantera Digital)
+    getAllDocumentTypes,
+    saveDocumentType,
+    updateDocumentType,
+    deleteDocumentType,
     // Utilities
     clearAllData,
     getDatabaseSize,

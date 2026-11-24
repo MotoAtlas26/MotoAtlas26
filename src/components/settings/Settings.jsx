@@ -55,7 +55,7 @@ export const Settings = () => {
     loadSettings, 
     saveSetting 
   } = useGPX()
-  const { getWorkshops, saveWorkshop, editWorkshop, removeWorkshop, getMotorcycles, saveMotorcycle, editMotorcycle, removeMotorcycle, getCustomThemes, saveCustomTheme, editCustomTheme, removeCustomTheme, getAllTires, saveTire, updateTire, deleteTire } = useDatabase()
+  const { getWorkshops, saveWorkshop, editWorkshop, removeWorkshop, getMotorcycles, saveMotorcycle, editMotorcycle, removeMotorcycle, getCustomThemes, saveCustomTheme, editCustomTheme, removeCustomTheme, getAllTires, saveTire, updateTire, deleteTire, getAllDocumentTypes, saveDocumentType, updateDocumentType, deleteDocumentType } = useDatabase()
   const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow } = useAuth()
   const [backups, setBackups] = useState([])
   const [loadingBackups, setLoadingBackups] = useState(false)
@@ -93,6 +93,19 @@ export const Settings = () => {
   })
   const [deleteTireConfirm, setDeleteTireConfirm] = useState(null)
   const [tireFormError, setTireFormError] = useState(null)
+
+  // Document Types state
+  const [documentTypes, setDocumentTypes] = useState([])
+  const [loadingDocumentTypes, setLoadingDocumentTypes] = useState(true)
+  const [showDocumentTypeForm, setShowDocumentTypeForm] = useState(false)
+  const [editingDocumentType, setEditingDocumentType] = useState(null)
+  const [documentTypeFormData, setDocumentTypeFormData] = useState({
+    name: '',
+    hasExpiration: false,
+    isInsurance: false
+  })
+  const [deleteDocumentTypeConfirm, setDeleteDocumentTypeConfirm] = useState(null)
+  const [documentTypeFormError, setDocumentTypeFormError] = useState(null)
 
   // Available themes state (predefined + custom)
   const [availableThemes, setAvailableThemes] = useState([])
@@ -206,6 +219,21 @@ export const Settings = () => {
     }
     loadTires()
   }, [getAllTires])
+
+  // Load document types on mount
+  useEffect(() => {
+    const loadDocumentTypes = async () => {
+      try {
+        const data = await getAllDocumentTypes()
+        setDocumentTypes(data)
+      } catch (error) {
+        console.error('Error loading document types:', error)
+      } finally {
+        setLoadingDocumentTypes(false)
+      }
+    }
+    loadDocumentTypes()
+  }, [getAllDocumentTypes])
 
   const loadAvailableThemes = useCallback(async () => {
     try {
@@ -428,6 +456,78 @@ export const Settings = () => {
       console.error('Error deleting tire:', error)
     } finally {
       setDeleteTireConfirm(null)
+    }
+  }
+
+  // Document Type form handlers
+  const resetDocumentTypeForm = () => {
+    setDocumentTypeFormData({
+      name: '',
+      hasExpiration: false,
+      isInsurance: false
+    })
+    setEditingDocumentType(null)
+    setDocumentTypeFormError(null)
+  }
+
+  const handleDocumentTypeSubmit = async (e) => {
+    e.preventDefault()
+    setDocumentTypeFormError(null)
+    
+    if (!documentTypeFormData.name.trim()) {
+      setDocumentTypeFormError('El nombre es obligatorio')
+      return
+    }
+
+    try {
+      if (editingDocumentType) {
+        await updateDocumentType(editingDocumentType.id, documentTypeFormData)
+      } else {
+        // Generate a slug-like code for new custom types
+        const code = documentTypeFormData.name
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '')
+          + '-' + Date.now()
+        await saveDocumentType({ ...documentTypeFormData, code })
+      }
+      const data = await getAllDocumentTypes()
+      setDocumentTypes(data)
+      resetDocumentTypeForm()
+      setShowDocumentTypeForm(false)
+    } catch (error) {
+      console.error('Error saving document type:', error)
+      setDocumentTypeFormError('Error al guardar. Inténtalo de nuevo.')
+    }
+  }
+
+  const handleDocumentTypeEdit = (docType) => {
+    setEditingDocumentType(docType)
+    setDocumentTypeFormData({
+      name: docType.name,
+      hasExpiration: docType.hasExpiration,
+      isInsurance: docType.isInsurance
+    })
+    setShowDocumentTypeForm(true)
+    setDocumentTypeFormError(null)
+  }
+
+  const handleDocumentTypeDeleteConfirm = (docType) => {
+    setDeleteDocumentTypeConfirm(docType)
+  }
+
+  const handleDocumentTypeDelete = async () => {
+    if (!deleteDocumentTypeConfirm) return
+    try {
+      await deleteDocumentType(deleteDocumentTypeConfirm.id)
+      const data = await getAllDocumentTypes()
+      setDocumentTypes(data)
+    } catch (error) {
+      console.error('Error deleting document type:', error)
+    } finally {
+      setDeleteDocumentTypeConfirm(null)
     }
   }
 
@@ -1919,6 +2019,83 @@ export const Settings = () => {
             </div>
           )}
         </SettingCard>
+
+        {/* Document Types List */}
+        <SettingCard
+          icon="📄"
+          title="Tipos de Documento"
+          description="Catálogo de tipos de documento para la Guantera Digital"
+          actions={
+            <button 
+              className="btn btn-gold" 
+              onClick={() => { resetDocumentTypeForm(); setShowDocumentTypeForm(true); }}
+            >
+              <PlusIcon size={16} /> Añadir Tipo
+            </button>
+          }
+        >
+          {loadingDocumentTypes ? (
+            <div className="loading-state">
+              <RefreshCwIcon size={24} spin />
+              <span>Cargando tipos de documento...</span>
+            </div>
+          ) : documentTypes.length === 0 ? (
+            <EmptyState
+              icon="📄"
+              title="Sin tipos de documento"
+              description="Añade tu primer tipo de documento para organizar la Guantera Digital."
+              action={
+                <button className="btn-gold" onClick={() => { resetDocumentTypeForm(); setShowDocumentTypeForm(true); }}>
+                  <PlusIcon size={16} /> Añadir primer tipo
+                </button>
+              }
+            />
+          ) : (
+            <div className="document-types-list">
+              {documentTypes.map((docType) => (
+                <div key={docType.id} className="document-type-card">
+                  <div className="document-type-header">
+                    <div className="document-type-main">
+                      <div className="document-type-name-row">
+                        <span className="document-type-name">{docType.name}</span>
+                        <span className="document-type-code">({docType.code})</span>
+                      </div>
+                      <div className="document-type-meta">
+                        {docType.hasExpiration && (
+                          <span className="document-type-badge badge-expiration">
+                            <span className="badge-icon">⏰</span> Requiere vencimiento
+                          </span>
+                        )}
+                        {docType.isInsurance && (
+                          <span className="document-type-badge badge-insurance">
+                            <span className="badge-icon">🛡️</span> Incluye datos de póliza
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="document-type-actions">
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleDocumentTypeEdit(docType)}
+                        title="Editar"
+                      >
+                        <EditIcon size={18} />
+                      </button>
+                      <button 
+                        className="btn-icon danger" 
+                        onClick={() => handleDocumentTypeDeleteConfirm(docType)}
+                        title="Eliminar"
+                      >
+                        <TrashIcon size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SettingCard>
+
       </div>
     </section>
   )
