@@ -1954,6 +1954,41 @@
   color: var(--color-error);
 }
 
+/* ── Tire Wheel Groups (Neumáticos form) ── */
+.tire-wheel-group {
+  background: rgba(255, 255, 255, 0.02);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tire-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.tire-group-title {
+  font-weight: 600;
+  color: var(--color-primary-text);
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.tire-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 540px) {
+  .tire-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .catalog-detail-view {
     padding: var(--space-3);

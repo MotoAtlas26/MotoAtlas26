@@ -71,7 +71,7 @@ const CATALOG_CONFIG = {
       // Compatibilidad (se guardan automáticamente)
       { name: 'brand', label: 'Marca (compatibilidad)', type: 'hidden' },
       { name: 'model', label: 'Modelo (compatibilidad)', type: 'hidden' },
-      { name: 'notes', label: 'Notas', type: 'textarea', placeholder: 'Uso recomendado, observaciones...' },
+      { name: 'notes', label: 'Notas', type: 'textarea', placeholder: 'Uso recomendado, observaciones...', rows: 2 },
     ],
     formatItem: (item) => (
       <div className="catalog-item">
@@ -312,6 +312,79 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
     setShowForm(false)
   }
 
+  // Helper to render a single field with proper input type
+  const renderField = (field) => {
+    if (!field || field.type === 'hidden') return null
+    
+    const isRequired = field.required
+    
+    return (
+      <div key={field.name} className="form-group">
+        <label className="form-label">
+          {field.label}
+          {isRequired && <span className="required">*</span>}
+        </label>
+        {field.type === 'textarea' ? (
+          <textarea
+            className="form-textarea"
+            name={field.name}
+            value={formData[field.name] || ''}
+            onChange={handleInputChange}
+            placeholder={field.placeholder}
+            rows={field.rows || 3}
+          />
+        ) : field.type === 'select' ? (
+          <div className="select-wrapper">
+            <select
+              className="form-select"
+              name={field.name}
+              value={formData[field.name] || ''}
+              onChange={handleInputChange}
+              required={isRequired}
+            >
+              <option value="">Seleccionar...</option>
+              {field.options?.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        ) : field.type === 'color' ? (
+          <div className="color-input-wrapper">
+            <input
+              type="color"
+              className="color-input"
+              name={field.name}
+              value={formData[field.name] || field.defaultValue || '#000000'}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              className="color-hex-input"
+              value={formData[field.name] || field.defaultValue || '#000000'}
+              onChange={handleInputChange}
+              name={field.name}
+              placeholder="#RRGGBB"
+              maxLength={7}
+            />
+          </div>
+        ) : (
+          <input
+            type={field.type}
+            className="form-input"
+            name={field.name}
+            value={formData[field.name] || ''}
+            onChange={handleInputChange}
+            placeholder={field.placeholder}
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            required={isRequired}
+          />
+        )}
+      </div>
+    )
+  }
+
   const Icon = config.icon
 
   return (
@@ -358,97 +431,61 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
             {formError && <div className="form-error">{formError}</div>}
             
             <form onSubmit={handleSubmit} className="catalog-form">
-              {config.fields.map((field) => {
-                // Skip hidden fields (used for compatibility)
-                if (field.type === 'hidden') return null
-                
-                // Special handling for neumaticos: add "Copiar delantera a trasera" button after rearBrand label
-                const isNeumaticosRearBrand = catalogKey === 'neumaticos' && field.name === 'rearBrand'
-                
-                return (
-                  <div key={field.name} className="form-group">
-                    <label className="form-label">
-                      {field.label}
-                      {field.required && <span className="required">*</span>}
-                      {isNeumaticosRearBrand && (
-                        <button
-                          type="button"
-                          className="btn-copy-front"
-                          onClick={() => {
-                            setFormData(prev => ({
-                              ...prev,
-                              rearBrand: prev.frontBrand || '',
-                              rearModel: prev.frontModel || '',
-                              rearSize: prev.frontSize || '',
-                              recommendedRearBar: prev.recommendedFrontBar || ''
-                            }))
-                          }}
-                          title="Copiar datos de la rueda delantera"
-                        >
-                          Copiar delantera
-                        </button>
-                      )}
-                    </label>
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        className="form-textarea"
-                        name={field.name}
-                        value={formData[field.name] || ''}
-                        onChange={handleInputChange}
-                        placeholder={field.placeholder}
-                        rows={3}
-                      />
-                    ) : field.type === 'select' ? (
-                      <div className="select-wrapper">
-                        <select
-                          className="form-select"
-                          name={field.name}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          required={field.required}
-                        >
-                          <option value="">Seleccionar...</option>
-                          {field.options?.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ) : field.type === 'color' ? (
-                      <div className="color-input-wrapper">
-                        <input
-                          type="color"
-                          className="color-input"
-                          name={field.name}
-                          value={formData[field.name] || field.defaultValue || '#000000'}
-                          onChange={handleInputChange}
-                        />
-                        <input
-                          type="text"
-                          className="color-hex-input"
-                          value={formData[field.name] || field.defaultValue || '#000000'}
-                          onChange={handleInputChange}
-                          name={field.name}
-                          placeholder="#RRGGBB"
-                          maxLength={7}
-                        />
-                      </div>
-                    ) : (
-                      <input
-                        type={field.type}
-                        className="form-input"
-                        name={field.name}
-                        value={formData[field.name] || ''}
-                        onChange={handleInputChange}
-                        placeholder={field.placeholder}
-                        min={field.min}
-                        max={field.max}
-                        step={field.step}
-                        required={field.required}
-                      />
-                    )}
+              {catalogKey === 'neumaticos' ? (
+                // Special 2-column grid layout for neumaticos
+                <>
+                  {/* Bloque 1 — Rueda Delantera */}
+                  <div className="tire-wheel-group">
+                    <h3 className="tire-group-title">Rueda Delantera</h3>
+                    <div className="tire-grid">
+                      {['frontBrand', 'frontModel', 'frontSize', 'recommendedFrontBar'].map(fieldName => {
+                        const field = config.fields.find(f => f.name === fieldName)
+                        if (!field) return null
+                        return renderField(field)
+                      })}
+                    </div>
                   </div>
-                )
-              })}
+
+                  {/* Bloque 2 — Rueda Trasera */}
+                  <div className="tire-wheel-group">
+                    <div className="tire-group-header">
+                      <h3 className="tire-group-title">Rueda Trasera</h3>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            rearBrand: prev.frontBrand || '',
+                            rearModel: prev.frontModel || '',
+                            rearSize: prev.frontSize || '',
+                            recommendedRearBar: prev.recommendedFrontBar || ''
+                          }))
+                        }}
+                        title="Copiar datos de la rueda delantera"
+                      >
+                        Copiar delantera
+                      </button>
+                    </div>
+                    <div className="tire-grid">
+                      {['rearBrand', 'rearModel', 'rearSize', 'recommendedRearBar'].map(fieldName => {
+                        const field = config.fields.find(f => f.name === fieldName)
+                        if (!field) return null
+                        return renderField(field)
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Notas a ancho completo */}
+                  {renderField(config.fields.find(f => f.name === 'notes'))}
+                </>
+              ) : (
+                // Default vertical layout for other catalogs
+                config.fields.map((field) => {
+                  if (field.type === 'hidden') return null
+                  return renderField(field)
+                })
+              )}
               
               <div className="form-actions">
                 <button type="button" className="btn btn-ghost" onClick={handleCancel}>
