@@ -26,12 +26,12 @@
   --color-primary-text: #D2B474;     /* Texto/iconos seguros sobre fondo neutro */
   
   /* ── Acentos de marca (Color 2: Secundario) ── */
-  --color-secondary: #E07A5F;        /* Acento secundario (orange para CFMOTO) */
-  --color-secondary-light: #F07E2E;  /* Acento secundario claro */
-  --color-secondary-dark: #C45A3F;   /* Acento secundario oscuro */
+  --color-secondary: #64748B;        /* Acento secundario (slate/steel) */
+  --color-secondary-light: #94A3B8;  /* Acento secundario claro */
+  --color-secondary-dark: #475569;   /* Acento secundario oscuro */
   --color-secondary-contrast: #FFFFFF; /* Texto sobre secondary */
   --color-secondary-border: 1px solid rgba(255,255,255,0.14); /* Borde visible si secondary es muy oscuro */
-  --color-secondary-text: #E07A5F;   /* Texto/iconos seguros sobre fondo neutro */
+  --color-secondary-text: #64748B;   /* Texto/iconos seguros sobre fondo neutro */
   
   /* ── Acentos de marca (Color 3: Terciario / Google Drive / Nube) ── */
   --color-tertiary: #3D5A80;         /* Acento terciario (blue para CFMOTO) */

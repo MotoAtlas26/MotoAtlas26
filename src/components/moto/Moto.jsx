@@ -165,8 +165,7 @@ export const Moto = () => {
             <h4 style={{ margin: '0 0 var(--space-3)', color: 'var(--color-text-primary)' }}>Actividad Reciente Unificada</h4>
             <div style={{ 
               height: '150px', 
-              overflowY: 'auto', 
-              background: 'var(--color-secondary-light)', 
+              overflowY: 'auto',
               borderRadius: 'var(--radius-sm)'
             }}>
               <p style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>

@@ -144,7 +144,7 @@ export const THEMES = [
     'motoatlas26',
     'MotoAtlas26',
     'MotoAtlas',
-    ['#D2B474', '#E07A5F', '#3D5A80'],
+    ['#D2B474', '#64748B', '#3D5A80'],
     'original'
   ),
   // 2. Aprilia - Grupo Marcas
@@ -260,7 +260,7 @@ export const THEMES = [
  */
 function generateCustomThemeTokens(customTheme) {
   const primary = customTheme.primaryColor || customTheme.swatches?.[0] || '#D2B474'
-  const secondary = customTheme.secondaryColor || customTheme.swatches?.[1] || '#E07A5F'
+  const secondary = customTheme.secondaryColor || customTheme.swatches?.[1] || '#64748B'
   const tertiary = customTheme.tertiaryColor || customTheme.swatches?.[2] || '#3D5A80'
 
   const swatches = [primary, secondary, tertiary]

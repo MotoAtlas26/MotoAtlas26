@@ -149,7 +149,7 @@ function getSafeTextColor(hex, mode) {
  */
 function generateMainTokensFromSwatches(swatches, mode = 'dark') {
   const primary = swatches?.[0] || '#D2B474'
-  const secondary = swatches?.[1] || '#E07A5F'
+  const secondary = swatches?.[1] || '#64748B'
   const tertiary = swatches?.[2] || '#3D5A80'
   
   const primaryContrast = getContrastColor(primary)
@@ -360,7 +360,7 @@ export function initTheme() {
     } else {
       // Ultimate fallback - hardcoded minimal tokens
       const neutralTokens = generateNeutralTokens('dark')
-      const mainTokens = generateMainTokensFromSwatches(['#D2B474', '#E07A5F', '#3D5A80'], 'dark')
+      const mainTokens = generateMainTokensFromSwatches(['#D2B474', '#64748B', '#3D5A80'], 'dark')
       applyTokensToDocument({ ...neutralTokens, ...mainTokens }, 'motoatlas26', 'dark')
     }
     return
