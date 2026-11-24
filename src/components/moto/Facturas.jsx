@@ -263,7 +263,7 @@ const InvoiceForm = ({
             ))}
             <button
               type="button"
-              className="btn-primary btn-small"
+              className="btn-primary btn-sm"
               onClick={() => {
                 const newItem = {
                   id: crypto.randomUUID(),
@@ -399,7 +399,7 @@ const InvoiceForm = ({
         </div>
         <button
           type="button"
-          className="btn-primary btn-small"
+          className="btn-primary btn-sm"
           onClick={() => {
             // Add empty row
             const newItem = {

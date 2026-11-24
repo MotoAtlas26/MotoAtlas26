@@ -56,18 +56,20 @@
 }
 
 /* ── Buttons ── */
+/* Modern standard for ALL action buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-btn);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  border: var(--border-width) solid transparent;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -82,20 +84,22 @@
   cursor: not-allowed;
 }
 
+.btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.btn:active:not(:disabled) {
+  filter: brightness(0.95);
+  transform: translateY(0);
+}
+
 /* Primary button - uses brand color 1 */
 .btn-primary {
   background-color: var(--color-primary);
   color: var(--color-primary-contrast);
   border-color: var(--color-primary-border);
-}
-
-.btn-primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-  box-shadow: var(--shadow-glow);
-}
-
-.btn-primary:active:not(:disabled) {
-  filter: brightness(0.95);
 }
 
 /* Secondary button - uses brand color 2 */
@@ -105,27 +109,11 @@
   border-color: var(--color-secondary-border);
 }
 
-.btn-secondary:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn-secondary:active:not(:disabled) {
-  filter: brightness(0.95);
-}
-
 /* Tertiary button - uses brand color 3 (Google Drive / Cloud) */
 .btn-tertiary {
   background-color: var(--color-tertiary);
   color: var(--color-tertiary-contrast);
   border-color: var(--color-tertiary-border);
-}
-
-.btn-tertiary:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn-tertiary:active:not(:disabled) {
-  filter: brightness(0.95);
 }
 
 /* Ghost/Outline button - neutral, for inactive tabs/buttons */
@@ -155,19 +143,11 @@
   border-color: var(--color-error-border);
 }
 
-.btn-danger:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
 /* Success button */
 .btn-success {
   background-color: var(--color-success);
   color: var(--color-success-contrast);
   border-color: var(--color-success-border);
-}
-
-.btn-success:hover:not(:disabled) {
-  filter: brightness(1.1);
 }
 
 /* Gold button - special accent (CFMOTO gold) */
@@ -178,12 +158,7 @@
 }
 
 .btn-gold:hover:not(:disabled) {
-  filter: brightness(1.1);
   box-shadow: var(--shadow-glow);
-}
-
-.btn-gold:active:not(:disabled) {
-  filter: brightness(0.95);
 }
 
 /* Accept Theme button - prominent primary action */
@@ -191,21 +166,23 @@
   background-color: var(--color-primary);
   color: var(--color-primary-contrast);
   border-color: var(--color-primary-border);
-  padding: var(--space-3) var(--space-6);
-  font-size: var(--font-size-base);
+  padding: 0.6rem 1.15rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  border-radius: var(--radius-btn);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn-accept-theme:hover:not(:disabled) {
-  filter: brightness(1.1);
-  box-shadow: var(--shadow-glow);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
 }
 
 .btn-accept-theme:active:not(:disabled) {
   filter: brightness(0.95);
+  transform: translateY(0);
 }
 
 .btn-accept-theme:focus-visible {
@@ -215,14 +192,16 @@
 
 /* Small button variant */
 .btn-sm {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-xs);
+  padding: 0.42rem 0.85rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
 }
 
 /* Outline small button */
 .btn-outline-sm {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-xs);
+  padding: 0.42rem 0.85rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
   background-color: transparent;
   color: var(--color-text-secondary);
   border-color: var(--color-card-border);
@@ -236,8 +215,9 @@
 
 /* Danger small button */
 .btn-danger-sm {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-xs);
+  padding: 0.42rem 0.85rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
   background-color: var(--color-error);
   color: var(--color-error-contrast);
   border-color: var(--color-error-border);
@@ -249,8 +229,9 @@
 
 /* View small button */
 .btn-view-sm {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-xs);
+  padding: 0.42rem 0.85rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
   background-color: var(--color-secondary);
   color: var(--color-secondary-contrast);
   border-color: var(--color-secondary-border);
@@ -262,8 +243,9 @@
 
 /* Edit small button */
 .btn-edit-sm {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-xs);
+  padding: 0.42rem 0.85rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
   background-color: var(--color-tertiary);
   color: var(--color-tertiary-contrast);
   border-color: var(--color-tertiary-border);
@@ -275,23 +257,29 @@
 
 /* Close viewer button */
 .btn-close-viewer {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--font-size-sm);
+  padding: 0.6rem 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 10px;
   background-color: transparent;
   color: var(--color-text-secondary);
   border-color: var(--color-card-border);
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn-close-viewer:hover:not(:disabled) {
   background-color: var(--color-card);
   color: var(--color-text-primary);
   border-color: var(--color-primary);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
 }
 
 /* Icon button */
 .btn-icon {
-  padding: var(--space-2);
-  border-radius: var(--radius-full);
+  padding: 0.5rem;
+  border-radius: 10px;
 }
 
 .btn-icon:hover:not(:disabled) {
@@ -457,6 +445,99 @@
 
 .settings-tab-icon {
   flex-shrink: 0;
+}
+
+/* ── Moto Header ── */
+.moto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-card-border);
+}
+
+.moto-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.moto-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.moto-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.moto-header-actions {
+  display: inline-flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.moto-header-actions .btn {
+  border-radius: 10px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+}
+
+/* ── Moto Segmented Tabs ── */
+.moto-segmented-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-card);
+  border: var(--border-width) solid var(--color-card-border);
+  border-radius: 12px;
+  margin-bottom: var(--space-6);
+}
+
+.moto-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: var(--border-width) solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.moto-tab:hover:not(.active):not(:disabled) {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.moto-tab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.moto-tab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.moto-tab.active {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
 }
 
 /* ── Badges ── */

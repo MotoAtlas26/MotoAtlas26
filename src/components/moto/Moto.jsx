@@ -7,7 +7,7 @@ import { formatFileSize, formatDateTime, getFileIcon } from '../../utils/formatt
 import { getMotoModel, getMotoModelsArray } from '../../constants/motoModels'
 import { Mantenimiento } from './Mantenimiento'
 import { Documentacion } from './Documentacion'
-import { TrashIcon, UploadIcon, FileTextIcon } from '../shared/Icons'
+import { TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon } from '../shared/Icons'
 
 export const Moto = () => {
   const { selectedMoto } = useGPX()
@@ -18,41 +18,66 @@ export const Moto = () => {
   const [selectedMotoId, setSelectedMotoId] = useState(selectedMoto)
   const [view, setView] = useState('dashboard')
 
+  const tabs = [
+    { id: 'dashboard', label: 'Resumen', icon: HomeIcon },
+    { id: 'facturas', label: 'Facturas', icon: FileTextIcon },
+    { id: 'mantenimiento', label: 'Mantenimiento', icon: WrenchIcon },
+    { id: 'documentacion', label: 'Documentación', icon: ShieldIcon },
+  ]
+
   return (
-    <>
-      <SectionHeader
-        title={moto.name}
-        subtitle="Panel de Control Moto"
-        actions={
-          <div className="header-actions">
-            <Link to="/moto/facturas" className="btn-outline">
-              📂 Ver Facturas
-            </Link>
-            <button className="btn-primary" onClick={() => setShowInvoiceModal(true)}>
-              Subir Facturas
-            </button>
+    <div>
+      {/* Cabecera superior moderna */}
+      <header className="moto-header">
+        <div className="moto-header-left">
+          <h1 className="moto-title">{moto.name}</h1>
+          <span className="moto-subtitle">Panel de Control Moto</span>
+        </div>
+        <div className="moto-header-actions">
+          <button 
+            className="btn-primary" 
+            onClick={() => setShowInvoiceModal(true)}
+            aria-label="Subir factura"
+          >
+            <PlusIcon size={18} />
+            <span>Subir Factura</span>
+          </button>
+          <Link 
+            to="/fileUpload" 
+            className="btn-secondary"
+            aria-label="Registrar mantenimiento"
+          >
+            <PlusIcon size={18} />
+            <span>Registrar Mantenimiento</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Barra de pestañas segmentada moderna */}
+      <nav className="moto-segmented-tabs" role="tablist" aria-label="Secciones de la moto">
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          const isActive = view === tab.id
+          return (
             <button
-              className="btn-secondary"
-              onClick={() => setView(prev => prev === 'mantenimiento' ? 'dashboard' : 'mantenimiento')}
+              key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`panel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              className={`moto-tab ${isActive ? 'active' : ''}`}
+              onClick={() => setView(tab.id)}
             >
-              {view === 'mantenimiento' ? 'Dashboard' : 'Mantenimiento'}
+              <Icon size={18} />
+              <span>{tab.label}</span>
             </button>
-            <button
-              className="btn-secondary"
-              onClick={() => setView(prev => prev === 'documentacion' ? 'dashboard' : 'documentacion')}
-            >
-              {view === 'documentacion' ? 'Dashboard' : 'Documentación'}
-            </button>
-            <Link to="/fileUpload" className="btn-outline">
-              Registrar Mantenimiento
-            </Link>
-          </div>
-        }
-      />
+          )
+        })}
+      </nav>
 
       {/* Dashboard Técnico Real */}
       {view === 'dashboard' && (
-        <section className="moto-stats-overview">
+        <section className="moto-stats-overview" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
           {/* 4 Tarjetas KPI */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
             {/* Card 1: Gasto total acumulado */}
@@ -166,7 +191,9 @@ export const Moto = () => {
             <div style={{ 
               height: '150px', 
               overflowY: 'auto',
-              borderRadius: 'var(--radius-sm)'
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-card)',
+              border: '1px solid var(--color-card-border)'
             }}>
               <p style={{ padding: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>
                 Cargar actividad reciente...
@@ -177,10 +204,27 @@ export const Moto = () => {
       )}
 
       {/* Vista de Mantenimiento */}
-      {view === 'mantenimiento' && <Mantenimiento />}
+      {view === 'mantenimiento' && (
+        <div id="panel-mantenimiento" role="tabpanel" aria-labelledby="tab-mantenimiento">
+          <Mantenimiento />
+        </div>
+      )}
 
       {/* Vista de Documentación (Guantera Digital) */}
-      {view === 'documentacion' && <Documentacion />}
+      {view === 'documentacion' && (
+        <div id="panel-documentacion" role="tabpanel" aria-labelledby="tab-documentacion">
+          <Documentacion />
+        </div>
+      )}
+
+      {/* Vista de Facturas */}
+      {view === 'facturas' && (
+        <div id="panel-facturas" role="tabpanel" aria-labelledby="tab-facturas">
+          <p style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+            Vista de Facturas - Próximamente
+          </p>
+        </div>
+      )}
 
       {/* Modal de Facturas */}
       <Modal
@@ -195,7 +239,7 @@ export const Moto = () => {
           onUploadComplete={() => setShowInvoiceModal(false)}
         />
       </Modal>
-    </>
+    </div>
   )
 }
 
