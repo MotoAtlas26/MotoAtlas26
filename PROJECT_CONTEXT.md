@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/24/2026, 1:30:22 PM
+> Generado el 11/24/2026, 5:24:46 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -17,6 +17,29 @@
     📄 Facturas.jsx
     📄 Mantenimiento.jsx
     📄 Moto.jsx
+    📄 MotoDashboard.jsx
+    📁 documentacion
+      📄 Documentacion.jsx
+      📄 DocumentacionForm.jsx
+      📄 DocumentacionList.jsx
+      📄 DocumentacionViewer.jsx
+    📁 facturas
+      📄 FacturaForm.jsx
+      📄 FacturaList.jsx
+      📄 FacturaViewerModal.jsx
+      📄 Facturas.jsx
+      📄 FormFields.jsx
+      📄 InvoiceItemRow.jsx
+      📄 ItemsTable.jsx
+      📄 ManualItemsSection.jsx
+      📄 ParsedDataPreview.jsx
+      📄 UploadZone.jsx
+    📁 mantenimiento
+      📄 Mantenimiento.jsx
+      📄 MantenimientoConstants.js
+      📄 MantenimientoForm.jsx
+      📄 MantenimientoList.jsx
+      📄 SuspensionSetupForm.jsx
   📁 settings
     📄 CatalogDetailView.jsx
     📄 Settings.jsx
@@ -90,21 +113,85 @@
 - Archivo: src/components/layout/Sidebar.jsx
 - Exports: Sidebar, Sidebar
 
-### Documentacion
-- Archivo: src/components/moto/Documentacion.jsx
-- Exports: Documentacion, Documentacion
-
-### Facturas
-- Archivo: src/components/moto/Facturas.jsx
-- Exports: Facturas, Facturas
-
-### Mantenimiento
-- Archivo: src/components/moto/Mantenimiento.jsx
-- Exports: Mantenimiento
-
 ### Moto
 - Archivo: src/components/moto/Moto.jsx
 - Exports: Moto, Moto
+
+### MotoDashboard
+- Archivo: src/components/moto/MotoDashboard.jsx
+- Exports: MotoDashboard, MotoDashboard
+
+### Documentacion
+- Archivo: src/components/moto/documentacion/Documentacion.jsx
+- Exports: Documentacion, Documentacion
+
+### DocumentacionForm
+- Archivo: src/components/moto/documentacion/DocumentacionForm.jsx
+- Exports: DocumentacionForm, DocumentacionForm
+
+### DocumentacionList
+- Archivo: src/components/moto/documentacion/DocumentacionList.jsx
+- Exports: DocumentacionList, DocumentacionList
+
+### DocumentacionViewer
+- Archivo: src/components/moto/documentacion/DocumentacionViewer.jsx
+- Exports: DocumentacionViewer, DocumentacionViewer
+
+### FacturaForm
+- Archivo: src/components/moto/facturas/FacturaForm.jsx
+- Exports: FacturaForm, FacturaForm
+
+### FacturaList
+- Archivo: src/components/moto/facturas/FacturaList.jsx
+- Exports: FacturaList, FacturaList
+
+### FacturaViewerModal
+- Archivo: src/components/moto/facturas/FacturaViewerModal.jsx
+- Exports: FacturaViewerModal, FacturaViewerModal
+
+### Facturas
+- Archivo: src/components/moto/facturas/Facturas.jsx
+- Exports: Facturas, Facturas
+
+### FormFields
+- Archivo: src/components/moto/facturas/FormFields.jsx
+- Exports: FormFields, FormFields
+
+### InvoiceItemRow
+- Archivo: src/components/moto/facturas/InvoiceItemRow.jsx
+- Exports: InvoiceItemRow, InvoiceItemRow
+
+### ItemsTable
+- Archivo: src/components/moto/facturas/ItemsTable.jsx
+- Exports: ItemsTable, ItemsTable
+
+### ManualItemsSection
+- Archivo: src/components/moto/facturas/ManualItemsSection.jsx
+- Exports: ManualItemsSection, ManualItemsSection
+
+### ParsedDataPreview
+- Archivo: src/components/moto/facturas/ParsedDataPreview.jsx
+- Exports: ParsedDataPreview, ParsedDataPreview
+
+### UploadZone
+- Archivo: src/components/moto/facturas/UploadZone.jsx
+- Exports: UploadZone, UploadZone
+
+### Mantenimiento
+- Archivo: src/components/moto/mantenimiento/Mantenimiento.jsx
+- Exports: Mantenimiento, Mantenimiento
+
+### MantenimientoForm
+- Archivo: src/components/moto/mantenimiento/MantenimientoForm.jsx
+- Exports: MantenimientoForm
+
+### MantenimientoList
+- Archivo: src/components/moto/mantenimiento/MantenimientoList.jsx
+- Exports: MantenimientoList
+
+### SuspensionSetupForm
+- Archivo: src/components/moto/mantenimiento/SuspensionSetupForm.jsx
+- Exports: SuspensionSetupForm
 
 ### CatalogDetailView
 - Archivo: src/components/settings/CatalogDetailView.jsx
@@ -258,36 +345,6 @@
 - Importa **{ MotoIcon, RouteIcon, SettingsIcon, HomeIcon }** desde `../shared/Icons`
 - Importa **{ MotoAtlas26Logo }** desde `../shared`
 
-### src/components/moto/Documentacion.jsx
-- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
-- Importa **{ useGPX }** desde `../../context/GPXContext`
-- Importa **{ Modal, SectionHeader, BlobImage }** desde `../shared`
-- Importa **{ formatDate, formatFileSize }** desde `../../utils/formatters`
-- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
-- Importa **{ TrashIcon, EditIcon, EyeIcon, DownloadIcon, AlertIcon, CheckIcon, CalendarIcon, PhoneIcon, ShieldIcon, FileIcon, UploadIcon }** desde `../shared/Icons`
-
-### src/components/moto/Facturas.jsx
-- Importa **{ Link }** desde `react-router-dom`
-- Importa **{ ImageUpload }** desde `../upload/ImageUpload`
-- Importa **{ db }** desde `../../services/db`
-- Importa **{ useGPX }** desde `../../context/GPXContext`
-- Importa **{ EmptyState, Modal, SectionHeader, BlobImage }** desde `../shared`
-- Importa **{ formatFileSize, formatDate, getFileIcon }** desde `../../utils/formatters`
-- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
-- Importa **{ TrashIcon, UploadIcon }** desde `../shared/Icons`
-- Importa **{ useBlobUrl }** desde `../../hooks/useBlobUrl`
-- Importa **invoiceParser** desde `../../utils/invoiceParser`
-
-### src/components/moto/Mantenimiento.jsx
-- Importa **{ Link }** desde `react-router-dom`
-- Importa **{ db }** desde `../../services/db`
-- Importa **{ useGPX }** desde `../../context/GPXContext`
-- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
-- Importa **{ EmptyState, Modal, SectionHeader, BlobImage }** desde `../shared`
-- Importa **{ formatFileSize, formatDate, formatDateTime }** desde `../../utils/formatters`
-- Importa **{ getMotoModel, getMotoModelsArray, getDefaultMotoModel }** desde `../../constants/motoModels`
-- Importa **{ TrashIcon, CheckIcon, EditIcon }** desde `../shared/Icons`
-
 ### src/components/moto/Moto.jsx
 - Importa **{ Link }** desde `react-router-dom`
 - Importa **{ ImageUpload }** desde `../upload/ImageUpload`
@@ -296,8 +353,116 @@
 - Importa **{ formatFileSize, formatDateTime, getFileIcon }** desde `../../utils/formatters`
 - Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
 - Importa **{ Mantenimiento }** desde `./Mantenimiento`
-- Importa **{ Documentacion }** desde `./Documentacion`
+- Importa **Documentacion** desde `./Documentacion`
+- Importa **{ MotoDashboard }** desde `./MotoDashboard`
 - Importa **{ TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon }** desde `../shared/Icons`
+
+### src/components/moto/MotoDashboard.jsx
+- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
+- Importa **{ useGPX }** desde `../../context/GPXContext`
+- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
+- Importa **{ formatDate }** desde `../../utils/formatters`
+- Importa **{ HomeIcon, WrenchIcon, ShieldIcon, FileTextIcon, CalendarIcon, PhoneIcon, FolderIcon, PlusIcon, TrashIcon, EditIcon, EyeIcon, DownloadIcon, UploadIcon }** desde `../shared/Icons`
+
+### src/components/moto/documentacion/Documentacion.jsx
+- Importa **{ useDatabase }** desde `../../../hooks/useDatabase`
+- Importa **{ useGPX }** desde `../../../context/GPXContext`
+- Importa **{ Modal, SectionHeader }** desde `../../shared`
+- Importa **{ formatDate, formatFileSize }** desde `../../../utils/formatters`
+- Importa **{ getMotoModel, getMotoModelsArray }** desde `../../../constants/motoModels`
+- Importa **{ TrashIcon, EditIcon, EyeIcon, DownloadIcon, CalendarIcon, PhoneIcon, ShieldIcon, FileIcon, UploadIcon }** desde `../../shared/Icons`
+- Importa **{ DocumentacionForm }** desde `./DocumentacionForm`
+- Importa **{ DocumentacionViewer }** desde `./DocumentacionViewer`
+- Importa **{ DocumentacionList }** desde `./DocumentacionList`
+
+### src/components/moto/documentacion/DocumentacionForm.jsx
+- Importa **React** desde `react`
+- Importa **{ formatFileSize }** desde `../../../utils/formatters`
+- Importa **{ UploadIcon, ShieldIcon, FileIcon }** desde `../../shared/Icons`
+
+### src/components/moto/documentacion/DocumentacionList.jsx
+- Importa **React** desde `react`
+- Importa **{ formatDate, formatFileSize }** desde `../../../utils/formatters`
+- Importa **{ getMotoModel }** desde `../../../constants/motoModels`
+- Importa **{ TrashIcon, EditIcon, EyeIcon, DownloadIcon, CalendarIcon, PhoneIcon, ShieldIcon, FileIcon, UploadIcon }** desde `../../shared/Icons`
+
+### src/components/moto/documentacion/DocumentacionViewer.jsx
+- Importa **React** desde `react`
+- Importa **{ formatDate, formatFileSize }** desde `../../../utils/formatters`
+- Importa **{ DownloadIcon, EyeIcon, EditIcon, TrashIcon, CalendarIcon, PhoneIcon, ShieldIcon, FileIcon }** desde `../../shared/Icons`
+
+### src/components/moto/facturas/FacturaForm.jsx
+- Importa **{ db }** desde `../../../services/db`
+- Importa **{ SectionHeader }** desde `../../shared`
+- Importa **invoiceParser** desde `../../../utils/invoiceParser`
+- Importa **{ UploadZone }** desde `./UploadZone`
+- Importa **{ ParsedDataPreview }** desde `./ParsedDataPreview`
+- Importa **{ FormFields }** desde `./FormFields`
+- Importa **{ ItemsTable }** desde `./ItemsTable`
+- Importa **{ ManualItemsSection }** desde `./ManualItemsSection`
+
+### src/components/moto/facturas/FacturaList.jsx
+- Importa **React** desde `react`
+- Importa **{ EmptyState }** desde `../../shared`
+- Importa **{ formatDate, getFileIcon }** desde `../../../utils/formatters`
+- Importa **{ TrashIcon }** desde `../../shared/Icons`
+
+### src/components/moto/facturas/FacturaViewerModal.jsx
+- Importa **React** desde `react`
+- Importa **{ useBlobUrl }** desde `../../../hooks/useBlobUrl`
+- Importa **{ EmptyState }** desde `../../shared`
+
+### src/components/moto/facturas/Facturas.jsx
+- Importa **{ db }** desde `../../../services/db`
+- Importa **{ useGPX }** desde `../../../context/GPXContext`
+- Importa **{ Modal, SectionHeader }** desde `../../shared`
+- Importa **{ getMotoModel }** desde `../../../constants/motoModels`
+- Importa **{ FacturaForm }** desde `./FacturaForm`
+- Importa **{ FacturaList }** desde `./FacturaList`
+- Importa **{ FacturaViewerModal }** desde `./FacturaViewerModal`
+
+### src/components/moto/facturas/FormFields.jsx
+- Importa **React** desde `react`
+
+### src/components/moto/facturas/InvoiceItemRow.jsx
+- Importa **{ TrashIcon }** desde `../../shared/Icons`
+
+### src/components/moto/facturas/ItemsTable.jsx
+- Importa **React** desde `react`
+- Importa **{ InvoiceItemRow }** desde `./InvoiceItemRow`
+
+### src/components/moto/facturas/ManualItemsSection.jsx
+- Importa **React** desde `react`
+- Importa **{ InvoiceItemRow }** desde `./InvoiceItemRow`
+
+### src/components/moto/facturas/ParsedDataPreview.jsx
+- Importa **React** desde `react`
+
+### src/components/moto/facturas/UploadZone.jsx
+- Importa **React** desde `react`
+- Importa **{ UploadIcon }** desde `../../shared/Icons`
+
+### src/components/moto/mantenimiento/Mantenimiento.jsx
+- Importa **{ useGPX }** desde `../../../context/GPXContext`
+- Importa **{ useDatabase }** desde `../../../hooks/useDatabase`
+- Importa **{ getMotoModel }** desde `../../../constants/motoModels`
+- Importa **{ SectionHeader }** desde `../../../components/shared`
+- Importa **{ MantenimientoForm }** desde `./MantenimientoForm`
+- Importa **{ MantenimientoList }** desde `./MantenimientoList`
+- Importa **{ MAINTENANCE_CATEGORIES }** desde `./MantenimientoConstants`
+
+### src/components/moto/mantenimiento/MantenimientoForm.jsx
+- Importa **{ MAINTENANCE_CATEGORIES, SUSPENSION_FIELDS }** desde `./MantenimientoConstants`
+- Importa **{ SuspensionSetupForm }** desde `./SuspensionSetupForm`
+
+### src/components/moto/mantenimiento/MantenimientoList.jsx
+- Importa **React** desde `react`
+- Importa **{ MAINTENANCE_CATEGORIES }** desde `./MantenimientoConstants`
+- Importa **{ EmptyState }** desde `../../../components/shared`
+
+### src/components/moto/mantenimiento/SuspensionSetupForm.jsx
+- Importa **React** desde `react`
+- Importa **{ SUSPENSION_FIELDS }** desde `./MantenimientoConstants`
 
 ### src/components/settings/CatalogDetailView.jsx
 - Importa **{ MotoIcon, WrenchIcon, PaletteIcon, PlusIcon, EditIcon, TrashIcon, ChevronLeftIcon, ShieldIcon, CircleIcon }** desde `../shared/Icons`
