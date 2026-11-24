@@ -17,5 +17,17 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-pdf': ['pdfjs-dist'],
+          'vendor-map': ['leaflet', '@react-leaflet/core', 'react-leaflet'],
+          'vendor-db': ['dexie'],
+          'vendor-router': ['react-router-dom'],
+          'vendor-react': ['react', 'react-dom'],
+        },
+      },
+    },
   },
 })

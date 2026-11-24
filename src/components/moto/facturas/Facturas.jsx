@@ -145,6 +145,10 @@ export const Facturas = () => {
           workshops={workshops}
           selectedMotoId={selectedMoto}
           onSave={handleSaveInvoice}
+          onCancel={() => {
+            setOpenInvoiceForm(false)
+            setSelectedInvoice(null)
+          }}
           initialData={selectedInvoice || {}}
         />
       </Modal>
