@@ -305,7 +305,7 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
     <div className="catalog-detail-view">
       {/* Back button - own row, left aligned */}
       <div className="catalog-back-row">
-        <button className="btn btn-ghost" onClick={onBack}>
+        <button className="btn btn-secondary" onClick={onBack}>
           <ChevronLeftIcon size={18} /> Volver a Listados
         </button>
       </div>
