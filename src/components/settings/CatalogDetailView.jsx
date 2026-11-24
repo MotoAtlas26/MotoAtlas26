@@ -56,29 +56,36 @@ const CATALOG_CONFIG = {
   neumaticos: {
     title: 'Neumáticos',
     icon: CircleIcon,
-    description: 'Catálogo de neumáticos: marca, modelo, medidas y presiones recomendadas',
+    description: 'Catálogo de neumáticos: marca, modelo, medidas y presiones recomendadas por rueda',
     fields: [
-      { name: 'brand', label: 'Marca', type: 'text', required: true, placeholder: 'Ej: Michelin, Pirelli, Metzeler' },
-      { name: 'model', label: 'Modelo', type: 'text', required: true, placeholder: 'Ej: Anakee Wild, Scorpion Rally' },
-      { name: 'frontSize', label: 'Medida Delantero', type: 'text', placeholder: 'Ej: 90/90-21' },
-      { name: 'rearSize', label: 'Medida Trasero', type: 'text', placeholder: 'Ej: 150/70-18' },
-      { name: 'frontPressure', label: 'Presión Del. (bar)', type: 'number', step: 0.1, min: 0, placeholder: '2.3' },
-      { name: 'rearPressure', label: 'Presión Tras. (bar)', type: 'number', step: 0.1, min: 0, placeholder: '2.5' },
+      // Rueda Delantera
+      { name: 'frontBrand', label: 'Marca Delantera *', type: 'text', required: true, placeholder: 'Ej: Michelin, Pirelli, Metzeler' },
+      { name: 'frontModel', label: 'Modelo Delantero *', type: 'text', required: true, placeholder: 'Ej: Anakee Wild, Scorpion Rally' },
+      { name: 'frontSize', label: 'Medida Delantera', type: 'text', placeholder: 'Ej: 90/90-21' },
+      { name: 'recommendedFrontBar', label: 'Presión Delantera (bar)', type: 'number', step: 0.1, min: 0, placeholder: '2.3' },
+      // Rueda Trasera
+      { name: 'rearBrand', label: 'Marca Trasera *', type: 'text', required: true, placeholder: 'Ej: Michelin, Pirelli, Metzeler' },
+      { name: 'rearModel', label: 'Modelo Trasero *', type: 'text', required: true, placeholder: 'Ej: Anakee Wild, Scorpion Rally' },
+      { name: 'rearSize', label: 'Medida Trasera', type: 'text', placeholder: 'Ej: 150/70-18' },
+      { name: 'recommendedRearBar', label: 'Presión Trasera (bar)', type: 'number', step: 0.1, min: 0, placeholder: '2.5' },
+      // Compatibilidad (se guardan automáticamente)
+      { name: 'brand', label: 'Marca (compatibilidad)', type: 'hidden' },
+      { name: 'model', label: 'Modelo (compatibilidad)', type: 'hidden' },
       { name: 'notes', label: 'Notas', type: 'textarea', placeholder: 'Uso recomendado, observaciones...' },
     ],
     formatItem: (item) => (
       <div className="catalog-item">
         <div className="catalog-item-main">
-          <div className="catalog-item-title">{item.brand} {item.model}</div>
+          <div className="catalog-item-title">
+            {item.frontBrand || item.brand} {item.frontModel || item.model}
+          </div>
           <div className="catalog-item-meta">
             <span className="meta-badge tire-badge">
-              Del: {item.frontSize || '—'} · Tras: {item.rearSize || '—'}
+              Del: {(item.frontBrand || item.brand)} {(item.frontModel || item.model)} {(item.frontSize && `(${item.frontSize})`)} · {(item.recommendedFrontBar ? `${item.recommendedFrontBar} bar` : '—')}
             </span>
-            {(item.frontPressure || item.rearPressure) && (
-              <span className="meta-badge pressure-badge">
-                Presión: {item.frontPressure ? `${item.frontPressure} bar` : '—'} / {item.rearPressure ? `${item.rearPressure} bar` : '—'}
-              </span>
-            )}
+            <span className="meta-badge tire-badge">
+              Tras: {(item.rearBrand || item.brand)} {(item.rearModel || item.model)} {(item.rearSize && `(${item.rearSize})`)} · {(item.recommendedRearBar ? `${item.recommendedRearBar} bar` : '—')}
+            </span>
           </div>
           {item.notes && <div className="catalog-item-notes">{item.notes}</div>}
         </div>
@@ -253,6 +260,12 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
         }
       })
 
+      // For neumaticos: save brand/model as fallback from frontBrand/frontModel for compatibility
+      if (catalogKey === 'neumaticos') {
+        dataToSave.brand = dataToSave.frontBrand || ''
+        dataToSave.model = dataToSave.frontModel || ''
+      }
+
       if (editingItem) {
         await dbProps[dbMethods.edit](editingItem.id, dataToSave)
       } else {
@@ -345,71 +358,97 @@ export function CatalogDetailView({ catalogKey, onBack, dbProps }) {
             {formError && <div className="form-error">{formError}</div>}
             
             <form onSubmit={handleSubmit} className="catalog-form">
-              {config.fields.map((field) => (
-                <div key={field.name} className="form-group">
-                  <label className="form-label">
-                    {field.label}
-                    {field.required && <span className="required">*</span>}
-                  </label>
-                  {field.type === 'textarea' ? (
-                    <textarea
-                      className="form-textarea"
-                      name={field.name}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      placeholder={field.placeholder}
-                      rows={3}
-                    />
-                  ) : field.type === 'select' ? (
-                    <div className="select-wrapper">
-                      <select
-                        className="form-select"
+              {config.fields.map((field) => {
+                // Skip hidden fields (used for compatibility)
+                if (field.type === 'hidden') return null
+                
+                // Special handling for neumaticos: add "Copiar delantera a trasera" button after rearBrand label
+                const isNeumaticosRearBrand = catalogKey === 'neumaticos' && field.name === 'rearBrand'
+                
+                return (
+                  <div key={field.name} className="form-group">
+                    <label className="form-label">
+                      {field.label}
+                      {field.required && <span className="required">*</span>}
+                      {isNeumaticosRearBrand && (
+                        <button
+                          type="button"
+                          className="btn-copy-front"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              rearBrand: prev.frontBrand || '',
+                              rearModel: prev.frontModel || '',
+                              rearSize: prev.frontSize || '',
+                              recommendedRearBar: prev.recommendedFrontBar || ''
+                            }))
+                          }}
+                          title="Copiar datos de la rueda delantera"
+                        >
+                          Copiar delantera
+                        </button>
+                      )}
+                    </label>
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        className="form-textarea"
                         name={field.name}
                         value={formData[field.name] || ''}
                         onChange={handleInputChange}
+                        placeholder={field.placeholder}
+                        rows={3}
+                      />
+                    ) : field.type === 'select' ? (
+                      <div className="select-wrapper">
+                        <select
+                          className="form-select"
+                          name={field.name}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          required={field.required}
+                        >
+                          <option value="">Seleccionar...</option>
+                          {field.options?.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : field.type === 'color' ? (
+                      <div className="color-input-wrapper">
+                        <input
+                          type="color"
+                          className="color-input"
+                          name={field.name}
+                          value={formData[field.name] || field.defaultValue || '#000000'}
+                          onChange={handleInputChange}
+                        />
+                        <input
+                          type="text"
+                          className="color-hex-input"
+                          value={formData[field.name] || field.defaultValue || '#000000'}
+                          onChange={handleInputChange}
+                          name={field.name}
+                          placeholder="#RRGGBB"
+                          maxLength={7}
+                        />
+                      </div>
+                    ) : (
+                      <input
+                        type={field.type}
+                        className="form-input"
+                        name={field.name}
+                        value={formData[field.name] || ''}
+                        onChange={handleInputChange}
+                        placeholder={field.placeholder}
+                        min={field.min}
+                        max={field.max}
+                        step={field.step}
                         required={field.required}
-                      >
-                        <option value="">Seleccionar...</option>
-                        {field.options?.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : field.type === 'color' ? (
-                    <div className="color-input-wrapper">
-                      <input
-                        type="color"
-                        className="color-input"
-                        name={field.name}
-                        value={formData[field.name] || field.defaultValue || '#000000'}
-                        onChange={handleInputChange}
                       />
-                      <input
-                        type="text"
-                        className="color-hex-input"
-                        value={formData[field.name] || field.defaultValue || '#000000'}
-                        onChange={handleInputChange}
-                        name={field.name}
-                        placeholder="#RRGGBB"
-                        maxLength={7}
-                      />
-                    </div>
-                  ) : (
-                    <input
-                      type={field.type}
-                      className="form-input"
-                      name={field.name}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      placeholder={field.placeholder}
-                      min={field.min}
-                      max={field.max}
-                      step={field.step}
-                      required={field.required}
-                    />
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                )
+              })}
               
               <div className="form-actions">
                 <button type="button" className="btn btn-ghost" onClick={handleCancel}>

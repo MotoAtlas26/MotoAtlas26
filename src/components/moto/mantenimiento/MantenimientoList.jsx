@@ -95,7 +95,16 @@ export const MantenimientoList = ({
               {maintenances.map((m) => {
                 const isTiresCategory = m.category === 'Neumáticos y presiones'
                 const tireInfo = isTiresCategory && m.suspensionSetup?.neumaticos
-                  ? `${m.suspensionSetup.neumaticos.brand || ''} ${m.suspensionSetup.neumaticos.model || ''} · ${m.suspensionSetup.neumaticos.frontSize || ''} / ${m.suspensionSetup.neumaticos.rearSize || ''}`.trim()
+                  ? (
+                    <>
+                      <div style={{ fontWeight: 500 }}>
+                        Del: {(m.suspensionSetup.neumaticos.frontBrand || m.suspensionSetup.neumaticos.brand || '')} {(m.suspensionSetup.neumaticos.frontModel || m.suspensionSetup.neumaticos.model || '')} {(m.suspensionSetup.neumaticos.frontSize && `(${m.suspensionSetup.neumaticos.frontSize})`)} · {(m.suspensionSetup.neumaticos.delantero?.value ? `${m.suspensionSetup.neumaticos.delantero.value} bar` : '—')}
+                      </div>
+                      <div style={{ fontSize: '0.85em', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                        Tras: {(m.suspensionSetup.neumaticos.rearBrand || m.suspensionSetup.neumaticos.brand || '')} {(m.suspensionSetup.neumaticos.rearModel || m.suspensionSetup.neumaticos.model || '')} {(m.suspensionSetup.neumaticos.rearSize && `(${m.suspensionSetup.neumaticos.rearSize})`)} · {(m.suspensionSetup.neumaticos.trasero?.value ? `${m.suspensionSetup.neumaticos.trasero.value} bar` : '—')}
+                      </div>
+                    </>
+                  )
                   : '—'
                 return (
                   <tr key={m.id} style={{ background: 'var(--color-card)', color: 'var(--color-text-primary)' }}>

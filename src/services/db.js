@@ -99,6 +99,25 @@ export class MotoAtlas26DB extends Dexie {
       tires: '++id, brand, model, frontSize, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt',
       documentTypes: '++id, code, name, hasExpiration, isInsurance, createdAt'
     })
+
+    // Version 10: Add separate front/rear brand/model fields to tires table for per-wheel tire specs
+    this.version(10).stores({
+      tracks: '++id, name, date, distance, elevationGain, duration, createdAt, updatedAt',
+      trackPoints: '++id, trackId, lat, lng, elevation, timestamp, sequence',
+      images: '++id, type, trackId, motoId, fileName, mimeType, size, blob, description, tags, aspectRatio, colorTheme, createdAt',
+      maintenance: '++id, motoId, type, date, mileage, cost, workshop, description, createdAt',
+      motoProfile: '++id, model, year, vin, purchaseDate, currentMileage, updatedAt',
+      settings: '++id, key, value, updatedAt',
+      uploads: '++id, type, fileName, size, status, localPath, remoteUrl, createdAt',
+      workshops: '++id, type, name, specialty, isDefault, createdAt',
+      motorcycles: '++id, brand, model, year, plate, purchaseDate, createdAt',
+      customThemes: '++id, name, brand, createdAt',
+      invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt',
+      motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      tires: '++id, brand, model, frontBrand, frontModel, frontSize, rearBrand, rearModel, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt',
+      documentTypes: '++id, code, name, hasExpiration, isInsurance, createdAt'
+    })
     
     this.tracks.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()

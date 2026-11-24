@@ -159,10 +159,16 @@ export const SuspensionSetupForm = ({
                 if (tireId) {
                   const tire = tires.find(t => t.id === parseInt(tireId))
                   if (tire) {
-                    onFieldChange('neumaticos', 'brand', { value: tire.brand })
-                    onFieldChange('neumaticos', 'model', { value: tire.model })
+                    // Populate separate front/rear fields (new schema)
+                    onFieldChange('neumaticos', 'frontBrand', { value: tire.frontBrand || tire.brand })
+                    onFieldChange('neumaticos', 'frontModel', { value: tire.frontModel || tire.model })
                     onFieldChange('neumaticos', 'frontSize', { value: tire.frontSize })
+                    onFieldChange('neumaticos', 'rearBrand', { value: tire.rearBrand || tire.brand })
+                    onFieldChange('neumaticos', 'rearModel', { value: tire.rearModel || tire.model })
                     onFieldChange('neumaticos', 'rearSize', { value: tire.rearSize })
+                    // Also populate legacy fields for compatibility
+                    onFieldChange('neumaticos', 'brand', { value: tire.frontBrand || tire.brand })
+                    onFieldChange('neumaticos', 'model', { value: tire.frontModel || tire.model })
                     if (tire.recommendedFrontBar && !setup?.neumaticos?.delantero?.value) {
                       onFieldChange('neumaticos', 'delantero', { value: tire.recommendedFrontBar.toString(), unit: 'bar' })
                     }
@@ -177,59 +183,113 @@ export const SuspensionSetupForm = ({
               <option value="">Otro / Introducción manual</option>
               {tires.map(tire => (
                 <option key={tire.id} value={tire.id}>
-                  {tire.brand} · {tire.model} · {tire.frontSize} / {tire.rearSize}
+                  {(tire.frontBrand || tire.brand)} {(tire.frontModel || tire.model)} · {(tire.rearBrand || tire.brand)} {(tire.rearModel || tire.model)} · {tire.frontSize} / {tire.rearSize}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Campos del neumático (editables manualmente) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-            <div>
-              <span className="form-label">Marca</span>
-              <input
-                type="text"
-                value={setup?.neumaticos?.brand || ''}
-                onChange={(e) => onFieldChange('neumaticos', 'brand', { value: e.target.value })}
-                className="form-input form-input-sm"
-                placeholder="Ej: Michelin, Pirelli, Metzeler..."
-              />
+          {/* Campos del neumático - Rueda Delantera */}
+          <div style={{ marginBottom: 'var(--space-2)' }}>
+            <span className="form-label" style={{ fontWeight: 600, color: 'var(--color-primary)' }}>Rueda Delantera</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div>
+                <span className="form-label">Marca</span>
+                <input
+                  type="text"
+                  value={setup?.neumaticos?.frontBrand || setup?.neumaticos?.brand || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'frontBrand', { value: e.target.value })}
+                  className="form-input form-input-sm"
+                  placeholder="Ej: Michelin, Pirelli, Metzeler..."
+                />
+              </div>
+              <div>
+                <span className="form-label">Modelo</span>
+                <input
+                  type="text"
+                  value={setup?.neumaticos?.frontModel || setup?.neumaticos?.model || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'frontModel', { value: e.target.value })}
+                  className="form-input form-input-sm"
+                  placeholder="Ej: Anakee Wild, Scorpion Rally..."
+                />
+              </div>
             </div>
-            <div>
-              <span className="form-label">Modelo</span>
-              <input
-                type="text"
-                value={setup?.neumaticos?.model || ''}
-                onChange={(e) => onFieldChange('neumaticos', 'model', { value: e.target.value })}
-                className="form-input form-input-sm"
-                placeholder="Ej: Anakee Adventure, Scorpion Trail III..."
-              />
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-            <div>
-              <span className="form-label">Medida Delantero</span>
-              <input
-                type="text"
-                value={setup?.neumaticos?.frontSize || ''}
-                onChange={(e) => onFieldChange('neumaticos', 'frontSize', { value: e.target.value })}
-                className="form-input form-input-sm"
-                placeholder="Ej: 90/90-21, 110/80 R19"
-              />
-            </div>
-            <div>
-              <span className="form-label">Medida Trasero</span>
-              <input
-                type="text"
-                value={setup?.neumaticos?.rearSize || ''}
-                onChange={(e) => onFieldChange('neumaticos', 'rearSize', { value: e.target.value })}
-                className="form-input form-input-sm"
-                placeholder="Ej: 150/70 R18, 150/70 R17"
-              />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div>
+                <span className="form-label">Medida</span>
+                <input
+                  type="text"
+                  value={setup?.neumaticos?.frontSize || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'frontSize', { value: e.target.value })}
+                  className="form-input form-input-sm"
+                  placeholder="Ej: 90/90-21, 110/80 R19"
+                />
+              </div>
+              <div>
+                <span className="form-label">Presión (bar)</span>
+                <input
+                  type="number"
+                  value={setup?.neumaticos?.delantero?.value || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'delantero', { value: e.target.value, unit: 'bar' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Presiones de Neumáticos - unidad en la etiqueta */}
+          {/* Campos del neumático - Rueda Trasera */}
+          <div style={{ marginBottom: 'var(--space-2)' }}>
+            <span className="form-label" style={{ fontWeight: 600, color: 'var(--color-primary)' }}>Rueda Trasera</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div>
+                <span className="form-label">Marca</span>
+                <input
+                  type="text"
+                  value={setup?.neumaticos?.rearBrand || setup?.neumaticos?.brand || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'rearBrand', { value: e.target.value })}
+                  className="form-input form-input-sm"
+                  placeholder="Ej: Michelin, Pirelli, Metzeler..."
+                />
+              </div>
+              <div>
+                <span className="form-label">Modelo</span>
+                <input
+                  type="text"
+                  value={setup?.neumaticos?.rearModel || setup?.neumaticos?.model || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'rearModel', { value: e.target.value })}
+                  className="form-input form-input-sm"
+                  placeholder="Ej: Anakee Wild, Scorpion Rally..."
+                />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div>
+                <span className="form-label">Medida</span>
+                <input
+                  type="text"
+                  value={setup?.neumaticos?.rearSize || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'rearSize', { value: e.target.value })}
+                  className="form-input form-input-sm"
+                  placeholder="Ej: 150/70 R18, 150/70 R17"
+                />
+              </div>
+              <div>
+                <span className="form-label">Presión (bar)</span>
+                <input
+                  type="number"
+                  value={setup?.neumaticos?.trasero?.value || ''}
+                  onChange={(e) => onFieldChange('neumaticos', 'trasero', { value: e.target.value, unit: 'bar' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Presiones de Neumáticos - unidad en la etiqueta (legacy, kept for compatibility) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
             <div>
               <span className="form-label">Delantero (bar)</span>
