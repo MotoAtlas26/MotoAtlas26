@@ -9,7 +9,7 @@ import { useGPX } from '../../context/GPXContext'
 import { useDatabase } from '../../hooks/useDatabase'
 import { EmptyState, Modal, SectionHeader, BlobImage } from '../shared'
 import { formatFileSize, formatDate, formatDateTime } from '../../utils/formatters'
-import { getMotoModelsArray, getDefaultMotoModel } from '../../constants/motoModels'
+import { getMotoModel, getMotoModelsArray, getDefaultMotoModel } from '../../constants/motoModels'
 import { TrashIcon, CheckIcon, EditIcon } from '../shared/Icons'
 
 /**
