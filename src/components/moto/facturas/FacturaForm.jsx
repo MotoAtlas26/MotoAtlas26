@@ -374,8 +374,7 @@ export const FacturaForm = ({
         <button
           type="button"
           className="btn btn-outline"
-          onClick={() => onCancel?.()}
-          disabled={open && !initialData.id}
+          onClick={() => onCancel && onCancel()}
         >
           Cancelar
         </button>
