@@ -222,6 +222,23 @@ export function useDatabase() {
     return await db.deleteMotoDocument(id)
   }, [])
 
+  // Tires (Catálogo de Neumáticos)
+  const saveTire = useCallback(async (tireData) => {
+    return await db.saveTire(tireData)
+  }, [])
+
+  const getAllTires = useCallback(async () => {
+    return await db.getAllTires()
+  }, [])
+
+  const updateTire = useCallback(async (id, updates) => {
+    return await db.updateTire(id, updates)
+  }, [])
+
+  const deleteTire = useCallback(async (id) => {
+    return await db.deleteTire(id)
+  }, [])
+
   // Utilities
   const clearAllData = useCallback(async () => {
     return await db.clearAllData()
@@ -302,6 +319,11 @@ export function useDatabase() {
     getMotoDocumentsByType,
     updateMotoDocument,
     deleteMotoDocument,
+    // Tires (Catálogo de Neumáticos)
+    saveTire,
+    getAllTires,
+    updateTire,
+    deleteTire,
     // Utilities
     clearAllData,
     getDatabaseSize,

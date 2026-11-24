@@ -86,9 +86,12 @@ const MaintenanceCategoryRow = ({ category, onToggle }) => {
 }
 
 /**
- * Componente de ajustes técnicos de suspensión
+ * Componente de ajustes técnicos de suspensión y neumáticos
+ * Muestra bloques exclusivos según la categoría:
+ * - 'Reglaje / Tarado de suspensiones': solo horquilla + amortiguador
+ * - 'Neumáticos y presiones': solo presiones de neumáticos
  */
-const SuspensionSetupForm = ({ category, setup, onFieldChange, onToggle }) => {
+const SuspensionSetupForm = ({ category, setup, onFieldChange }) => {
   const isSuspension = category === 'Reglaje / Tarado de suspensiones'
   const isTires = category === 'Neumáticos y presiones'
 
@@ -100,139 +103,215 @@ const SuspensionSetupForm = ({ category, setup, onFieldChange, onToggle }) => {
         {isSuspension ? 'Ajustes de Suspensión' : 'Presiones de Neumáticos'}
       </h5>
 
-      {/* Toggle for suspension details */}
+      {/* Bloque de Suspensiones (solo para categoría 'Reglaje / Tarado de suspensiones') */}
       {isSuspension && (
-        <button
-          type="button"
-          className="btn btn-outline btn-outline-sm"
-          onClick={onToggle}
-          style={{ float: 'right', fontSize: '0.75rem', padding: '0 var(--space-2)' }}
-        >
-          {setup ? 'Ocultar ajustes' : 'Mostrar ajustes de suspensión'}
-        </button>
+        <>
+          {/* Horquilla Delantera */}
+          <div style={{ marginBottom: 'var(--space-3)' }}>
+            <span className="form-label">Horquilla Delantera</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div>
+                <span>Precarga</span>
+                <input
+                  type="number"
+                  value={setup?.horquilla?.precarga?.value || ''}
+                  onChange={(e) => onFieldChange('horquilla', 'precarga', { value: e.target.value, unit: 'vueltas' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="0.5"
+                />
+                <span className="form-label-sm">{setup?.horquilla?.precarga?.unit || 'vueltas'}</span>
+              </div>
+              <div>
+                <span>Compresión</span>
+                <input
+                  type="number"
+                  value={setup?.horquilla?.compresion?.value || ''}
+                  onChange={(e) => onFieldChange('horquilla', 'compresion', { value: e.target.value, unit: 'clics' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="1"
+                />
+                <span className="form-label-sm">{setup?.horquilla?.compresion?.unit || 'clics'}</span>
+              </div>
+            </div>
+            <div style={{ marginTop: 'var(--space-1)', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+              <div>
+                <span>Extensión / Rebote</span>
+                <input
+                  type="number"
+                  value={setup?.horquilla?.extension?.value || ''}
+                  onChange={(e) => onFieldChange('horquilla', 'extension', { value: e.target.value, unit: 'clics' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="1"
+                />
+                <span className="form-label-sm">{setup?.horquilla?.extension?.unit || 'clics'}</span>
+              </div>
+              <div>
+                <span>Compresión Alta</span>
+                <input
+                  type="number"
+                  value={setup?.horquilla?.compresion_alta?.value || ''}
+                  onChange={(e) => onFieldChange('horquilla', 'compresion_alta', { value: e.target.value, unit: 'clics' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="1"
+                />
+                <span className="form-label-sm">{setup?.horquilla?.compresion_alta?.unit || 'clics'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Amortiguador Trasero */}
+          <div style={{ marginBottom: 'var(--space-3)' }}>
+            <span className="form-label">Amortiguador Trasero</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div>
+                <span>Precarga</span>
+                <input
+                  type="number"
+                  value={setup?.amortiguador?.precarga?.value || ''}
+                  onChange={(e) => onFieldChange('amortiguador', 'precarga', { value: e.target.value, unit: 'clics/mm' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="0.5"
+                />
+                <span className="form-label-sm">{setup?.amortiguador?.precarga?.unit || 'clics/mm'}</span>
+              </div>
+              <div>
+                <span>Compresión Alta</span>
+                <input
+                  type="number"
+                  value={setup?.amortiguador?.compresion_alta?.value || ''}
+                  onChange={(e) => onFieldChange('amortiguador', 'compresion_alta', { value: e.target.value, unit: 'clics' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="1"
+                />
+                <span className="form-label-sm">{setup?.amortiguador?.compresion_alta?.unit || 'clics'}</span>
+              </div>
+            </div>
+            <div style={{ marginTop: 'var(--space-1)', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+              <div>
+                <span>Compresión Baja</span>
+                <input
+                  type="number"
+                  value={setup?.amortiguador?.compresion_baja?.value || ''}
+                  onChange={(e) => onFieldChange('amortiguador', 'compresion_baja', { value: e.target.value, unit: 'clics' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="1"
+                />
+                <span className="form-label-sm">{setup?.amortiguador?.compresion_baja?.unit || 'clics'}</span>
+              </div>
+              <div>
+                <span>Extensión / Rebote</span>
+                <input
+                  type="number"
+                  value={setup?.amortiguador?.extension?.value || ''}
+                  onChange={(e) => onFieldChange('amortiguador', 'extension', { value: e.target.value, unit: 'clics' })}
+                  className="form-input form-input-sm"
+                  min="0"
+                  step="1"
+                />
+                <span className="form-label-sm">{setup?.amortiguador?.extension?.unit || 'clics'}</span>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
-      {/* Horquilla Delantera */}
-      <div style={{ marginBottom: 'var(--space-3)' }}>
-        <span className="form-label">Horquilla Delantera</span>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
-          <div>
-            <span>Precarga</span>
-            <input
-              type="number"
-              value={setup?.horquilla?.precarga?.value || ''}
-              onChange={(e) => onFieldChange('horquilla', 'precarga', { value: e.target.value, unit: 'vueltas' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="0.5"
-            />
-            <span className="form-label-sm">{setup?.horquilla?.precarga?.unit || 'vueltas'}</span>
-          </div>
-          <div>
-            <span>Compresión</span>
-            <input
-              type="number"
-              value={setup?.horquilla?.compresion?.value || ''}
-              onChange={(e) => onFieldChange('horquilla', 'compresion', { value: e.target.value, unit: 'clics' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="1"
-            />
-            <span className="form-label-sm">{setup?.horquilla?.compresion?.unit || 'clics'}</span>
-          </div>
-        </div>
-        <div style={{ marginTop: 'var(--space-1)', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-          <div>
-            <span>Extensión / Rebote</span>
-            <input
-              type="number"
-              value={setup?.horquilla?.extension?.value || ''}
-              onChange={(e) => onFieldChange('horquilla', 'extension', { value: e.target.value, unit: 'clics' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="1"
-            />
-            <span className="form-label-sm">{setup?.horquilla?.extension?.unit || 'clics'}</span>
-          </div>
-          <div>
-            <span>Compresión Alta</span>
-            <input
-              type="number"
-              value={setup?.horquilla?.compresion_alta?.value || ''}
-              onChange={(e) => onFieldChange('horquilla', 'compresion_alta', { value: e.target.value, unit: 'clics' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="1"
-            />
-            <span className="form-label-sm">{setup?.horquilla?.compresion_alta?.unit || 'clics'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Amortiguador Trasero */}
-      <div style={{ marginBottom: 'var(--space-3)' }}>
-        <span className="form-label">Amortiguador Trasero</span>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
-          <div>
-            <span>Precarga</span>
-            <input
-              type="number"
-              value={setup?.amortiguador?.precarga?.value || ''}
-              onChange={(e) => onFieldChange('amortiguador', 'precarga', { value: e.target.value, unit: 'clics/mm' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="0.5"
-            />
-            <span className="form-label-sm">{setup?.amortiguador?.precarga?.unit || 'clics/mm'}</span>
-          </div>
-          <div>
-            <span>Compresión Alta</span>
-            <input
-              type="number"
-              value={setup?.amortiguador?.compresion_alta?.value || ''}
-              onChange={(e) => onFieldChange('amortiguador', 'compresion_alta', { value: e.target.value, unit: 'clics' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="1"
-            />
-            <span className="form-label-sm">{setup?.amortiguador?.compresion_alta?.unit || 'clics'}</span>
-          </div>
-        </div>
-        <div style={{ marginTop: 'var(--space-1)', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-          <div>
-            <span>Compresión Baja</span>
-            <input
-              type="number"
-              value={setup?.amortiguador?.compresion_baja?.value || ''}
-              onChange={(e) => onFieldChange('amortiguador', 'compresion_baja', { value: e.target.value, unit: 'clics' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="1"
-            />
-            <span className="form-label-sm">{setup?.amortiguador?.compresion_baja?.unit || 'clics'}</span>
-          </div>
-          <div>
-            <span>Extensión / Rebote</span>
-            <input
-              type="number"
-              value={setup?.amortiguador?.extension?.value || ''}
-              onChange={(e) => onFieldChange('amortiguador', 'extension', { value: e.target.value, unit: 'clics' })}
-              className="form-input form-input-sm"
-              min="0"
-              step="1"
-            />
-            <span className="form-label-sm">{setup?.amortiguador?.extension?.unit || 'clics'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Presiones de Neumáticos */}
+      {/* Bloque de Presiones de Neumáticos (solo para categoría 'Neumáticos y presiones') */}
       {isTires && (
         <div style={{ marginBottom: 'var(--space-3)' }}>
-          <span className="form-label">Presiones de Neumáticos</span>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+          {/* Selector de neumático del catálogo */}
+          <div style={{ marginBottom: 'var(--space-3)' }}>
+            <span className="form-label">Neumático montado</span>
+            <select
+              value={selectedTireId || ''}
+              onChange={(e) => {
+                const tireId = e.target.value
+                setSelectedTireId(tireId)
+                if (tireId) {
+                  const tire = tires.find(t => t.id === parseInt(tireId))
+                  if (tire) {
+                    // Auto-rellenar campos del neumático
+                    onFieldChange('neumaticos', 'brand', { value: tire.brand })
+                    onFieldChange('neumaticos', 'model', { value: tire.model })
+                    onFieldChange('neumaticos', 'frontSize', { value: tire.frontSize })
+                    onFieldChange('neumaticos', 'rearSize', { value: tire.rearSize })
+                    // Auto-rellenar presiones recomendadas solo si los inputs están vacíos
+                    if (tire.recommendedFrontBar && !setup?.neumaticos?.delantero?.value) {
+                      onFieldChange('neumaticos', 'delantero', { value: tire.recommendedFrontBar.toString(), unit: 'bar' })
+                    }
+                    if (tire.recommendedRearBar && !setup?.neumaticos?.trasero?.value) {
+                      onFieldChange('neumaticos', 'trasero', { value: tire.recommendedRearBar.toString(), unit: 'bar' })
+                    }
+                  }
+                }
+              }}
+              className="form-select form-select-md"
+            >
+              <option value="">Otro / Introducción manual</option>
+              {tires.map(tire => (
+                <option key={tire.id} value={tire.id}>
+                  {tire.brand} · {tire.model} · {tire.frontSize} / {tire.rearSize}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Campos del neumático (editables manualmente) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
             <div>
-              <span>Delantero</span>
+              <span className="form-label">Marca</span>
+              <input
+                type="text"
+                value={setup?.neumaticos?.brand || ''}
+                onChange={(e) => onFieldChange('neumaticos', 'brand', { value: e.target.value })}
+                className="form-input form-input-sm"
+                placeholder="Ej: Michelin, Pirelli, Metzeler..."
+              />
+            </div>
+            <div>
+              <span className="form-label">Modelo</span>
+              <input
+                type="text"
+                value={setup?.neumaticos?.model || ''}
+                onChange={(e) => onFieldChange('neumaticos', 'model', { value: e.target.value })}
+                className="form-input form-input-sm"
+                placeholder="Ej: Anakee Adventure, Scorpion Trail III..."
+              />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+            <div>
+              <span className="form-label">Medida Delantero</span>
+              <input
+                type="text"
+                value={setup?.neumaticos?.frontSize || ''}
+                onChange={(e) => onFieldChange('neumaticos', 'frontSize', { value: e.target.value })}
+                className="form-input form-input-sm"
+                placeholder="Ej: 90/90-21, 110/80 R19"
+              />
+            </div>
+            <div>
+              <span className="form-label">Medida Trasero</span>
+              <input
+                type="text"
+                value={setup?.neumaticos?.rearSize || ''}
+                onChange={(e) => onFieldChange('neumaticos', 'rearSize', { value: e.target.value })}
+                className="form-input form-input-sm"
+                placeholder="Ej: 150/70 R18, 150/70 R17"
+              />
+            </div>
+          </div>
+
+          {/* Presiones de Neumáticos - unidad en la etiqueta */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+            <div>
+              <span className="form-label">Delantero (bar)</span>
               <input
                 type="number"
                 value={setup?.neumaticos?.delantero?.value || ''}
@@ -241,10 +320,9 @@ const SuspensionSetupForm = ({ category, setup, onFieldChange, onToggle }) => {
                 min="0"
                 step="0.1"
               />
-              <span className="form-label-sm">{setup?.neumaticos?.delantero?.unit || 'bar'}</span>
             </div>
             <div>
-              <span>Trasero</span>
+              <span className="form-label">Trasero (bar)</span>
               <input
                 type="number"
                 value={setup?.neumaticos?.trasero?.value || ''}
@@ -253,11 +331,10 @@ const SuspensionSetupForm = ({ category, setup, onFieldChange, onToggle }) => {
                 min="0"
                 step="0.1"
               />
-              <span className="form-label-sm">{setup?.neumaticos?.trasero?.unit || 'bar'}</span>
             </div>
           </div>
           <div style={{ marginTop: 'var(--space-1)' }}>
-            <span>Escenario</span>
+            <span className="form-label">Escenario</span>
             <select
               onChange={(e) => onFieldChange('neumaticos', 'escenario', { value: e.target.value })}
               className="form-select form-select-sm"
@@ -277,7 +354,7 @@ const SuspensionSetupForm = ({ category, setup, onFieldChange, onToggle }) => {
 export const Mantenimiento = () => {
   const { selectedMoto } = useGPX()
   const moto = getMotoModel(selectedMoto)
-  const { saveMaintenanceRecord, getMaintenancesByMoto, getAllMaintenances } = useDatabase()
+  const { saveMaintenanceRecord, getMaintenancesByMoto, getAllMaintenances, getAllTires, deleteMaintenanceRecord } = useDatabase()
   const [motos, setMotos] = useState([])
   const [maintenances, setMaintenances] = useState([])
   const [form, setForm] = useState({
@@ -289,12 +366,14 @@ export const Mantenimiento = () => {
     title: '',
     description: '',
     cost: 0,
-    includeSuspension: false,
     suspensionSetup: {}
   })
   const [filtered, setFiltered] = useState({ category: 'all', moto: 'all', workshop: 'all' })
   const [editingId, setEditingId] = useState(null)
   const [copiedSetup, setCopiedSetup] = useState(null)
+  const [viewingDetailId, setViewingDetailId] = useState(null)
+  const [tires, setTires] = useState([])
+  const [selectedTireId, setSelectedTireId] = useState('')
 
   // Cargar motos disponibles
   useEffect(() => {
@@ -324,6 +403,15 @@ export const Mantenimiento = () => {
     }
     loadMaintenances()
   }, [filtered.moto, filtered.category])
+
+  // Cargar catálogo de neumáticos
+  useEffect(() => {
+    const loadTires = async () => {
+      const allTires = await getAllTires()
+      setTires(allTires)
+    }
+    loadTires()
+  }, [getAllTires])
 
   // Calcular KPIs
   const totalGastado = maintenances
@@ -431,19 +519,17 @@ export const Mantenimiento = () => {
     <div>
       <SectionHeader
         title="Bitácora Técnica de Mantenimiento"
-        subtitle={`Moto: ${moto.name || 'Selecciona una moto'}`
-      }>
-        <div style={{ float: 'right', marginTop: 'var(--space-1)' }}>
+        subtitle={`Moto: ${moto.name || 'Selecciona una moto'}`}
+        actions={
           <button
             type="button"
             className="btn btn-primary"
             onClick={() => setEditingId(null)}
-            style={{ marginRight: 'var(--space-1)' }}
           >
-            Nuevo Mantenimiento
+            + Registrar Mantenimiento
           </button>
-        </div>
-      </SectionHeader>
+        }
+      />
 
       {/* Formulario de Registro */}
       <div style={{ margin: 'var(--space-4) 0' }}>
@@ -553,41 +639,24 @@ export const Mantenimiento = () => {
           />
         </div>
 
-        {/* Bloque técnico de suspensiones/presiones */}
-        <SuspensionSetupForm
-          category={form.category}
-          setup={form.suspensionSetup}
-          onFieldChange={(section, field, value) => {
-            setForm(prev => ({
-              ...prev,
-              suspensionSetup: {
-                ...prev.suspensionSetup,
-                [section]: {
-                  ...prev.suspensionSetup[section],
-                  [field]: value
+        {/* Bloque técnico de suspensiones/presiones - se renderiza según la categoría seleccionada */}
+        {(form.category === 'Reglaje / Tarado de suspensiones' || form.category === 'Neumáticos y presiones') && (
+          <SuspensionSetupForm
+            category={form.category}
+            setup={form.suspensionSetup}
+            onFieldChange={(section, field, value) => {
+              setForm(prev => ({
+                ...prev,
+                suspensionSetup: {
+                  ...prev.suspensionSetup,
+                  [section]: {
+                    ...prev.suspensionSetup[section],
+                    [field]: value
+                  }
                 }
-              }
-            }))
-          }}
-          onToggle={() => setForm(prev => ({
-            ...prev,
-            includeSuspension: !prev.includeSuspension
-          }))}
-        />
-
-        {/* Checkbox opcional para mostrar bloque de suspensión */}
-        {form.category !== 'Reglaje / Tarado de suspensiones' && form.category !== 'Neumáticos y presiones' && (
-          <div style={{ marginTop: 'var(--space-3)' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <input
-                type="checkbox"
-                checked={form.includeSuspension}
-                onChange={(e) => setForm(prev => ({ ...prev, includeSuspension: e.target.checked }))}
-                style={{ accentColor: 'var(--color-primary)' }}
-              />
-              {form.includeSuspension ? 'Incluir ajustes de suspensión / presiones' : 'Ocultar ajustes de suspensión / presiones'}
-            </label>
-          </div>
+              }))
+            }}
+          />
         )}
 
         <div style={{ marginTop: 'var(--space-4)' }}>
@@ -652,52 +721,60 @@ export const Mantenimiento = () => {
                 <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Fecha</th>
                 <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Moto</th>
                 <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Categoría</th>
+                <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Neumático</th>
                 <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Km</th>
                 <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Coste (€)</th>
                 <th style={{ padding: 'var(--space-2)', textAlign: 'left' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {maintenances.map((m) => (
-                <tr key={m.id} style={{ background: m.id === editingId ? 'var(--color-primary)' : 'var(--color-card)', color: 'var(--color-text-primary)' }}>
-                  <td style={{ padding: 'var(--space-2)' }}>{new Date(m.date).toLocaleDateString()}</td>
-                  <td style={{ padding: 'var(--space-2)' }}>{m.motoId || '—'}</td>
-                  <td style={{ padding: 'var(--space-2)' }}>{m.category || '—'}</td>
-                  <td style={{ padding: 'var(--space-2)' }}>{m.mileage || 0}</td>
-                  <td style={{ padding: 'var(--space-2)' }}>{m.cost || 0} €</td>
-                  <td style={{ padding: 'var(--space-2)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-outline-sm"
-                        onClick={() => {
-                          const setup = m.suspensionSetup || {}
-                          copySetup(setup)
-                          setEditingId(m.id)
-                        }}
-                      >
-                        Copiar
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-danger btn-danger-sm"
-                        onClick={async () => {
-                          if (window.confirm('¿Eliminar este mantenimiento?')) {
-                            await deleteMaintenanceRecord(m.id)
-                            const loadMaintenances = async () => {
-                              const all = await getAllMaintenances()
-                              setMaintenances(all)
+              {maintenances.map((m) => {
+                const isTiresCategory = m.category === 'Neumáticos y presiones'
+                const tireInfo = isTiresCategory && m.suspensionSetup?.neumaticos
+                  ? `${m.suspensionSetup.neumaticos.brand || ''} ${m.suspensionSetup.neumaticos.model || ''} · ${m.suspensionSetup.neumaticos.frontSize || ''} / ${m.suspensionSetup.neumaticos.rearSize || ''}`.trim()
+                  : '—'
+                return (
+                  <tr key={m.id} style={{ background: m.id === editingId ? 'var(--color-primary)' : 'var(--color-card)', color: 'var(--color-text-primary)' }}>
+                    <td style={{ padding: 'var(--space-2)' }}>{new Date(m.date).toLocaleDateString()}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{m.motoId || '—'}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{m.category || '—'}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{tireInfo}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{m.mileage || 0}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{m.cost || 0} €</td>
+                    <td style={{ padding: 'var(--space-2)' }}>
+                      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-outline-sm"
+                          onClick={() => {
+                            const setup = m.suspensionSetup || {}
+                            copySetup(setup)
+                            setEditingId(m.id)
+                          }}
+                        >
+                          Copiar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-danger-sm"
+                          onClick={async () => {
+                            if (window.confirm('¿Eliminar este mantenimiento?')) {
+                              await deleteMaintenanceRecord(m.id)
+                              const loadMaintenances = async () => {
+                                const all = await getAllMaintenances()
+                                setMaintenances(all)
+                              }
+                              loadMaintenances()
                             }
-                            loadMaintenances()
-                          }
-                        }}
-                      >
-                        Borrar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                          }}
+                        >
+                          Borrar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

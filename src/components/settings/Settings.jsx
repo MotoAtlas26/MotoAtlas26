@@ -55,7 +55,7 @@ export const Settings = () => {
     loadSettings, 
     saveSetting 
   } = useGPX()
-  const { getWorkshops, saveWorkshop, editWorkshop, removeWorkshop, getMotorcycles, saveMotorcycle, editMotorcycle, removeMotorcycle, getCustomThemes, saveCustomTheme, editCustomTheme, removeCustomTheme } = useDatabase()
+  const { getWorkshops, saveWorkshop, editWorkshop, removeWorkshop, getMotorcycles, saveMotorcycle, editMotorcycle, removeMotorcycle, getCustomThemes, saveCustomTheme, editCustomTheme, removeCustomTheme, getAllTires, saveTire, updateTire, deleteTire } = useDatabase()
   const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow } = useAuth()
   const [backups, setBackups] = useState([])
   const [loadingBackups, setLoadingBackups] = useState(false)
@@ -76,6 +76,23 @@ export const Settings = () => {
   })
   const [deleteCustomThemeConfirm, setDeleteCustomThemeConfirm] = useState(null)
   const [customThemeFormError, setCustomThemeFormError] = useState(null)
+
+  // Tires state
+  const [tires, setTires] = useState([])
+  const [loadingTires, setLoadingTires] = useState(true)
+  const [showTireForm, setShowTireForm] = useState(false)
+  const [editingTire, setEditingTire] = useState(null)
+  const [tireFormData, setTireFormData] = useState({
+    brand: '',
+    model: '',
+    frontSize: '',
+    rearSize: '',
+    recommendedFrontBar: '',
+    recommendedRearBar: '',
+    notes: ''
+  })
+  const [deleteTireConfirm, setDeleteTireConfirm] = useState(null)
+  const [tireFormError, setTireFormError] = useState(null)
 
   // Available themes state (predefined + custom)
   const [availableThemes, setAvailableThemes] = useState([])
@@ -174,6 +191,21 @@ export const Settings = () => {
     }
     loadCustomThemes()
   }, [getCustomThemes])
+
+  // Load tires on mount
+  useEffect(() => {
+    const loadTires = async () => {
+      try {
+        const data = await getAllTires()
+        setTires(data)
+      } catch (error) {
+        console.error('Error loading tires:', error)
+      } finally {
+        setLoadingTires(false)
+      }
+    }
+    loadTires()
+  }, [getAllTires])
 
   const loadAvailableThemes = useCallback(async () => {
     try {
@@ -312,6 +344,90 @@ export const Settings = () => {
       console.error('Error deleting workshop:', error)
     } finally {
       setDeleteConfirm(null)
+    }
+  }
+
+  // Tire form handlers
+  const resetTireForm = () => {
+    setTireFormData({
+      brand: '',
+      model: '',
+      frontSize: '',
+      rearSize: '',
+      recommendedFrontBar: '',
+      recommendedRearBar: '',
+      notes: ''
+    })
+    setEditingTire(null)
+    setTireFormError(null)
+  }
+
+  const handleTireSubmit = async (e) => {
+    e.preventDefault()
+    setTireFormError(null)
+    
+    if (!tireFormData.brand.trim()) {
+      setTireFormError('La marca es obligatoria')
+      return
+    }
+    if (!tireFormData.model.trim()) {
+      setTireFormError('El modelo es obligatorio')
+      return
+    }
+    if (!tireFormData.frontSize.trim()) {
+      setTireFormError('La medida delantera es obligatoria')
+      return
+    }
+    if (!tireFormData.rearSize.trim()) {
+      setTireFormError('La medida trasera es obligatoria')
+      return
+    }
+
+    try {
+      if (editingTire) {
+        await updateTire(editingTire.id, tireFormData)
+      } else {
+        await saveTire(tireFormData)
+      }
+      const data = await getAllTires()
+      setTires(data)
+      resetTireForm()
+      setShowTireForm(false)
+    } catch (error) {
+      console.error('Error saving tire:', error)
+      setTireFormError('Error al guardar. Inténtalo de nuevo.')
+    }
+  }
+
+  const handleTireEdit = (tire) => {
+    setEditingTire(tire)
+    setTireFormData({
+      brand: tire.brand,
+      model: tire.model,
+      frontSize: tire.frontSize,
+      rearSize: tire.rearSize,
+      recommendedFrontBar: tire.recommendedFrontBar || '',
+      recommendedRearBar: tire.recommendedRearBar || '',
+      notes: tire.notes || ''
+    })
+    setShowTireForm(true)
+    setTireFormError(null)
+  }
+
+  const handleTireDeleteConfirm = (tire) => {
+    setDeleteTireConfirm(tire)
+  }
+
+  const handleTireDelete = async () => {
+    if (!deleteTireConfirm) return
+    try {
+      await deleteTire(deleteTireConfirm.id)
+      const data = await getAllTires()
+      setTires(data)
+    } catch (error) {
+      console.error('Error deleting tire:', error)
+    } finally {
+      setDeleteTireConfirm(null)
     }
   }
 
@@ -695,7 +811,7 @@ export const Settings = () => {
     <section className="settings-section">
       <SectionHeader 
         title="Listados" 
-        subtitle="Gestiona tus talleres, proveedores y modelos de motos"
+        subtitle="Gestiona tus talleres, proveedores, modelos de motos y neumáticos"
         actions={
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
             <button 
@@ -1500,6 +1616,136 @@ export const Settings = () => {
           </Modal>
         )}
 
+        {/* Tire Form Modal */}
+        {showTireForm && (
+          <Modal 
+            isOpen={showTireForm} 
+            onClose={() => { setShowTireForm(false); resetTireForm(); }}
+            title={editingTire ? 'Editar Neumático' : 'Nuevo Neumático'}
+            size="lg"
+          >
+            <form onSubmit={handleTireSubmit} className="tire-form">
+              {tireFormError && <div className="form-error">{tireFormError}</div>}
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Marca <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={tireFormData.brand}
+                    onChange={(e) => setTireFormData(prev => ({ ...prev, brand: e.target.value }))}
+                    placeholder="Ej: Michelin, Pirelli, Metzeler, Continental, Bridgestone, Dunlop"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Modelo <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={tireFormData.model}
+                    onChange={(e) => setTireFormData(prev => ({ ...prev, model: e.target.value }))}
+                    placeholder="Ej: Anakee Adventure, Scorpion Trail III, Tourance Next 2, TKC 70"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Medida Delantero <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={tireFormData.frontSize}
+                    onChange={(e) => setTireFormData(prev => ({ ...prev, frontSize: e.target.value }))}
+                    placeholder="Ej: 90/90-21, 110/80 R19"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Medida Trasero <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={tireFormData.rearSize}
+                    onChange={(e) => setTireFormData(prev => ({ ...prev, rearSize: e.target.value }))}
+                    placeholder="Ej: 150/70 R18, 150/70 R17"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Presión Delantero (bar)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    className="form-input"
+                    value={tireFormData.recommendedFrontBar}
+                    onChange={(e) => setTireFormData(prev => ({ ...prev, recommendedFrontBar: e.target.value }))}
+                    placeholder="Ej: 2.3"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Presión Trasero (bar)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    className="form-input"
+                    value={tireFormData.recommendedRearBar}
+                    onChange={(e) => setTireFormData(prev => ({ ...prev, recommendedRearBar: e.target.value }))}
+                    placeholder="Ej: 2.5"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Notas</label>
+                <textarea
+                  className="form-textarea"
+                  value={tireFormData.notes}
+                  onChange={(e) => setTireFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Observaciones, uso recomendado, durabilidad..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="button" className="btn btn-outline" onClick={() => { setShowTireForm(false); resetTireForm(); }}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-gold">
+                  {editingTire ? 'Actualizar' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </Modal>
+        )}
+
+        {/* Delete Tire Confirmation Modal */}
+        {deleteTireConfirm && (
+          <Modal 
+            isOpen={!!deleteTireConfirm} 
+            onClose={() => setDeleteTireConfirm(null)}
+            title="Eliminar Neumático"
+            size="sm"
+          >
+            <div className="confirm-dialog">
+              <p>¿Estás seguro de que quieres eliminar <strong>{deleteTireConfirm.brand} {deleteTireConfirm.model}</strong>?</p>
+              <p className="confirm-warning">Esta acción no se puede deshacer.</p>
+              <div className="confirm-actions">
+                <button className="btn-outline" onClick={() => setDeleteTireConfirm(null)}>Cancelar</button>
+                <button className="btn-danger" onClick={handleTireDelete}>Eliminar</button>
+              </div>
+            </div>
+          </Modal>
+        )}
+
         {/* Delete Custom Theme Confirmation Modal */}
         {deleteCustomThemeConfirm && (
           <Modal 
@@ -1580,6 +1826,88 @@ export const Settings = () => {
                       <button 
                         className="btn-icon danger" 
                         onClick={() => handleDeleteConfirm(workshop)}
+                        title="Eliminar"
+                      >
+                        <TrashIcon size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SettingCard>
+
+        {/* Tires List */}
+        <SettingCard
+          icon="🛞"
+          title="Neumáticos"
+          description="Catálogo de neumáticos con medidas y presiones recomendadas"
+          actions={
+            <button 
+              className="btn btn-gold" 
+              onClick={() => { resetTireForm(); setShowTireForm(true); }}
+            >
+              <PlusIcon size={16} /> Añadir Neumático
+            </button>
+          }
+        >
+          {loadingTires ? (
+            <div className="loading-state">
+              <RefreshCwIcon size={24} spin />
+              <span>Cargando neumáticos...</span>
+            </div>
+          ) : tires.length === 0 ? (
+            <EmptyState
+              icon="🛞"
+              title="Sin neumáticos registrados"
+              description="Añade tu primer neumático al catálogo para tener un registro de medidas y presiones recomendadas."
+              action={
+                <button className="btn-gold" onClick={() => { resetTireForm(); setShowTireForm(true); }}>
+                  <PlusIcon size={16} /> Añadir primer neumático
+                </button>
+              }
+            />
+          ) : (
+            <div className="tires-list">
+              {tires.map((tire) => (
+                <div key={tire.id} className="tire-card">
+                  <div className="tire-header">
+                    <div className="tire-main">
+                      <div className="tire-name-row">
+                        <span className="tire-brand">{tire.brand}</span>
+                        <span className="tire-model">{tire.model}</span>
+                      </div>
+                      <div className="tire-meta">
+                        <span className="tire-sizes">
+                          <span className="tire-size-label">Del:</span> {tire.frontSize}
+                          <span className="tire-size-separator">/</span>
+                          <span className="tire-size-label">Tras:</span> {tire.rearSize}
+                        </span>
+                        {(tire.recommendedFrontBar || tire.recommendedRearBar) && (
+                          <span className="tire-pressure">
+                            <span className="tire-pressure-label">Presión:</span>
+                            {tire.recommendedFrontBar && <span>Del {tire.recommendedFrontBar} bar</span>}
+                            {tire.recommendedFrontBar && tire.recommendedRearBar && <span className="tire-pressure-separator">/</span>}
+                            {tire.recommendedRearBar && <span>Tras {tire.recommendedRearBar} bar</span>}
+                          </span>
+                        )}
+                        {tire.notes && (
+                          <span className="tire-notes">{tire.notes}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="tire-actions">
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleTireEdit(tire)}
+                        title="Editar"
+                      >
+                        <EditIcon size={18} />
+                      </button>
+                      <button 
+                        className="btn-icon danger" 
+                        onClick={() => handleTireDeleteConfirm(tire)}
                         title="Eliminar"
                       >
                         <TrashIcon size={18} />

@@ -622,17 +622,12 @@ export const Facturas = () => {
         title={`Facturas - ${moto.name}`}
         subtitle="Gestión de facturas y documentación"
         actions={
-          <div className="header-actions">
-            <Link to="/moto" className="btn btn-outline">
-              📂 Volver al Dashboard
-            </Link>
-            <button
-              className="btn btn-primary"
-              onClick={openInvoiceFormModal}
-            >
-              Documentos Subir Factura
-            </button>
-          </div>
+          <button
+            className="btn btn-primary"
+            onClick={openInvoiceFormModal}
+          >
+            + Subir Factura
+          </button>
         }
       />
 

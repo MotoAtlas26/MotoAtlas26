@@ -62,6 +62,24 @@ export class MotoAtlas26DB extends Dexie {
       maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt',
       motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt'
     })
+
+    // Version 8: Add tires table for tire catalog
+    this.version(8).stores({
+      tracks: '++id, name, date, distance, elevationGain, duration, createdAt, updatedAt',
+      trackPoints: '++id, trackId, lat, lng, elevation, timestamp, sequence',
+      images: '++id, type, trackId, motoId, fileName, mimeType, size, blob, description, tags, aspectRatio, colorTheme, createdAt',
+      maintenance: '++id, motoId, type, date, mileage, cost, workshop, description, createdAt',
+      motoProfile: '++id, model, year, vin, purchaseDate, currentMileage, updatedAt',
+      settings: '++id, key, value, updatedAt',
+      uploads: '++id, type, fileName, size, status, localPath, remoteUrl, createdAt',
+      workshops: '++id, type, name, specialty, isDefault, createdAt',
+      motorcycles: '++id, brand, model, year, plate, purchaseDate, createdAt',
+      customThemes: '++id, name, brand, createdAt',
+      invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt',
+      motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt',
+      tires: '++id, brand, model, frontSize, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt'
+    })
     
     this.tracks.hook('creating', (primKey, obj, trans) => {
       obj.createdAt = new Date()
@@ -108,6 +126,16 @@ export class MotoAtlas26DB extends Dexie {
       window.dispatchEvent(new CustomEvent('db:changed'))
     })
     this.motoDocuments.hook('deleting', (primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.tires.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.tires.hook('updating', (modifications, primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.tires.hook('deleting', (primKey, obj, trans) => {
       window.dispatchEvent(new CustomEvent('db:changed'))
     })
   }
@@ -398,6 +426,31 @@ export class MotoAtlas26DB extends Dexie {
     return await this.motoDocuments.delete(id)
   }
 
+  // ============ NEUMÁTICOS (CATÁLOGO) ============
+
+  async saveTire(tireData) {
+    return await this.tires.add({
+      ...tireData,
+      createdAt: new Date()
+    })
+  }
+
+  async getTire(id) {
+    return await this.tires.get(id)
+  }
+
+  async getAllTires() {
+    return await this.tires.orderBy('brand').toArray()
+  }
+
+  async updateTire(id, updates) {
+    return await this.tires.update(id, updates)
+  }
+
+  async deleteTire(id) {
+    return await this.tires.delete(id)
+  }
+
   // ============ TALLERES Y MANTENIMIENTO PROPIO ============
 
   async getAllWorkshops() {
@@ -534,6 +587,7 @@ export class MotoAtlas26DB extends Dexie {
       this.invoices,
       this.maintenances,
       this.motoDocuments,
+      this.tires,
       async () => {
         await Promise.all([
           this.tracks.clear(),
@@ -548,7 +602,8 @@ export class MotoAtlas26DB extends Dexie {
           this.customThemes.clear(),
           this.invoices.clear(),
           this.maintenances.clear(),
-          this.motoDocuments.clear()
+          this.motoDocuments.clear(),
+          this.tires.clear()
         ])
       }
     )
@@ -563,12 +618,13 @@ export class MotoAtlas26DB extends Dexie {
     const invoices = await this.invoices.count()
     const maintenances = await this.maintenances.count()
     const motoDocuments = await this.motoDocuments.count()
+    const tires = await this.tires.count()
 
-    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments }
+    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments, tires }
   }
 
   async exportAll() {
-    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments] = await Promise.all([
+    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments, tires] = await Promise.all([
       this.tracks.toArray(),
       this.trackPoints.toArray(),
       this.images.toArray(),
@@ -581,11 +637,12 @@ export class MotoAtlas26DB extends Dexie {
       this.customThemes.toArray(),
       this.invoices.toArray(),
       this.maintenances.toArray(),
-      this.motoDocuments.toArray()
+      this.motoDocuments.toArray(),
+      this.tires.toArray()
     ])
 
     return {
-      version: 7,
+      version: 8,
       exportedAt: new Date().toISOString(),
       tracks,
       trackPoints,
@@ -599,7 +656,8 @@ export class MotoAtlas26DB extends Dexie {
       customThemes,
       invoices,
       maintenances,
-      motoDocuments
+      motoDocuments,
+      tires
     }
   }
 
@@ -618,6 +676,7 @@ export class MotoAtlas26DB extends Dexie {
       this.invoices,
       this.maintenances,
       this.motoDocuments,
+      this.tires,
       async () => {
         await Promise.all([
           this.tracks.bulkPut(data.tracks || []),
@@ -632,7 +691,8 @@ export class MotoAtlas26DB extends Dexie {
           this.customThemes.bulkPut(data.customThemes || []),
           this.invoices.bulkPut(data.invoices || []),
           this.maintenances.bulkPut(data.maintenances || []),
-          this.motoDocuments.bulkPut(data.motoDocuments || [])
+          this.motoDocuments.bulkPut(data.motoDocuments || []),
+          this.tires.bulkPut(data.tires || [])
         ])
       }
     )

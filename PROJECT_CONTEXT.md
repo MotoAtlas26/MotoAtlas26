@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/23/2026, 5:25:23 PM
+> Generado el 11/24/2026, 11:14:18 AM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -280,7 +280,7 @@
 - Importa **{ useDatabase }** desde `../../hooks/useDatabase`
 - Importa **{ EmptyState, Modal, SectionHeader, BlobImage }** desde `../shared`
 - Importa **{ formatFileSize, formatDate, formatDateTime }** desde `../../utils/formatters`
-- Importa **{ getMotoModelsArray, getDefaultMotoModel }** desde `../../constants/motoModels`
+- Importa **{ getMotoModel, getMotoModelsArray, getDefaultMotoModel }** desde `../../constants/motoModels`
 - Importa **{ TrashIcon, CheckIcon, EditIcon }** desde `../shared/Icons`
 
 ### src/components/moto/Moto.jsx
@@ -292,7 +292,7 @@
 - Importa **{ getMotoModel, getMotoModelsArray }** desde `../../constants/motoModels`
 - Importa **{ Mantenimiento }** desde `./Mantenimiento`
 - Importa **{ Documentacion }** desde `./Documentacion`
-- Importa **{ TrashIcon, UploadIcon, FileTextIcon }** desde `../shared/Icons`
+- Importa **{ TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon }** desde `../shared/Icons`
 
 ### src/components/settings/Settings.jsx
 - Importa **{ Link }** desde `react-router-dom`

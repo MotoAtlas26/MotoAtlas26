@@ -33,24 +33,6 @@ export const Moto = () => {
           <h1 className="moto-title">{moto.name}</h1>
           <span className="moto-subtitle">Panel de Control Moto</span>
         </div>
-        <div className="moto-header-actions">
-          <button 
-            className="btn btn-primary" 
-            onClick={() => setShowInvoiceModal(true)}
-            aria-label="Subir factura"
-          >
-            <PlusIcon size={18} />
-            <span>Subir Factura</span>
-          </button>
-          <Link 
-            to="/fileUpload" 
-            className="btn btn-secondary"
-            aria-label="Registrar mantenimiento"
-          >
-            <PlusIcon size={18} />
-            <span>Registrar Mantenimiento</span>
-          </Link>
-        </div>
       </header>
 
       {/* Barra de pestañas segmentada moderna */}
