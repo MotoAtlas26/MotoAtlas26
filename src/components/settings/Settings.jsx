@@ -101,6 +101,7 @@ export const Settings = () => {
   const [editingDocumentType, setEditingDocumentType] = useState(null)
   const [documentTypeFormData, setDocumentTypeFormData] = useState({
     name: '',
+    controlType: 'none',
     hasExpiration: false,
     isInsurance: false
   })
@@ -463,6 +464,7 @@ export const Settings = () => {
   const resetDocumentTypeForm = () => {
     setDocumentTypeFormData({
       name: '',
+      controlType: 'none',
       hasExpiration: false,
       isInsurance: false
     })
@@ -505,12 +507,15 @@ export const Settings = () => {
 
   const handleDocumentTypeEdit = (docType) => {
     setEditingDocumentType(docType)
+    let controlType = 'none';
+    if (docType.isInsurance) controlType = 'insurance';
+    else if (docType.hasExpiration) controlType = 'expiration';
     setDocumentTypeFormData({
       name: docType.name,
+      controlType,
       hasExpiration: docType.hasExpiration,
       isInsurance: docType.isInsurance
     })
-    setShowDocumentTypeForm(true)
     setDocumentTypeFormError(null)
   }
 
@@ -2024,15 +2029,61 @@ export const Settings = () => {
         <SettingCard
           title="Tipos de Documento"
           description="Catálogo de tipos de documento para la Guantera Digital"
-          actions={
-            <button 
-              className="btn btn-gold" 
-              onClick={() => { resetDocumentTypeForm(); setShowDocumentTypeForm(true); }}
-            >
-              <PlusIcon size={16} /> Añadir Tipo de Documento
-            </button>
-          }
         >
+          {/* Inline Form */}
+          <div className="document-type-form" style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-card)', border: 'var(--border-width) solid var(--color-card-border)', borderRadius: 'var(--radius-card)' }}>
+            <h4 style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+              {editingDocumentType ? 'Editar Tipo de Documento' : 'Añadir Tipo de Documento'}
+            </h4>
+            {documentTypeFormError && <div className="form-error" style={{ marginBottom: 'var(--space-3)' }}>{documentTypeFormError}</div>}
+            <form onSubmit={handleDocumentTypeSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', alignItems: 'flex-end' }}>
+              <div className="form-group" style={{ flex: '1 1 280px', minWidth: '280px' }}>
+                <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)', fontSize: 'var(--font-size-sm)', fontWeight: 500, color: 'var(--color-text-primary)' }}>Nombre <span className="required" style={{ color: 'var(--color-error)' }}>*</span></label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={documentTypeFormData.name}
+                  onChange={(e) => setDocumentTypeFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Ej. Ficha Técnica / ITV"
+                  required
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="form-group" style={{ flex: '1 1 280px', minWidth: '280px' }}>
+                <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)', fontSize: 'var(--font-size-sm)', fontWeight: 500, color: 'var(--color-text-primary)' }}>Tipo de control / vencimiento <span className="required" style={{ color: 'var(--color-error)' }}>*</span></label>
+                <div className="select-wrapper" style={{ width: '100%' }}>
+                  <select
+                    className="form-select"
+                    value={documentTypeFormData.controlType}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      let hasExpiration = false;
+                      let isInsurance = false;
+                      if (value === 'expiration') hasExpiration = true;
+                      if (value === 'insurance') { hasExpiration = true; isInsurance = true; }
+                      setDocumentTypeFormData(prev => ({ ...prev, controlType: value, hasExpiration, isInsurance }));
+                    }}
+                    required
+                    style={{ width: '100%' }}
+                  >
+                    <option value="none">Sin fecha de vencimiento</option>
+                    <option value="expiration">Con fecha de vencimiento</option>
+                    <option value="insurance">Seguro (Vencimiento y Asistencia)</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                <button type="submit" className="btn btn-gold" style={{ height: '42px' }}>
+                  {editingDocumentType ? 'Guardar' : 'Añadir Tipo'}
+                </button>
+                {editingDocumentType && (
+                  <button type="button" className="btn btn-outline" onClick={resetDocumentTypeForm} style={{ height: '42px' }}>Cancelar</button>
+                )}
+              </div>
+            </form>
+          </div>
+
+          {/* List */}
           {loadingDocumentTypes ? (
             <div className="loading-state">
               <RefreshCwIcon size={24} spin />
@@ -2043,29 +2094,27 @@ export const Settings = () => {
               title="Sin tipos de documento"
               description="Añade tu primer tipo de documento para organizar la Guantera Digital."
               action={
-                <button className="btn-gold" onClick={() => { resetDocumentTypeForm(); setShowDocumentTypeForm(true); }}>
+                <button className="btn-gold" onClick={() => { resetDocumentTypeForm(); }}>
                   <PlusIcon size={16} /> Añadir primer tipo
                 </button>
               }
             />
           ) : (
-            <div className="document-types-table">
-              <div className="document-types-header">
-                <div className="doc-type-col-name">Nombre</div>
-                <div className="doc-type-col-expiration">Vencimiento</div>
-                <div className="doc-type-col-insurance">Datos de Seguro</div>
-                <div className="doc-type-col-actions">Acciones</div>
-              </div>
+            <div className="document-types-list">
               {documentTypes.map((docType) => (
-                <div key={docType.id} className="document-type-row">
-                  <div className="doc-type-col-name">{docType.name}</div>
-                  <div className="doc-type-col-expiration">{docType.hasExpiration ? 'Sí' : 'No'}</div>
-                  <div className="doc-type-col-insurance">{docType.isInsurance ? 'Sí' : 'No'}</div>
-                  <div className="doc-type-col-actions">
+                <div key={docType.id} className="document-type-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4)', borderBottom: 'var(--border-width) solid var(--color-card-border)', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+                  <div className="document-type-main" style={{ flex: 1, minWidth: 0 }}>
+                    <div className="document-type-name" style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontSize: 'var(--font-size-base)', marginBottom: 'var(--space-1)' }}>{docType.name}</div>
+                    <div className="document-type-subtitle" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                      {docType.isInsurance ? 'Seguro y asistencia' : docType.hasExpiration ? 'Con fecha de vencimiento' : 'Sin vencimiento'}
+                    </div>
+                  </div>
+                  <div className="document-type-actions" style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
                     <button 
                       className="btn-icon" 
                       onClick={() => handleDocumentTypeEdit(docType)}
                       title="Editar"
+                      style={{ width: '36px', height: '36px' }}
                     >
                       <EditIcon size={18} />
                     </button>
@@ -2073,6 +2122,7 @@ export const Settings = () => {
                       className="btn-icon danger" 
                       onClick={() => handleDocumentTypeDeleteConfirm(docType)}
                       title="Eliminar"
+                      style={{ width: '36px', height: '36px' }}
                     >
                       <TrashIcon size={18} />
                     </button>
