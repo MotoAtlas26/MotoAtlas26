@@ -4,11 +4,12 @@ import { useGPX } from '../../context/GPXContext'
 import { useDatabase } from '../../hooks/useDatabase'
 import { useAuth } from '../../context/AuthContext'
 import { EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect } from '../shared'
+import CatalogDetailView from './CatalogDetailView'
 import { formatBackupName } from '../../utils/formatters'
 import { getMotoModelsArray, getMotoModel } from '../../constants/motoModels'
 import { getThemesList, THEMES } from '../../constants/themes'
 import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme } from '../../utils/themeEngine'
-import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon } from '../shared/Icons'
+import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ChevronLeftIcon, CircleIcon, ShieldIcon } from '../shared/Icons'
 
 const TABS = [
   { id: 'appearance', label: 'Apariencia' },
@@ -33,6 +34,7 @@ export const Settings = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark')
   const [selectedMoto, setSelectedMoto] = useState('cfmoto-800mt-x')
   const [activeTab, setActiveTab] = useState('appearance')
+  const [activeCatalog, setActiveCatalog] = useState(null)
   // Initialize theme from localStorage (synced with initTheme in main.jsx)
   const savedTheme = getSavedTheme()
   const [colorTheme, setColorTheme] = useState(savedTheme.themeId)
