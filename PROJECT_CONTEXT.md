@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/25/2026, 2:07:46 PM
+> Generado el 11/25/2026, 2:49:13 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -212,7 +212,7 @@
 
 ### GoogleDriveSyncCard
 - Archivo: src/components/shared/GoogleDriveSyncCard.jsx
-- Exports: GoogleDriveSyncCard, GoogleDriveSyncCard
+- Exports: GoogleDriveSyncCard
 
 ### Icons
 - Archivo: src/components/shared/Icons.jsx
@@ -272,7 +272,7 @@
 
 ### googleDrive
 - Archivo: src/services/googleDrive.js
-- Exports: initGoogleClient, hasStoredSession, getConnectionStatus, getLastSync, tokenClient, accessToken, currentUser, loadSessionFromStorage
+- Exports: clearSessionFromStorage, initGoogleClient, hasStoredSession, getConnectionStatus, getLastSync, tokenClient, accessToken, currentUser, loadSessionFromStorage
 
 ### invoiceParser
 - Archivo: src/utils/invoiceParser.js
@@ -493,8 +493,9 @@
 - Importa **React** desde `react`
 
 ### src/components/shared/GoogleDriveSyncCard.jsx
-- Importa **{ useAuth }** desde `../../context/AuthContext`
-- Importa **{ CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon, DownloadIcon, UploadIcon, AlertCircleIcon, UserCircleIcon }** desde `./Icons`
+- Importa **{ useContext, useEffect, useState }** desde `react`
+- Importa **{ AuthContext }** desde `../../context/AuthContext`
+- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
 
 ### src/components/shared/Icons.jsx
 - Importa **React** desde `react`
@@ -549,7 +550,7 @@
 
 ### src/context/AuthContext.jsx
 - Importa **{ db }** desde `../services/db`
-- Importa **{ signIn, signOut, getCurrentUser, loadSessionFromStorage, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, ensureValidToken, renewTokenSilently, forceReconnect }** desde `../services/googleDrive`
+- Importa **{ signIn, signOut, getCurrentUser, loadSessionFromStorage, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, ensureValidToken, renewTokenSilently, forceReconnect, clearSessionFromStorage }** desde `../services/googleDrive`
 
 ### src/context/GPXContext.jsx
 - Importa **{ db, initDB }** desde `../services/db`

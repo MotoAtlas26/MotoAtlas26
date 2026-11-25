@@ -64,7 +64,7 @@ function loadSessionFromStorage() {
 /**
  * Limpia la sesión de localStorage
  */
-function clearSessionFromStorage() {
+export function clearSessionFromStorage() {
   localStorage.removeItem(STORAGE_KEYS.SESSION)
   localStorage.removeItem(STORAGE_KEYS.CONNECTED)
   localStorage.removeItem(STORAGE_KEYS.USER)
