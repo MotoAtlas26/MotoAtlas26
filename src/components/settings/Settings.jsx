@@ -9,7 +9,7 @@ import { formatBackupName } from '../../utils/formatters'
 import { getMotoModelsArray, getMotoModel } from '../../constants/motoModels'
 import { getThemesList, THEMES } from '../../constants/themes'
 import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme } from '../../utils/themeEngine'
-import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon, CloudOffIcon } from '../shared/Icons'
+import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon, CloudOffIcon, CloudIcon } from '../shared/Icons'
 
 const TABS = [
   { id: 'appearance', label: 'Apariencia' },
