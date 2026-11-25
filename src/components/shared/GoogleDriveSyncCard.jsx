@@ -174,7 +174,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
   const userNameStyle = {
     fontWeight: 600,
     fontSize: '0.9375rem',
-    color: 'var(--color-text, #1f2937)',
+    color: 'var(--color-text-primary, #1f2937)',
   };
 
   const userEmailStyle = {
@@ -188,9 +188,9 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     gap: '0.5rem',
     marginBottom: '1.25rem',
     padding: '0.75rem 1rem',
-    background: 'var(--color-surface, #f9fafb)',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: '10px',
-    border: '1px solid var(--color-border, #e5e7eb)',
+    border: '1px solid var(--color-card-border, #e5e7eb)',
     textAlign: 'left',
   };
 
@@ -206,14 +206,14 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     alignItems: 'center',
     gap: '0.5rem',
     fontSize: '0.8125rem',
-    color: 'var(--color-text-muted, #6b7280)',
+    color: 'var(--color-text-secondary, #6b7280)',
     flexShrink: 0,
   };
 
   const syncValueStyle = {
     fontSize: '0.8125rem',
     fontWeight: 500,
-    color: 'var(--color-text, #1f2937)',
+    color: 'var(--color-text-primary, #1f2937)',
     textAlign: 'right',
   };
 
