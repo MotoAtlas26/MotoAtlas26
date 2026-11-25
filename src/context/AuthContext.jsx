@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null)
   const [isInstalled, setIsInstalled] = useState(false)
   const [needsReauth, setNeedsReauth] = useState(false)
+  const [syncStatus, setSyncStatus] = useState('idle') // 'idle' | 'syncing' | 'synced' | 'error'
 
   // Timer para debounce de auto-sync
   const syncTimerRef = useRef(null)
@@ -407,6 +408,8 @@ export const AuthProvider = ({ children }) => {
     error,
     isInstalled,
     needsReauth,
+    syncStatus,
+    setSyncStatus,
     connect,
     disconnect,
     uploadBackup,
