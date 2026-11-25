@@ -88,6 +88,7 @@ function getClientId() {
 /**
  * Inicializa el cliente de tokens de Google OAuth2
  * Debe llamarse antes de solicitar el token
+ * NO intenta renovación automática - solo restaura token válido si existe
  */
 export function initGoogleClient(clientId) {
   if (!window.google || !window.google.accounts) {
@@ -120,7 +121,9 @@ export function initGoogleClient(clientId) {
 
   isInitialized = true
   
-  // Intentar restaurar sesión guardada silenciosamente
+  // Intentar restaurar sesión guardada SILENCIOSAMENTE
+  // Solo restaura si el token sigue vigente (con 2 min de margen)
+  // NO intenta renovación automática - eso se hace bajo demanda
   const storedSession = loadSessionFromStorage()
   if (storedSession && storedSession.connected && storedSession.accessToken) {
     const now = Date.now()
@@ -132,9 +135,12 @@ export function initGoogleClient(clientId) {
       currentUser = storedSession.user
       console.log('[Google Drive] Sesión restaurada desde localStorage (token válido)')
     } else {
-      // Token caducado o a punto de caducar - intentar renovación silenciosa
-      console.log('[Google Drive] Token caducado, intentando renovación silenciosa...')
-      renewTokenSilently()
+      // Token caducado - NO renovar automáticamente
+      // Se marcará needsTokenRenewal en AuthContext y se renovará bajo demanda
+      console.log('[Google Drive] Token caducado en localStorage - se renovará bajo demanda')
+      accessToken = null
+      tokenExpiry = null
+      // NO limpiar currentUser - mantener para mostrar en UI
     }
   }
   
@@ -620,6 +626,41 @@ export async function syncToDrive(db) {
 }
 
 /**
+ * Fuerza reconexión con interacción del usuario (prompt: 'consent')
+ * Usar cuando la renovación silenciosa falla y se necesita autorización explícita
+ */
+export async function forceReconnect(clientId) {
+  if (!tokenClient) {
+    initGoogleClient(clientId)
+  }
+
+  return new Promise((resolve, reject) => {
+    tokenClient.callback = async (response) => {
+      if (response.error) {
+        reject(new Error(response.error))
+        return
+      }
+      accessToken = response.access_token
+      tokenExpiry = Date.now() + (response.expires_in * 1000)
+      try {
+        await fetchCurrentUser()
+        saveSessionToStorage()
+        resolve(currentUser)
+      } catch (err) {
+        reject(err)
+      }
+    }
+
+    tokenClient.error_callback = (error) => {
+      reject(new Error(error.error || 'Error al reconectar'))
+    }
+
+    // prompt: 'consent' fuerza interacción del usuario
+    tokenClient.requestAccessToken({ prompt: 'consent' })
+  })
+}
+
+/**
  * Obtiene el estado de conexión actual
  */
 export function getConnectionStatus() {
@@ -642,4 +683,4 @@ export function getLastSync() {
 }
 
 // Exportar funciones de utilidad
-export { tokenClient, accessToken, currentUser }
+export { tokenClient, accessToken, currentUser, loadSessionFromStorage }

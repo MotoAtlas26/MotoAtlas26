@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/25/2026, 1:12:37 PM
+> Generado el 11/25/2026, 1:28:54 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -272,7 +272,7 @@
 
 ### googleDrive
 - Archivo: src/services/googleDrive.js
-- Exports: initGoogleClient, hasStoredSession, getConnectionStatus, getLastSync, tokenClient, accessToken, currentUser
+- Exports: initGoogleClient, hasStoredSession, getConnectionStatus, getLastSync, tokenClient, accessToken, currentUser, loadSessionFromStorage
 
 ### invoiceParser
 - Archivo: src/utils/invoiceParser.js
@@ -549,7 +549,7 @@
 
 ### src/context/AuthContext.jsx
 - Importa **{ db }** desde `../services/db`
-- Importa **{ signIn, signOut, getCurrentUser, hasStoredSession, restoreSession, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, ensureValidToken, renewTokenSilently }** desde `../services/googleDrive`
+- Importa **{ signIn, signOut, getCurrentUser, loadSessionFromStorage, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, ensureValidToken, renewTokenSilently, forceReconnect }** desde `../services/googleDrive`
 
 ### src/context/GPXContext.jsx
 - Importa **{ db, initDB }** desde `../services/db`

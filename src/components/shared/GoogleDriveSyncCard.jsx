@@ -32,7 +32,8 @@ export const GoogleDriveSyncCard = ({
     disconnect, 
     syncNow,
     needsTokenRenewal,
-    renewToken
+    renewToken,
+    reconnectWithConsent
   } = useAuth()
   
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
@@ -211,6 +212,34 @@ export const GoogleDriveSyncCard = ({
         <div className="text-sm flex items-center gap-2" style={{ color: 'var(--color-text-secondary)' }}>
           <SyncIcon size={14} />
           <span>Sincronizado: {formatTime(lastSync)}</span>
+        </div>
+      )}
+
+      {/* Token renewal alert */}
+      {needsTokenRenewal && (
+        <div className="p-3 rounded-lg" style={{ 
+          background: 'var(--color-alert-bg)',
+          border: 'var(--border-width) solid var(--color-alert-border)',
+          color: 'var(--color-alert-contrast)'
+        }}>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <AlertCircleIcon size={16} />
+              <span className="text-sm">Sesión caducada — Pulsa para renovar</span>
+            </div>
+            <button
+              onClick={reconnectWithConsent}
+              disabled={syncStatus === 'syncing'}
+              className="px-3 py-1.5 text-sm font-semibold rounded-lg flex items-center gap-2 transition-colors"
+              style={{ 
+                background: 'var(--color-tertiary)',
+                color: 'var(--color-tertiary-contrast)',
+                border: 'var(--border-width) solid var(--color-tertiary-border)'
+              }}
+            >
+              <SyncIcon size={14} /> Reconectar sesión
+            </button>
+          </div>
         </div>
       )}
 
