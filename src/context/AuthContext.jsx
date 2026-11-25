@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }) => {
   const [isInstalled, setIsInstalled] = useState(false)
   const [needsReauth, setNeedsReauth] = useState(false)
   const [syncStatus, setSyncStatus] = useState('idle') // 'idle' | 'syncing' | 'synced' | 'error'
+  const [isLoading, setIsLoading] = useState(false) // Para operaciones de conexión (login, reconexión)
 
   // Timer para debounce de auto-sync
   const syncTimerRef = useRef(null)
@@ -209,7 +210,7 @@ export const AuthProvider = ({ children }) => {
         // NO desconectar en error de sync inicial - mantener sesión
         // Si es 401, marcar para renovación
         if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
-          setNeedsTokenRenewal(true)
+          setNeedsReauth(true)
         }
         setError(err.message)
         setSyncStatus('error')
@@ -256,6 +257,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      setIsLoading(true)
       setError(null)
       setNeedsReauth(false)
       const user = await signIn(clientId)
@@ -267,6 +269,8 @@ export const AuthProvider = ({ children }) => {
       // El usuario puede reintentar
       setError(err.message)
       throw err
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -277,6 +281,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      setIsLoading(true)
       setError(null)
       const { renewTokenSilently, getCurrentUser, forceReconnect } = await import('../services/googleDrive')
       const renewed = await renewTokenSilently()
@@ -295,6 +300,8 @@ export const AuthProvider = ({ children }) => {
       setError(err.message)
       setNeedsReauth(true)
       throw err
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -305,6 +312,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      setIsLoading(true)
       setError(null)
       const { forceReconnect, getCurrentUser } = await import('../services/googleDrive')
       const user = await forceReconnect(clientId)
@@ -317,6 +325,8 @@ export const AuthProvider = ({ children }) => {
       setError(err.message)
       setNeedsReauth(true)
       throw err
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -404,6 +414,7 @@ export const AuthProvider = ({ children }) => {
     user,
     isConnected,
     isSyncing,
+    isLoading,
     lastSync,
     error,
     isInstalled,

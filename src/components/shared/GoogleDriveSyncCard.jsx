@@ -8,6 +8,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     isConnected,
     needsReauth,
     isSyncing,
+    isLoading,
     user,
     lastSync,
     error,
@@ -127,7 +128,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     margin: 0,
     fontSize: '1.125rem',
     fontWeight: 600,
-    color: 'var(--color-text, #1f2937)',
+    color: 'var(--color-text-primary, #1f2937)',
   };
 
   const badgeStyle = (variant) => {
@@ -156,10 +157,10 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     alignItems: 'center',
     gap: '0.5rem',
     padding: '1rem',
-    background: 'var(--color-surface, #f9fafb)',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: '12px',
     marginBottom: '1.25rem',
-    border: '1px solid var(--color-border, #e5e7eb)',
+    border: '1px solid var(--color-card-border, #e5e7eb)',
   };
 
   const avatarStyle = {
@@ -415,7 +416,6 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
               <path d="M12 8v4l3 3" />
             </svg>
             <h3 style={titleStyle}>Google Drive Conectado</h3>
-            <span style={badgeStyle('expired')}>Sesión caducada</span>
           </div>
         )}
         <div style={userCardStyle}>
@@ -440,16 +440,16 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
 
         <div style={buttonsStyle}>
           <button
-            style={{ ...btnPrimaryStyle, ...(syncStatus === 'syncing' ? disabledStyle : {}) }}
+            style={{ ...btnPrimaryStyle, ...(isLoading ? disabledStyle : {}) }}
             onClick={handleRenewSession}
-            disabled={syncStatus === 'syncing'}
+            disabled={isLoading}
           >
-            {syncStatus === 'syncing' ? 'Renovando...' : 'Reconectar sesión'}
+            {isLoading ? 'Renovando...' : 'Reconectar sesión'}
           </button>
           <button
-            style={{ ...btnOutlineStyle, ...(syncStatus === 'syncing' ? disabledStyle : {}) }}
+            style={btnOutlineStyle}
             onClick={handleDisconnect}
-            disabled={syncStatus === 'syncing'}
+            disabled={false}
           >
             Desconectar
           </button>
@@ -514,23 +514,23 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
 
       <div style={buttonsStyle}>
         <button
-          style={{ ...btnPrimaryStyle, ...((isSyncing || syncStatus === 'syncing') ? disabledStyle : {}) }}
+          style={{ ...btnPrimaryStyle, ...(isSyncing ? disabledStyle : {}) }}
           onClick={handleSyncNow}
-          disabled={isSyncing || syncStatus === 'syncing'}
+          disabled={isSyncing}
         >
-          {isSyncing || syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar ahora'}
+          {isSyncing ? 'Sincronizando...' : 'Sincronizar ahora'}
         </button>
         <button
-          style={{ ...btnSecondaryStyle, ...((isSyncing || syncStatus === 'syncing') ? disabledStyle : {}) }}
+          style={{ ...btnSecondaryStyle, ...(isSyncing ? disabledStyle : {}) }}
           onClick={handleRestore}
-          disabled={isSyncing || syncStatus === 'syncing'}
+          disabled={isSyncing}
         >
           Restaurar
         </button>
         <button
-          style={{ ...btnOutlineStyle, ...((isSyncing || syncStatus === 'syncing') ? disabledStyle : {}) }}
+          style={btnOutlineStyle}
           onClick={handleDisconnect}
-          disabled={isSyncing || syncStatus === 'syncing'}
+          disabled={false}
         >
           Desconectar
         </button>
@@ -552,9 +552,9 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
                 Cancelar
               </button>
               <button
-                style={{ ...btnDangerStyle, ...(syncStatus === 'syncing' ? disabledStyle : {}) }}
+                style={{ ...btnDangerStyle, ...(isSyncing ? disabledStyle : {}) }}
                 onClick={handleRestoreConfirm}
-                disabled={syncStatus === 'syncing'}
+                disabled={isSyncing}
               >
                 Restaurar
               </button>
