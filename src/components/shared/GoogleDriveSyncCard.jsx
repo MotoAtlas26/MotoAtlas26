@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useDatabase } from '../../hooks/useDatabase';
 
-export function GoogleDriveSyncCard() {
+export function GoogleDriveSyncCard({ showTitle = true }) {
   const { db } = useDatabase();
   const {
     isConnected,
@@ -18,6 +18,7 @@ export function GoogleDriveSyncCard() {
     downloadBackup,
     clearError,
   } = useContext(AuthContext);
+  const { reconnectWithConsent } = useContext(AuthContext);
 
   const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'syncing' | 'success' | 'error'
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
@@ -47,7 +48,8 @@ export function GoogleDriveSyncCard() {
   const handleRenewSession = async () => {
     setSyncStatus('syncing');
     try {
-      await renewSession();
+      // Usar reconnectWithConsent que fuerza interacción del usuario (prompt: 'consent')
+      await reconnectWithConsent();
       setSyncStatus('success');
       setTimeout(() => setSyncStatus('idle'), 3000);
     } catch (err) {
@@ -105,16 +107,18 @@ export function GoogleDriveSyncCard() {
   if (!isConnected) {
     return (
       <div className="card google-drive-sync-card">
-        <div className="card-header">
-          <h3 className="card-title">
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-              <path d="M12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-              <path d="M12 8v4l3 3" />
-            </svg>
-            Sincronización Google Drive
-          </h3>
-        </div>
+        {showTitle && (
+          <div className="card-header">
+            <h3 className="card-title">
+              <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <path d="M12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+                <path d="M12 8v4l3 3" />
+              </svg>
+              Sincronización Google Drive
+            </h3>
+          </div>
+        )}
         <div className="card-body">
           <div className="sync-status disconnected">
             <span className="status-badge badge-local">Modo Local Activo</span>
@@ -141,23 +145,25 @@ export function GoogleDriveSyncCard() {
   if (isConnected && needsReauth) {
     return (
       <div className="card google-drive-sync-card">
-        <div className="card-header">
-          <h3 className="card-title">
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-              <path d="M12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-              <path d="M12 8v4l3 3" />
-            </svg>
-            Sincronización Google Drive
-          </h3>
-        </div>
+        {showTitle && (
+          <div className="card-header">
+            <h3 className="card-title">
+              <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <path d="M12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+                <path d="M12 8v4l3 3" />
+              </svg>
+              Sincronización Google Drive
+            </h3>
+          </div>
+        )}
         <div className="card-body">
           <div className="user-profile">
             {user?.picture && (
               <img src={user.picture} alt={user.name} className="user-avatar" />
             )}
             <div className="user-info">
-              <div className="user-name-row">
+              <div className="user-name-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span className="user-name">{user?.name || 'Usuario desconocido'}</span>
                 <span className="status-badge badge-expired">Sesión caducada</span>
               </div>
@@ -166,7 +172,7 @@ export function GoogleDriveSyncCard() {
           </div>
 
           <div className="sync-warning">
-            <svg className="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginRight: '0.5rem' }}>
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -204,16 +210,18 @@ export function GoogleDriveSyncCard() {
   // ============================================
   return (
     <div className="card google-drive-sync-card">
-      <div className="card-header">
-        <h3 className="card-title">
-          <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-            <path d="M12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-            <path d="M12 8v4l3 3" />
-          </svg>
-          Sincronización Google Drive
-        </h3>
-      </div>
+      {showTitle && (
+        <div className="card-header">
+          <h3 className="card-title">
+            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              <path d="M12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+              <path d="M12 8v4l3 3" />
+            </svg>
+            Sincronización Google Drive
+          </h3>
+        </div>
+      )}
       <div className="card-body">
         <div className="user-profile">
           {user?.picture && (
@@ -232,7 +240,13 @@ export function GoogleDriveSyncCard() {
 
         <div className="sync-info">
           <div className="sync-item">
-            <span className="sync-label">Última sincronización</span>
+            <span className="sync-label">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginRight: '0.35rem' }}>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              Última sincronización
+            </span>
             <span className="sync-value">{formatLastSynced(lastSync)}</span>
           </div>
           <div className="sync-item">
