@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { db } from '../services/db'
 import {
   signIn,
@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }) => {
 
   // Timer para debounce de auto-sync
   const syncTimerRef = useRef(null)
+  const initDoneRef = useRef(false)
 
   // Detectar si la app está instalada como PWA
   useEffect(() => {
@@ -67,60 +68,66 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  // Inicialización SÍNCRONA desde localStorage (antes del primer render)
-  // Esto evita el flash de "Modo Local Activo" al recargar
-  const storedSession = loadSessionFromStorage()
-  if (storedSession && storedSession.connected && storedSession.user) {
-    setUser(storedSession.user)
-    setIsConnected(true)
-    
-    // Cargar último sync desde localStorage
-    const lastSyncDate = getLastSync()
-    if (lastSyncDate) {
-      setLastSync(lastSyncDate)
-    }
-    
-    // Verificar si el token está caducado
-    const now = Date.now()
-    const expiresAt = storedSession.expiresAt || 0
-    if (now >= expiresAt - 120000) {
-      // Token caducado o a punto de caducar - marcar para renovación
-      setNeedsTokenRenewal(true)
-      console.log('[AuthContext] Sesión restaurada síncrona, token caducado - se renovará al usar')
-    } else {
-      console.log('[AuthContext] Sesión restaurada síncrona desde localStorage (token válido):', storedSession.user.email)
-    }
-  }
-
-  // Inicializar cliente Google y verificar token (asíncrono, no bloquea UI)
+  // Inicialización UNA SOLA VEZ al montar: restaurar sesión desde localStorage e inicializar Google Client
   useEffect(() => {
-    const initGoogle = async () => {
-      if (!clientId) return
-      
-      try {
-        const { initGoogleClient } = await import('../services/googleDrive')
-        initGoogleClient(clientId)
+    if (initDoneRef.current) return
+    initDoneRef.current = true
+
+    const initAuth = async () => {
+      // 1. Restaurar sesión desde localStorage (síncrono)
+      const storedSession = loadSessionFromStorage()
+      if (storedSession && storedSession.connected && storedSession.user) {
+        setUser(storedSession.user)
+        setIsConnected(true)
         
-        // Si teníamos sesión guardada y token válido, verificar que sigue funcionando
-        if (isConnected && user && !needsTokenRenewal) {
-          const hasValidToken = await ensureValidToken()
-          if (!hasValidToken) {
-            setNeedsTokenRenewal(true)
-            console.log('[AuthContext] Token no válido tras init, marcado para renovación')
-          }
+        // Cargar último sync desde localStorage
+        const lastSyncDate = getLastSync()
+        if (lastSyncDate) {
+          setLastSync(lastSyncDate)
         }
-      } catch (err) {
-        console.warn('[AuthContext] Error inicializando Google Client:', err)
-        // NO desconectar - mantener estado de localStorage
+        
+        // Verificar si el token está caducado
+        const now = Date.now()
+        const expiresAt = storedSession.expiresAt || 0
+        if (now >= expiresAt - 120000) {
+          // Token caducado o a punto de caducar - marcar para renovación
+          setNeedsTokenRenewal(true)
+          console.log('[AuthContext] Sesión restaurada, token caducado - se renovará al usar')
+        } else {
+          console.log('[AuthContext] Sesión restaurada desde localStorage (token válido):', storedSession.user.email)
+        }
+      }
+
+      // 2. Inicializar cliente Google si hay clientId
+      const currentClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+      if (currentClientId) {
+        try {
+          const { initGoogleClient } = await import('../services/googleDrive')
+          initGoogleClient(currentClientId)
+          
+          // Si teníamos sesión guardada y token válido, verificar que sigue funcionando
+          if (storedSession && storedSession.connected && storedSession.user && !needsTokenRenewal) {
+            const hasValidToken = await ensureValidToken()
+            if (!hasValidToken) {
+              setNeedsTokenRenewal(true)
+              console.log('[AuthContext] Token no válido tras init, marcado para renovación')
+            }
+          }
+        } catch (err) {
+          console.warn('[AuthContext] Error inicializando Google Client:', err)
+          // NO desconectar - mantener estado de localStorage
+        }
       }
     }
 
-    initGoogle()
-  }, [clientId, isConnected, user, needsTokenRenewal])
+    initAuth()
+  }, []) // Solo al montar
 
   // Sincronización inicial al conectar (después de signIn exitoso)
   useEffect(() => {
     if (!isConnected || !clientId) return
+
+    let cancelled = false
 
     const performInitialSync = async () => {
       try {
@@ -142,6 +149,8 @@ export const AuthProvider = ({ children }) => {
         // Leer archivo para ver si tiene contenido
         const data = await readDBFile(file.id)
         
+        if (cancelled) return
+
         // Si el archivo es nuevo/vacío y hay datos locales, subir primero
         if (!data || Object.keys(data).length === 0) {
           console.log('[AuthContext] Archivo nuevo/vacío en Drive. Subiendo datos locales...')
@@ -152,9 +161,11 @@ export const AuthProvider = ({ children }) => {
           await syncFromDrive(db)
         }
 
+        if (cancelled) return
         setSyncStatus('synced')
         setLastSync(new Date())
       } catch (err) {
+        if (cancelled) return
         console.error('[AuthContext] Error en sincronización inicial:', err)
         // NO desconectar en error de sync inicial - mantener sesión
         // Si es 401, marcar para renovación
@@ -167,13 +178,17 @@ export const AuthProvider = ({ children }) => {
     }
 
     performInitialSync()
+
+    return () => {
+      cancelled = true
+    }
   }, [isConnected, clientId])
 
   // Auto-sync con debounce tras cambios en la DB (2.5 segundos)
   useEffect(() => {
     if (!isConnected || !clientId) return
 
-    const debouncedSync = () => {
+    const debouncedSync = useCallback(() => {
       if (syncTimerRef.current) {
         clearTimeout(syncTimerRef.current)
       }
@@ -200,7 +215,7 @@ export const AuthProvider = ({ children }) => {
           setSyncStatus('error')
         }
       }, 2500) // 2.5 segundos de debounce
-    }
+    }, [])
 
     // Suscribirse a eventos de cambio en la DB
     const handleDBChange = () => {
@@ -352,7 +367,8 @@ export const AuthProvider = ({ children }) => {
     connect,
     disconnect,
     syncNow,
-    renewToken
+    renewToken,
+    reconnectWithConsent
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
