@@ -1,7 +1,7 @@
 # 🏍️ MANUAL OFICIAL DE FLUJO, ARQUITECTURA Y GUÍA DE USUARIO — MotoAtlas26
 
 > **Versión:** 1.0  
-> **URL de producción:** https://motoatlas26.netlify.app  
+> **URL de producción:** https://motoatlas26.github.io/MotoAtlas26/  
 > **Repositorio:** MotoAtlas26 (GitHub)  
 > **Última actualización:** 2026
 
@@ -126,9 +126,9 @@ graph LR
     A[Editar en VS Code] --> B[git add .]
     B --> C[git commit -m "mensaje"]
     C --> D[git push origin main]
-    D --> E[Netlify detecta push]
+    D --> E[GitHub Pages detecta push]
     E --> F[Build: npm run build]
-    F --> G[Deploy HTTPS en motoatlas26.netlify.app]
+    F --> G[Deploy HTTPS en https://motoatlas26.github.io/MotoAtlas26/]
 ```
 
 #### Comandos habituales
@@ -143,20 +143,21 @@ npm run preview      # Sirve dist/ en http://localhost:4173
 # 3. Commit & Push
 git add .
 git commit -m "feat: descripción clara"
-git push origin main  # Despliega automáticamente en Netlify
+git push origin main  # Despliega automáticamente en GitHub Pages
 ```
 
-#### Configuración Netlify (ya hecha)
+#### Configuración GitHub Pages (ya hecha)
 - **Build command:** `npm run build`
 - **Publish directory:** `dist`
-- **Node version:** 20 (definido en `netlify.toml` o UI de Netlify)
+- **Node version:** 20
 - **Environment variables:** `VITE_GOOGLE_CLIENT_ID` (ver abajo)
+- **Deploy:** `npm run deploy` (usa `gh-pages` para publicar en `gh-pages` branch)
 
 ### 2.2 Variables de Entorno Requeridas
 
 | Variable | Dónde | Valor |
 |----------|-------|-------|
-| `VITE_GOOGLE_CLIENT_ID` | Netlify → Site settings → Environment variables | Client ID de **OAuth 2.0** (tipo “Aplicación web”) creado en Google Cloud Console |
+| `VITE_GOOGLE_CLIENT_ID` | GitHub → Settings → Secrets and variables → Actions | Client ID de **OAuth 2.0** (tipo “Aplicación web”) creado en Google Cloud Console |
 
 > **Archivo local:** `.env.local` (no se commitea)
 > ```env
@@ -203,8 +204,8 @@ Ejecuta `xGrapt/generate-project-graph.js` y actualiza:
 
 | Plataforma | Pasos |
 |------------|-------|
-| **iPhone / iPad (Safari)** | 1. Abre `https://motoatlas26.netlify.app`<br>2. Toca **Compartir** (cuadrado con flecha ↑)<br>3. Desliza y elige **“Añadir a pantalla de inicio”**<br>4. Confirma → Icono hexagonal en Springboard |
-| **Android (Chrome)** | 1. Abre `https://motoatlas26.netlify.app`<br>2. Menú ⋮ (3 puntos) → **“Instalar la app”** o **“Añadir a pantalla de inicio”**<br>3. Confirma → Icono en cajón de apps / pantalla de inicio |
+| **iPhone / iPad (Safari)** | 1. Abre `https://motoatlas26.github.io/MotoAtlas26/`<br>2. Toca **Compartir** (cuadrado con flecha ↑)<br>3. Desliza y elige **“Añadir a pantalla de inicio”**<br>4. Confirma → Icono hexagonal en Springboard |
+| **Android (Chrome)** | 1. Abre `https://motoatlas26.github.io/MotoAtlas26/`<br>2. Menú ⋮ (3 puntos) → **“Instalar la app”** o **“Añadir a pantalla de inicio”**<br>3. Confirma → Icono en cajón de apps / pantalla de inicio |
 | **Escritorio (Chrome/Edge)** | 1. Abre la URL<br>2. Barra de direcciones → icono **⬇️ Instalar** (o menú ⋮ → “Instalar MotoAtlas26”)<br>3. Se abre en ventana propia, sin barra de URL |
 
 > **Icono:** Hexagonal, colores dorado/negro (`/icons/icon-192.png`, `/icons/icon-512.png`, maskable).
@@ -348,7 +349,7 @@ Si has concedido acceso a carpeta local (§1.4):
 ### C. Recursos Útiles
 
 - **Repo GitHub:** (privado) — `git@github.com:usuario/MotoAtlas26.git`
-- **Netlify Dashboard:** https://app.netlify.com/sites/motoatlas26
+- **GitHub Pages:** https://motoatlas26.github.io/MotoAtlas26/
 - **Google Cloud Console:** https://console.cloud.google.com/apis/credentials (proyecto MotoAtlas26)
 - **Documentación técnica generada:** `PROJECT_CONTEXT.md` / `PROJECT_CONTEXT.json`
 

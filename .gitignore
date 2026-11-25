@@ -9,5 +9,4 @@ PROJECT_CONTEXT.json
 .lunacode/
 .DS_Store
 
-# Local Netlify folder
-.netlify
+

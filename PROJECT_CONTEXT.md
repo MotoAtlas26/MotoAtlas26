@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/24/2026, 5:24:46 PM
+> Generado el 11/25/2026, 11:43:17 AM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -355,6 +355,7 @@
 - Importa **{ Mantenimiento }** desde `./Mantenimiento`
 - Importa **Documentacion** desde `./Documentacion`
 - Importa **{ MotoDashboard }** desde `./MotoDashboard`
+- Importa **{ Facturas }** desde `./Facturas`
 - Importa **{ TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon }** desde `../shared/Icons`
 
 ### src/components/moto/MotoDashboard.jsx
@@ -398,8 +399,7 @@
 - Importa **{ UploadZone }** desde `./UploadZone`
 - Importa **{ ParsedDataPreview }** desde `./ParsedDataPreview`
 - Importa **{ FormFields }** desde `./FormFields`
-- Importa **{ ItemsTable }** desde `./ItemsTable`
-- Importa **{ ManualItemsSection }** desde `./ManualItemsSection`
+- Importa **{ TrashIcon }** desde `../../shared/Icons`
 
 ### src/components/moto/facturas/FacturaList.jsx
 - Importa **React** desde `react`
