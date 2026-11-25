@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/25/2026, 12:19:54 PM
+> Generado el 11/25/2026, 1:12:37 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -483,7 +483,7 @@
 - Importa **{ getMotoModelsArray, getMotoModel }** desde `../../constants/motoModels`
 - Importa **{ getThemesList, THEMES }** desde `../../constants/themes`
 - Importa **{ applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme }** desde `../../utils/themeEngine`
-- Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon }** desde `../shared/Icons`
+- Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon, CloudOffIcon, CloudIcon }** desde `../shared/Icons`
 
 ### src/components/shared/BlobImage.jsx
 - Importa **React** desde `react`
@@ -549,7 +549,7 @@
 
 ### src/context/AuthContext.jsx
 - Importa **{ db }** desde `../services/db`
-- Importa **{ signIn, signOut, getCurrentUser, hasStoredSession, restoreSession, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync }** desde `../services/googleDrive`
+- Importa **{ signIn, signOut, getCurrentUser, hasStoredSession, restoreSession, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, ensureValidToken, renewTokenSilently }** desde `../services/googleDrive`
 
 ### src/context/GPXContext.jsx
 - Importa **{ db, initDB }** desde `../services/db`

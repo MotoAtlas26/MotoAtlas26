@@ -21,9 +21,54 @@ let isInitialized = false
 
 // Claves de localStorage
 const STORAGE_KEYS = {
+  SESSION: 'motoatlas_drive_session',
   CONNECTED: 'motoatlas:drive:connected',
   USER: 'motoatlas:drive:user',
   LAST_SYNC: 'motoatlas:drive:lastSync'
+}
+
+/**
+ * Guarda la sesión completa en localStorage (token + user + expiry)
+ */
+function saveSessionToStorage() {
+  if (!accessToken || !currentUser) return
+  const session = {
+    connected: true,
+    accessToken,
+    expiresAt: tokenExpiry,
+    user: currentUser,
+    lastSync: localStorage.getItem(STORAGE_KEYS.LAST_SYNC)
+  }
+  try {
+    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session))
+  } catch (e) {
+    console.warn('[Google Drive] Error guardando sesión:', e)
+  }
+}
+
+/**
+ * Carga la sesión desde localStorage
+ */
+function loadSessionFromStorage() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.SESSION)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (e) {
+    console.warn('[Google Drive] Error cargando sesión:', e)
+  }
+  return null
+}
+
+/**
+ * Limpia la sesión de localStorage
+ */
+function clearSessionFromStorage() {
+  localStorage.removeItem(STORAGE_KEYS.SESSION)
+  localStorage.removeItem(STORAGE_KEYS.CONNECTED)
+  localStorage.removeItem(STORAGE_KEYS.USER)
+  localStorage.removeItem(STORAGE_KEYS.LAST_SYNC)
 }
 
 /**
@@ -63,6 +108,7 @@ export function initGoogleClient(clientId) {
       accessToken = response.access_token
       tokenExpiry = Date.now() + (response.expires_in * 1000)
       console.log('[Google Drive] Token obtenido, expira en:', response.expires_in, 'segundos')
+      saveSessionToStorage()
     },
     error_callback: (error) => {
       console.error('[Google Drive] Error en error_callback:', error)
@@ -73,22 +119,122 @@ export function initGoogleClient(clientId) {
   })
 
   isInitialized = true
+  
+  // Intentar restaurar sesión guardada silenciosamente
+  const storedSession = loadSessionFromStorage()
+  if (storedSession && storedSession.connected && storedSession.accessToken) {
+    const now = Date.now()
+    const expiresAt = storedSession.expiresAt || 0
+    
+    if (now < expiresAt - 120000) { // Token válido con 2 min de margen
+      accessToken = storedSession.accessToken
+      tokenExpiry = expiresAt
+      currentUser = storedSession.user
+      console.log('[Google Drive] Sesión restaurada desde localStorage (token válido)')
+    } else {
+      // Token caducado o a punto de caducar - intentar renovación silenciosa
+      console.log('[Google Drive] Token caducado, intentando renovación silenciosa...')
+      renewTokenSilently()
+    }
+  }
+  
   return tokenClient
+}
+
+/**
+ * Renueva el token silenciosamente (sin prompt de usuario)
+ */
+export async function renewTokenSilently() {
+  if (!tokenClient) return false
+  
+  return new Promise((resolve) => {
+    const originalCallback = tokenClient.callback
+    const originalErrorCallback = tokenClient.error_callback
+    
+    tokenClient.callback = (response) => {
+      if (response.error) {
+        console.warn('[Google Drive] Renovación silenciosa falló:', response.error)
+        resolve(false)
+      } else {
+        accessToken = response.access_token
+        tokenExpiry = Date.now() + (response.expires_in * 1000)
+        console.log('[Google Drive] Token renovado silenciosamente')
+        saveSessionToStorage()
+        resolve(true)
+      }
+      // Restaurar callbacks originales
+      tokenClient.callback = originalCallback
+      tokenClient.error_callback = originalErrorCallback
+    }
+    
+    tokenClient.error_callback = (error) => {
+      console.warn('[Google Drive] Error en renovación silenciosa:', error)
+      resolve(false)
+      tokenClient.callback = originalCallback
+      tokenClient.error_callback = originalErrorCallback
+    }
+    
+    // Solicitar token sin prompt (prompt: '')
+    tokenClient.requestAccessToken({ prompt: '' })
+  })
+}
+
+/**
+ * Asegura que el token sea válido, renovándolo si es necesario
+ * @returns {Promise<boolean>} true si hay token válido
+ */
+export async function ensureValidToken() {
+  if (!accessToken) {
+    // Intentar renovación silenciosa
+    return await renewTokenSilently()
+  }
+  
+  const now = Date.now()
+  if (tokenExpiry && now >= tokenExpiry - 120000) { // 2 min antes de expirar
+    console.log('[Google Drive] Token próximo a expirar, renovando...')
+    return await renewTokenSilently()
+  }
+  
+  return true
+}
+
+/**
+ * Helper para hacer peticiones autenticadas a Google Drive API
+ * Maneja renovación automática de token y reintento en 401
+ */
+async function authenticatedFetch(url, options = {}) {
+  // Asegurar token válido antes de la petición
+  const hasToken = await ensureValidToken()
+  if (!hasToken) {
+    throw new Error('No se pudo obtener token de acceso válido')
+  }
+
+  const headers = {
+    ...options.headers,
+    Authorization: `Bearer ${accessToken}`
+  }
+
+  let response = await fetch(url, { ...options, headers })
+
+  // Si 401, forzar renovación y reintentar una vez
+  if (response.status === 401) {
+    console.warn('[Google Drive] 401 recibido, forzando renovación de token...')
+    accessToken = null // Forzar renovación
+    const renewed = await renewTokenSilently()
+    if (renewed) {
+      headers.Authorization = `Bearer ${accessToken}`
+      response = await fetch(url, { ...options, headers })
+    }
+  }
+
+  return response
 }
 
 /**
  * Obtiene información del usuario desde Google OAuth2 userinfo endpoint
  */
 async function fetchCurrentUser() {
-  if (!accessToken) {
-    throw new Error('No hay token de acceso')
-  }
-
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
+  const response = await authenticatedFetch('https://www.googleapis.com/oauth2/v3/userinfo')
 
   if (!response.ok) {
     throw new Error(`Error al obtener info de usuario: ${response.statusText}`)
@@ -118,9 +264,8 @@ export async function signIn(clientId) {
       tokenExpiry = Date.now() + (response.expires_in * 1000)
       try {
         await fetchCurrentUser()
-        // Guardar estado de conexión en localStorage
-        localStorage.setItem(STORAGE_KEYS.CONNECTED, 'true')
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(currentUser))
+        // Guardar sesión completa en localStorage
+        saveSessionToStorage()
         resolve(currentUser)
       } catch (err) {
         reject(err)
@@ -145,10 +290,8 @@ export async function signOut() {
   accessToken = null
   currentUser = null
   
-  // Limpiar localStorage
-  localStorage.removeItem(STORAGE_KEYS.CONNECTED)
-  localStorage.removeItem(STORAGE_KEYS.USER)
-  localStorage.removeItem(STORAGE_KEYS.LAST_SYNC)
+  // Limpiar localStorage completamente
+  clearSessionFromStorage()
   
   console.log('[Google Drive] Sesión cerrada')
 }
@@ -220,18 +363,10 @@ export async function restoreSession() {
  * @returns {Promise<{id: string, name: string}>}
  */
 export async function ensureMotoAtlasFolder() {
-  if (!accessToken) {
-    throw new Error('No hay token de acceso. Inicia sesión primero.')
-  }
-
   // Buscar carpeta existente
   const query = `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`
   const url = `${API_BASE}/files?q=${encodeURIComponent(query)}`
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
+  const response = await authenticatedFetch(url)
 
   if (!response.ok) {
     throw new Error(`Error al buscar carpeta: ${response.statusText}`)
@@ -247,11 +382,10 @@ export async function ensureMotoAtlasFolder() {
 
   // Crear carpeta nueva
   const createUrl = `${API_BASE}/files`
-  const createResponse = await fetch(createUrl, {
+  const createResponse = await authenticatedFetch(createUrl, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       name: FOLDER_NAME,
@@ -274,18 +408,10 @@ export async function ensureMotoAtlasFolder() {
  * @returns {Promise<{id: string, name: string}>}
  */
 export async function findOrCreateDBFile(folderId) {
-  if (!accessToken) {
-    throw new Error('No hay token de acceso. Inicia sesión primero.')
-  }
-
   // Buscar archivo existente
   const query = `name='${DB_FILE_NAME}' and '${folderId}' in parents and trashed=false`
   const url = `${API_BASE}/files?q=${encodeURIComponent(query)}`
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
+  const response = await authenticatedFetch(url)
 
   if (!response.ok) {
     throw new Error(`Error al buscar archivo: ${response.statusText}`)
@@ -311,11 +437,8 @@ export async function findOrCreateDBFile(folderId) {
   form.append('file', new Blob(['{}'], { type: 'application/json' }))
 
   const createUrl = `${UPLOAD_BASE}/files?uploadType=multipart`
-  const createResponse = await fetch(createUrl, {
+  const createResponse = await authenticatedFetch(createUrl, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
     body: form
   })
 
@@ -334,16 +457,8 @@ export async function findOrCreateDBFile(folderId) {
  * @returns {Promise<Object>} - Contenido JSON del archivo
  */
 export async function readDBFile(fileId) {
-  if (!accessToken) {
-    throw new Error('No hay token de acceso. Inicia sesión primero.')
-  }
-
   const url = `${API_BASE}/files/${fileId}?alt=media`
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
+  const response = await authenticatedFetch(url)
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -365,10 +480,6 @@ export async function readDBFile(fileId) {
  * @returns {Promise<{id: string, name: string}>}
  */
 export async function writeDBFile(fileId, data) {
-  if (!accessToken) {
-    throw new Error('No hay token de acceso. Inicia sesión primero.')
-  }
-
   const jsonContent = JSON.stringify(data, null, 2)
   const metadata = {
     name: DB_FILE_NAME,
@@ -385,11 +496,8 @@ export async function writeDBFile(fileId, data) {
   
   const method = fileId ? 'PATCH' : 'POST'
 
-  const response = await fetch(url, {
+  const response = await authenticatedFetch(url, {
     method,
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
     body: form
   })
 
@@ -436,10 +544,6 @@ function restoreVisualPreferences(prefs) {
  * @returns {Promise<Object>} - Datos importados
  */
 export async function syncFromDrive(db) {
-  if (!accessToken) {
-    throw new Error('No hay token de acceso. Inicia sesión primero.')
-  }
-
   // Buscar carpeta y archivo
   const folder = await ensureMotoAtlasFolder()
   const file = await findOrCreateDBFile(folder.id)

@@ -30,7 +30,9 @@ export const GoogleDriveSyncCard = ({
     error: authError, 
     connect, 
     disconnect, 
-    syncNow 
+    syncNow,
+    needsTokenRenewal,
+    renewToken
   } = useAuth()
   
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
