@@ -13,3 +13,4 @@ export { MotoAtlas26Logo } from './MotoLogLogo' /* renamed from MotoAtlas26Logo 
 export { default as Icons } from './Icons'
 export { InstallAppButton } from './InstallAppButton'
 export { ThemeSelect } from './ThemeSelect'
+export { GoogleDriveSyncCard } from './GoogleDriveSyncCard'

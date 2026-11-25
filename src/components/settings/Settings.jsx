@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import { useGPX } from '../../context/GPXContext'
 import { useDatabase } from '../../hooks/useDatabase'
 import { useAuth } from '../../context/AuthContext'
-import { EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect } from '../shared'
+import { EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect, GoogleDriveSyncCard } from '../shared'
 import CatalogDetailView from './CatalogDetailView'
 import { formatBackupName } from '../../utils/formatters'
 import { getMotoModelsArray, getMotoModel } from '../../constants/motoModels'
 import { getThemesList, THEMES } from '../../constants/themes'
 import { applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme } from '../../utils/themeEngine'
-import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon } from '../shared/Icons'
+import { TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon } from '../shared/Icons'
 
 const TABS = [
   { id: 'appearance', label: 'Apariencia' },
@@ -1079,121 +1079,7 @@ export const Settings = () => {
             ? 'Tus datos se sincronizan automáticamente entre dispositivos.' 
             : 'Conecta tu cuenta de Google para sincronizar tus datos entre dispositivos. Puedes usar MotoAtlas26 en modo local sin cuenta.'}
         >
-          {!isConnected ? (
-            <div className="space-y-3">
-              <div className="p-4 rounded-lg" style={{ background: 'var(--color-card)', border: 'var(--border-width) solid var(--color-card-border)' }}>
-                <div className="flex items-center gap-3 mb-3">
-                  <UserCircleIcon size={24} style={{ color: 'var(--color-tertiary)' }} />
-                  <div>
-                    <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Modo Local Activo</div>
-                    <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Tus datos se guardan solo en este navegador (IndexedDB)</div>
-                  </div>
-                </div>
-                <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-                  Conecta tu Google Drive para acceder a tus rutas, talleres, motos y temas desde cualquier dispositivo. 
-                  Solo MotoAtlas26 puede acceder a sus propios archivos (alcance <code style={{ fontSize: 'var(--font-size-xs)', background: 'var(--color-card-hover)', padding: '0.125rem 0.25rem', borderRadius: 'var(--radius-sm)' }}>drive.file</code>.)
-                </p>
-                <button
-                  onClick={connect}
-                  disabled={syncStatus === 'syncing'}
-                  className="w-full py-2.5 font-bold rounded-lg text-sm flex items-center justify-center gap-2"
-                  style={{ 
-                    background: 'var(--color-tertiary)',
-                    color: 'var(--color-tertiary-contrast)',
-                    border: 'var(--border-width) solid var(--color-tertiary-border)'
-                  }}
-                >
-                  <SyncIcon size={16} /> Conectar con Google Drive
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* User Info */}
-              <div className="flex items-center gap-4 p-4 rounded-lg" style={{ background: 'var(--color-card)', border: 'var(--border-width) solid var(--color-card-border)' }}>
-                {user?.picture && (
-                  <img 
-                    src={user.picture} 
-                    alt={user.name} 
-                    className="w-12 h-12 rounded-full border-2"
-                    style={{ borderColor: 'var(--color-tertiary-border)' }}
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{user?.name || user?.email}</div>
-                  <div className="text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>{user?.email}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium" style={{
-                    background: syncStatus === 'synced' ? 'var(--color-success-bg)' :
-                              syncStatus === 'syncing' ? 'var(--color-alert-bg)' :
-                              syncStatus === 'error' ? 'var(--color-error-bg)' :
-                              'var(--color-card-hover)',
-                    color: syncStatus === 'synced' ? 'var(--color-success-border)' :
-                           syncStatus === 'syncing' ? 'var(--color-alert-border)' :
-                           syncStatus === 'error' ? 'var(--color-error-border)' :
-                           'var(--color-text-muted)',
-                    border: 'var(--border-width) solid',
-                    borderColor: syncStatus === 'synced' ? 'var(--color-success-border)' :
-                                 syncStatus === 'syncing' ? 'var(--color-alert-border)' :
-                                 syncStatus === 'error' ? 'var(--color-error-border)' :
-                                 'var(--color-card-border)'
-                  }}>
-                    {syncStatus === 'synced' && <CheckCircleIcon size={10} className="inline-block mr-1" />}
-                    {syncStatus === 'syncing' && <SyncIcon size={10} className="inline-block mr-1 spin" />}
-                    {syncStatus === 'synced' ? 'Sincronizado' :
-                     syncStatus === 'syncing' ? 'Sincronizando...' :
-                     syncStatus === 'error' ? 'Error' : 'Pendiente'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Last Sync */}
-              {lastSync && (
-                <div className="text-sm flex items-center gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                  <SyncIcon size={14} />
-                  <span>Última sincronización: {formatRelativeTime(lastSync)}</span>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={syncNow}
-                  disabled={syncStatus === 'syncing'}
-                  className="flex-1 py-2.5 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
-                  style={{ 
-                    background: 'var(--color-card)',
-                    color: 'var(--color-text-primary)',
-                    border: 'var(--border-width) solid var(--color-card-border)'
-                  }}
-                >
-                  <SyncIcon size={16} /> {syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar ahora'}
-                </button>
-                <button
-                  onClick={disconnect}
-                  className="flex-1 py-2.5 font-semibold rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
-                  style={{ 
-                    background: 'var(--color-error-bg)',
-                    color: 'var(--color-error-border)',
-                    border: 'var(--border-width) solid var(--color-error-border)'
-                  }}
-                >
-                  <LogOutIcon size={16} /> Cerrar sesión
-                </button>
-              </div>
-
-              {authError && (
-                <div className="p-3 rounded-lg text-sm" style={{ 
-                  background: 'var(--color-error-bg)',
-                  border: 'var(--border-width) solid var(--color-error-border)',
-                  color: 'var(--color-error-border)'
-                }}>
-                  {authError}
-                </div>
-              )}
-            </div>
-          )}
+          <GoogleDriveSyncCard variant="settings" showTitle={false} showDescription={false} />
         </SettingCard>
 
         {/* PWA Install Button */}

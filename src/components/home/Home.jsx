@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useGPX } from '../../context/GPXContext'
 import { useAuth } from '../../context/AuthContext'
 import { MotoAtlas26Logo } from '../shared'
-import { CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon } from '../shared/Icons'
+import { GoogleDriveSyncCard } from '../shared'
 import { getMotoModel } from '../../constants/motoModels'
 
 // Importación directa de assets (Vite los hashea y garantiza disponibilidad en dist/assets/)
@@ -20,22 +20,6 @@ export const Home = () => {
   const { user, isConnected, syncStatus, lastSync, error: authError, connect, disconnect, syncNow } = useAuth()
   const [motoImage, setMotoImage] = useState(null)
   const [imageError, setImageError] = useState(false)
-
-  // Formatear tiempo relativo
-  const formatRelativeTime = (dateString) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now - date
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return 'hace un momento'
-    if (diffMins < 60) return `hace ${diffMins} min`
-    if (diffHours < 24) return `hace ${diffHours} h`
-    if (diffDays < 7) return `hace ${diffDays} d`
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })
-  }
 
   // Cargar imagen de la moto seleccionada
   useEffect(() => {
@@ -107,81 +91,12 @@ export const Home = () => {
       </div>
 
       {/* ── Bloque Inferior: Tarjeta de Sincronización Google Drive ── */}
-      <div className="home-sync-card">
-        {!isConnected ? (
-          <>
-            <CloudOffIcon size={36} className="home-sync-icon" />
-            <h3 className="home-sync-title">Sincroniza tus datos en la nube</h3>
-            <p className="home-sync-desc">
-              Conecta tu Google Drive para acceder a tus rutas, talleres, motos y temas desde cualquier dispositivo.
-            </p>
-            <span className="home-sync-note">Alcance drive.file - Solo MotoAtlas26 accede a sus archivos</span>
-            <button
-              onClick={connect}
-              disabled={syncStatus === 'syncing'}
-              className="home-sync-btn home-sync-btn--primary"
-            >
-              <SyncIcon size={16} /> Conectar con Google Drive
-            </button>
-          </>
-        ) : (
-          <>
-            <CloudIcon size={36} className="home-sync-icon" />
-            <div className="home-sync-user">
-              {user?.picture && (
-                <img
-                  src={user.picture}
-                  alt={user.name || ''}
-                  className="home-sync-avatar"
-                />
-              )}
-              <div className="home-sync-user-info">
-                <div className="home-sync-user-name">{user?.name || user?.email}</div>
-                <div className="home-sync-user-email">{user?.email}</div>
-              </div>
-            </div>
-            
-            <div className="home-sync-status">
-              <span className={`home-sync-badge ${syncStatus}`}>
-                {syncStatus === 'synced' && <CheckCircleIcon size={10} className="home-sync-badge-icon" />}
-                {syncStatus === 'syncing' && <SyncIcon size={10} className="home-sync-badge-icon spin" />}
-                {syncStatus === 'synced' ? 'Sincronizado' :
-                 syncStatus === 'syncing' ? 'Sincronizando...' :
-                 syncStatus === 'error' ? 'Error' : 'Pendiente'}
-              </span>
-            </div>
+      <GoogleDriveSyncCard 
+        variant="home"
+        showTitle={true}
+        showDescription={true}
+      />
 
-            {lastSync && (
-              <div className="home-sync-last">
-                <SyncIcon size={12} />
-                <span>Última sincronización: {formatRelativeTime(lastSync)}</span>
-              </div>
-            )}
-
-            <div className="home-sync-actions">
-              <button
-                onClick={syncNow}
-                disabled={syncStatus === 'syncing'}
-                className="home-sync-btn home-sync-btn--primary"
-              >
-                <SyncIcon size={14} /> {syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar ahora'}
-              </button>
-              <button
-                onClick={disconnect}
-                className="home-sync-btn home-sync-btn--secondary"
-              >
-                <LogOutIcon size={14} /> Cerrar sesión
-              </button>
-            </div>
-
-            {authError && (
-              <div className="home-sync-error">{authError}</div>
-            )}
-          </>
-        )}
-      </div>
-
-      
     </div>
   )
 }

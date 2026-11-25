@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/25/2026, 11:43:17 AM
+> Generado el 11/25/2026, 12:19:54 PM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -46,6 +46,7 @@
   📁 shared
     📄 BlobImage.jsx
     📄 EmptyState.jsx
+    📄 GoogleDriveSyncCard.jsx
     📄 Icons.jsx
     📄 InstallAppButton.jsx
     📄 Modal.jsx
@@ -209,6 +210,10 @@
 - Archivo: src/components/shared/EmptyState.jsx
 - Exports: EmptyState, EmptyState
 
+### GoogleDriveSyncCard
+- Archivo: src/components/shared/GoogleDriveSyncCard.jsx
+- Exports: GoogleDriveSyncCard, GoogleDriveSyncCard
+
 ### Icons
 - Archivo: src/components/shared/Icons.jsx
 - Exports: HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, ImageIcon, TrashIcon, SettingsIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ShieldIcon, ChevronRightIcon, FileTextIcon, FileIcon, PhoneIcon, EyeIcon, AlertIcon, CalendarIcon, ChevronLeftIcon, CircleIcon
@@ -267,7 +272,7 @@
 
 ### googleDrive
 - Archivo: src/services/googleDrive.js
-- Exports: initGoogleClient, getConnectionStatus, tokenClient, accessToken, currentUser
+- Exports: initGoogleClient, hasStoredSession, getConnectionStatus, getLastSync, tokenClient, accessToken, currentUser
 
 ### invoiceParser
 - Archivo: src/utils/invoiceParser.js
@@ -328,7 +333,7 @@
 - Importa **{ useGPX }** desde `../../context/GPXContext`
 - Importa **{ useAuth }** desde `../../context/AuthContext`
 - Importa **{ MotoAtlas26Logo }** desde `../shared`
-- Importa **{ CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon }** desde `../shared/Icons`
+- Importa **{ GoogleDriveSyncCard }** desde `../shared`
 - Importa **{ getMotoModel }** desde `../../constants/motoModels`
 - Importa **cfmoto800Img** desde `../../assets/motos/800MT-X.webp`
 - Importa **ktm1290Img** desde `../../assets/motos/KTM-1290-S-Adv-S.webp`
@@ -472,13 +477,13 @@
 - Importa **{ useGPX }** desde `../../context/GPXContext`
 - Importa **{ useDatabase }** desde `../../hooks/useDatabase`
 - Importa **{ useAuth }** desde `../../context/AuthContext`
-- Importa **{ EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect }** desde `../shared`
+- Importa **{ EmptyState, SectionHeader, SettingCard, Tabs, Modal, InstallAppButton, ThemeSelect, GoogleDriveSyncCard }** desde `../shared`
 - Importa **CatalogDetailView** desde `./CatalogDetailView`
 - Importa **{ formatBackupName }** desde `../../utils/formatters`
 - Importa **{ getMotoModelsArray, getMotoModel }** desde `../../constants/motoModels`
 - Importa **{ getThemesList, THEMES }** desde `../../constants/themes`
 - Importa **{ applyThemeToDocument, validateActiveTheme, refreshActiveCustomTheme, getSavedTheme }** desde `../../utils/themeEngine`
-- Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon }** desde `../shared/Icons`
+- Importa **{ TrashIcon, DownloadIcon, UploadIcon, FolderIcon, RefreshCwIcon, EditIcon, WrenchIcon, UserIcon, CheckCircleIcon, MotoIcon, PaletteIcon, PlusIcon, ChevronLeftIcon, CircleIcon, ShieldIcon, ChevronRightIcon }** desde `../shared/Icons`
 
 ### src/components/shared/BlobImage.jsx
 - Importa **React** desde `react`
@@ -486,6 +491,10 @@
 
 ### src/components/shared/EmptyState.jsx
 - Importa **React** desde `react`
+
+### src/components/shared/GoogleDriveSyncCard.jsx
+- Importa **{ useAuth }** desde `../../context/AuthContext`
+- Importa **{ CloudIcon, CloudOffIcon, SyncIcon, CheckCircleIcon, LogOutIcon, DownloadIcon, UploadIcon, AlertCircleIcon, UserCircleIcon }** desde `./Icons`
 
 ### src/components/shared/Icons.jsx
 - Importa **React** desde `react`
@@ -540,7 +549,7 @@
 
 ### src/context/AuthContext.jsx
 - Importa **{ db }** desde `../services/db`
-- Importa **{ signIn, signOut, getCurrentUser, ensureMotoAtlas26Folder, findOrCreateDBFile, readDBFile, writeDBFile, syncFromDrive, syncToDrive, getConnectionStatus }** desde `../services/googleDrive`
+- Importa **{ signIn, signOut, getCurrentUser, hasStoredSession, restoreSession, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync }** desde `../services/googleDrive`
 
 ### src/context/GPXContext.jsx
 - Importa **{ db, initDB }** desde `../services/db`

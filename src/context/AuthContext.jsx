@@ -4,13 +4,12 @@ import {
   signIn,
   signOut,
   getCurrentUser,
-  ensureMotoAtlas26Folder,
-  findOrCreateDBFile,
-  readDBFile,
-  writeDBFile,
+  hasStoredSession,
+  restoreSession,
   syncFromDrive,
   syncToDrive,
-  getConnectionStatus
+  getConnectionStatus,
+  getLastSync
 } from '../services/googleDrive'
 
 const AuthContext = createContext()
@@ -31,6 +30,7 @@ export const useAuth = () => {
  * - Maneja login/logout
  * - Sincronización inicial al conectar (si Drive está vacío, sube datos locales)
  * - Auto-sync con debounce tras cambios en la DB
+ * - Persistencia de sesión en localStorage
  */
 export const AuthProvider = ({ children }) => {
   const [clientId, setClientId] = useState(null)
@@ -64,7 +64,34 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  // Sincronización inicial al conectar
+  // Restaurar sesión guardada al montar
+  useEffect(() => {
+    const restoreStoredSession = async () => {
+      if (!clientId) return
+      
+      try {
+        const storedUser = await restoreSession()
+        if (storedUser) {
+          setUser(storedUser)
+          setIsConnected(true)
+          
+          // Cargar último sync desde localStorage
+          const lastSyncDate = getLastSync()
+          if (lastSyncDate) {
+            setLastSync(lastSyncDate)
+          }
+          
+          console.log('[AuthContext] Sesión restaurada desde localStorage:', storedUser.email)
+        }
+      } catch (err) {
+        console.warn('[AuthContext] No se pudo restaurar sesión:', err)
+      }
+    }
+
+    restoreStoredSession()
+  }, [clientId])
+
+  // Sincronización inicial al conectar (después de signIn exitoso)
   useEffect(() => {
     if (!isConnected || !clientId) return
 
@@ -73,12 +100,23 @@ export const AuthProvider = ({ children }) => {
         setSyncStatus('syncing')
         setError(null)
 
+        // Verificar estado de conexión
+        const status = getConnectionStatus()
+        if (!status.hasToken) {
+          console.log('[AuthContext] No hay token de acceso, esperando signIn...')
+          return
+        }
+
         // Buscar carpeta y archivo
-        const folder = await ensureMotoAtlas26Folder()
+        const { ensureMotoAtlasFolder, findOrCreateDBFile, readDBFile } = await import('../services/googleDrive')
+        const folder = await ensureMotoAtlasFolder()
         const file = await findOrCreateDBFile(folder.id)
 
+        // Leer archivo para ver si tiene contenido
+        const data = await readDBFile(file.id)
+        
         // Si el archivo es nuevo/vacío y hay datos locales, subir primero
-        if (!file.id || file.size === 0) {
+        if (!data || Object.keys(data).length === 0) {
           console.log('[AuthContext] Archivo nuevo/vacío en Drive. Subiendo datos locales...')
           await syncToDrive(db)
         } else {
@@ -99,7 +137,7 @@ export const AuthProvider = ({ children }) => {
     performInitialSync()
   }, [isConnected, clientId])
 
-  // Auto-sync con debounce tras cambios en la DB
+  // Auto-sync con debounce tras cambios en la DB (2.5 segundos)
   useEffect(() => {
     if (!isConnected || !clientId) return
 
@@ -110,6 +148,12 @@ export const AuthProvider = ({ children }) => {
 
       syncTimerRef.current = setTimeout(async () => {
         try {
+          const status = getConnectionStatus()
+          if (!status.hasToken) {
+            console.log('[AuthContext] No hay token para auto-sync')
+            return
+          }
+          
           setSyncStatus('syncing')
           await syncToDrive(db)
           setSyncStatus('synced')
@@ -118,7 +162,7 @@ export const AuthProvider = ({ children }) => {
           console.error('[AuthContext] Error en auto-sync:', err)
           setSyncStatus('error')
         }
-      }, 2000) // 2 segundos de debounce
+      }, 2500) // 2.5 segundos de debounce
     }
 
     // Suscribirse a eventos de cambio en la DB
@@ -126,10 +170,17 @@ export const AuthProvider = ({ children }) => {
       debouncedSync()
     }
 
+    // También escuchar cambios en preferencias visuales
+    const handlePreferencesChange = () => {
+      debouncedSync()
+    }
+
     window.addEventListener('db:changed', handleDBChange)
+    window.addEventListener('storage', handlePreferencesChange)
 
     return () => {
       window.removeEventListener('db:changed', handleDBChange)
+      window.removeEventListener('storage', handlePreferencesChange)
       if (syncTimerRef.current) {
         clearTimeout(syncTimerRef.current)
       }
