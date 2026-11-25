@@ -15,6 +15,7 @@ const UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3'
 // Estado interno
 let tokenClient = null
 let accessToken = null
+let tokenExpiry = null
 let currentUser = null
 let isInitialized = false
 
@@ -55,15 +56,18 @@ export function initGoogleClient(clientId) {
       if (response.error) {
         console.error('[Google Drive] Error en callback:', response.error)
         accessToken = null
+        tokenExpiry = null
         currentUser = null
         return
       }
       accessToken = response.access_token
-      console.log('[Google Drive] Token obtenido')
+      tokenExpiry = Date.now() + (response.expires_in * 1000)
+      console.log('[Google Drive] Token obtenido, expira en:', response.expires_in, 'segundos')
     },
     error_callback: (error) => {
       console.error('[Google Drive] Error en error_callback:', error)
       accessToken = null
+      tokenExpiry = null
       currentUser = null
     }
   })
@@ -111,6 +115,7 @@ export async function signIn(clientId) {
         return
       }
       accessToken = response.access_token
+      tokenExpiry = Date.now() + (response.expires_in * 1000)
       try {
         await fetchCurrentUser()
         // Guardar estado de conexión en localStorage
@@ -126,7 +131,7 @@ export async function signIn(clientId) {
       reject(new Error(error.error || 'Error al iniciar sesión'))
     }
 
-    tokenClient.prompt()
+    tokenClient.requestAccessToken({ prompt: 'consent' })
   })
 }
 
@@ -519,7 +524,8 @@ export function getConnectionStatus() {
     hasUser: !!currentUser,
     user: currentUser,
     isStoredSession: hasStoredSession(),
-    lastSync: localStorage.getItem(STORAGE_KEYS.LAST_SYNC)
+    lastSync: localStorage.getItem(STORAGE_KEYS.LAST_SYNC),
+    tokenExpiry
   }
 }
 
