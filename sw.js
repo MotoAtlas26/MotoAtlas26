@@ -4,16 +4,18 @@
  * Versión: incrementar al cambiar archivos cacheados
  */
 const CACHE_NAME = 'motoatlas-v4';
+
+// Usar rutas relativas al scope del SW para funcionar en GitHub Pages subpath (/MotoAtlas26/)
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png',
-  '/favicon.svg',
-  '/800MT-X.webp',
-  '/KTM-1290-S-Adv-S.webp'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/apple-touch-icon.png',
+  './favicon.svg',
+  './800MT-X.webp',
+  './KTM-1290-S-Adv-S.webp'
 ];
 
 // Install: cache static assets
@@ -64,7 +66,7 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // Offline: servir index.html desde cache (SPA)
-          return caches.match('/index.html');
+          return caches.match('./index.html');
         })
     );
     return;
