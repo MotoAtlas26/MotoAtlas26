@@ -48,6 +48,37 @@ export const AuthProvider = ({ children }) => {
   const syncTimerRef = useRef(null)
   const initDoneRef = useRef(false)
 
+  // Debounced sync function (top-level hook, stable reference)
+  const debouncedSync = useCallback(() => {
+    if (syncTimerRef.current) {
+      clearTimeout(syncTimerRef.current)
+    }
+
+    syncTimerRef.current = setTimeout(async () => {
+      try {
+        const { getConnectionStatus, syncToDrive } = await import('../services/googleDrive')
+        const status = getConnectionStatus()
+        if (!status.hasToken) {
+          console.log('[AuthContext] No hay token para auto-sync')
+          return
+        }
+        
+        setSyncStatus('syncing')
+        await syncToDrive(db)
+        setSyncStatus('synced')
+        setLastSync(new Date())
+      } catch (err) {
+        console.error('[AuthContext] Error en auto-sync:', err)
+        // NO desconectar en error de auto-sync - mantener sesión
+        // Si es 401, marcar para renovación
+        if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
+          setNeedsTokenRenewal(true)
+        }
+        setSyncStatus('error')
+      }
+    }, 2500) // 2.5 segundos de debounce
+  }, [db, setSyncStatus, setLastSync, setNeedsTokenRenewal])
+
   // Detectar si la app está instalada como PWA
   useEffect(() => {
     const isStandaloneMode =
@@ -188,35 +219,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (!isConnected || !clientId) return
 
-    const debouncedSync = useCallback(() => {
-      if (syncTimerRef.current) {
-        clearTimeout(syncTimerRef.current)
-      }
-
-      syncTimerRef.current = setTimeout(async () => {
-        try {
-          const status = getConnectionStatus()
-          if (!status.hasToken) {
-            console.log('[AuthContext] No hay token para auto-sync')
-            return
-          }
-          
-          setSyncStatus('syncing')
-          await syncToDrive(db)
-          setSyncStatus('synced')
-          setLastSync(new Date())
-        } catch (err) {
-          console.error('[AuthContext] Error en auto-sync:', err)
-          // NO desconectar en error de auto-sync - mantener sesión
-          // Si es 401, marcar para renovación
-          if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
-            setNeedsTokenRenewal(true)
-          }
-          setSyncStatus('error')
-        }
-      }, 2500) // 2.5 segundos de debounce
-    }, [])
-
     // Suscribirse a eventos de cambio en la DB
     const handleDBChange = () => {
       debouncedSync()
@@ -237,7 +239,7 @@ export const AuthProvider = ({ children }) => {
         clearTimeout(syncTimerRef.current)
       }
     }
-  }, [isConnected, clientId])
+  }, [isConnected, clientId, debouncedSync])
 
   // Funciones públicas
   const connect = async () => {
