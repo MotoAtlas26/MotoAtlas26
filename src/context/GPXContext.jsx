@@ -89,17 +89,18 @@ export const GPXProvider = ({ children }) => {
   }, [dispatch])
 
   const preloadMotoImages = async () => {
+    const baseUrl = import.meta.env.BASE_URL || '/'
     const motoImages = [
       {
         motoId: 'cfmoto-800mt-x',
         fileName: '800MT-X.webp',
-        path: '/800MT-X.webp',
+        path: `${baseUrl}800MT-X.webp`,
         colorTheme: { primary: '#E8A838', secondary: '#1A1A1A' }
       },
       {
         motoId: 'ktm-1290-super-adventure-s',
         fileName: 'KTM-1290-S-Adv-S.webp',
-        path: '/KTM-1290-S-Adv-S.webp',
+        path: `${baseUrl}KTM-1290-S-Adv-S.webp`,
         colorTheme: { primary: '#FF8200', secondary: '#000000' }
       }
     ]
