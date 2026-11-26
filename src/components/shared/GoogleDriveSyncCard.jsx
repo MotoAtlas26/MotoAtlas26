@@ -15,6 +15,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     connect,
     disconnect,
     renewSession,
+    reconnectWithConsent,
     syncStatus,
     setSyncStatus,
     uploadBackup,
@@ -69,7 +70,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     try {
       // Usar la función syncNow del contexto (maneja renovación de token)
       // Pasa: db para importar/exportar, uploadBackup para subir, setSyncStatus para feedback visual
-      await syncNow({ db, uploadBackup, setSyncStatus });
+      await syncNow({ db, uploadBackup, setSyncStatus, connect });
       console.log('[GoogleDriveSyncCard] Sincronización completada exitosamente');
       
       // Mostrar banner de éxito con la hora actual
@@ -92,9 +93,9 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
   const handleRestore = async () => {
     if (!db) return;
     console.log('[GoogleDriveSyncCard] Pulsado Restaurar');
+    // Mostrar confirmación inline antes de ejecutar
     setShowRestoreConfirm(true);
   };
-
   const handleRestoreConfirm = async () => {
     if (!db) return;
     console.log('[GoogleDriveSyncCard] Confirmada restauración desde Google Drive');
@@ -102,7 +103,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     setShowRestoreConfirm(false);
     
     try {
-      await restoreFromDrive({ db, downloadBackup, setSyncStatus });
+      await restoreFromDrive({ db, downloadBackup, setSyncStatus, connect });
       // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
       console.log('[GoogleDriveSyncCard] Restauración completada exitosamente');
       
@@ -148,7 +149,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     setShowRestoreConfirm(false);
     setRestoreConfirmMessage('');
     try {
-      await restoreFromDrive({ db, downloadBackup, setSyncStatus });
+      await restoreFromDrive({ db, downloadBackup, setSyncStatus, connect });
       setRestoreConfirmMessage('Datos restaurados desde Google Drive');
       // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
     } catch (err) {
