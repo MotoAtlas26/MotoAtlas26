@@ -6,7 +6,6 @@ import { db } from '../services/db'
  * Proporciona funciones tipadas para operaciones comunes
  */
 export function useDatabase() {
-  
   // Tracks
   const saveTrack = useCallback(async (trackData, points = []) => {
     return await db.saveTrack(trackData, points)
@@ -256,79 +255,52 @@ export function useDatabase() {
     return await db.deleteDocumentType(id)
   }, [])
 
-  // Utilities
-  const clearAllData = useCallback(async () => {
-    return await db.clearAllData()
-  }, [])
-
-  const getDatabaseSize = useCallback(async () => {
-    return await db.getDatabaseSize()
-  }, [])
-
-  const exportAll = useCallback(async () => {
-    return await db.exportAll()
-  }, [])
-
-  const importAll = useCallback(async (data) => {
-    return await db.importAll(data)
-  }, [])
-
   return {
-    // Tracks
+    db,
     saveTrack,
     getTrack,
-    getAllTracks,
     getTrackLazy,
+    getAllTracks,
     getTracksWithPoints,
     deleteTrack,
     updateTrack,
-    // Images
     saveImage,
     getImagesByTrack,
     getImagesByType,
     getImage,
     deleteImage,
-    // Maintenance (legacy)
     saveMaintenance,
     getAllMaintenance,
     getMaintenanceByMoto,
-    // Workshops
     getWorkshops,
     saveWorkshop,
     editWorkshop,
     removeWorkshop,
-    // Motorcycles (Garaje)
     getMotorcycles,
     saveMotorcycle,
     editMotorcycle,
     removeMotorcycle,
-    // Moto Profile
     saveMotoProfile,
     getMotoProfile,
-    // Settings
     setSetting,
     getSetting,
     getAllSettings,
-    // Custom Themes
     getCustomThemes,
     saveCustomTheme,
     editCustomTheme,
     removeCustomTheme,
-    // Invoices
     saveInvoice,
     getInvoice,
     getInvoicesByMoto,
     getAllInvoices,
     updateInvoice,
     deleteInvoice,
-    // Maintenances (new table)
     saveMaintenanceRecord,
     getMaintenanceRecord,
     getMaintenancesByMoto,
     getAllMaintenances,
     updateMaintenanceRecord,
     deleteMaintenanceRecord,
-    // Moto Documents (Guantera Digital)
     saveMotoDocument,
     getMotoDocument,
     getMotoDocumentsByMoto,
@@ -336,22 +308,13 @@ export function useDatabase() {
     getMotoDocumentsByType,
     updateMotoDocument,
     deleteMotoDocument,
-    // Tires (Catálogo de Neumáticos)
     saveTire,
     getAllTires,
     updateTire,
     deleteTire,
-    // Document Types (Guantera Digital)
     getAllDocumentTypes,
     saveDocumentType,
     updateDocumentType,
-    deleteDocumentType,
-    // Utilities
-    clearAllData,
-    getDatabaseSize,
-    exportAll,
-    importAll,
+    deleteDocumentType
   }
 }
-
-export default useDatabase

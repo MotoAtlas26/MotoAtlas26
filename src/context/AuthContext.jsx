@@ -36,6 +36,10 @@ export const useAuth = () => {
  * - Si el token caducó, solicita renovación y reintenta
  */
 export const syncNow = async (context) => {
+  console.log('[AuthContext] syncNow INVOKED', context);
+
+  console.log('[AuthContext] syncNow INVOKED from GoogleDriveSyncCard', context);
+
   console.log('[AuthContext] syncNow llamado')
   const { connect, uploadBackup, setSyncStatus, db } = context
   setSyncStatus('syncing')
@@ -66,7 +70,6 @@ export const syncNow = async (context) => {
       throw err
     }
   } finally {
-    setIsSyncing(false)
     console.log('[AuthContext] syncNow finally: isSyncing = false')
   }
 }
@@ -81,20 +84,17 @@ export const syncNow = async (context) => {
  * - Dispara evento 'db:changed' para notificar cambios
  */
 export const restoreFromDrive = async (context) => {
-  console.log('[AuthContext] restoreFromDrive llamado')
-  const { downloadBackup, setSyncStatus, db } = context
+  console.log('[AuthContext] restoreFromDrive INVOKED', context);
+  const { connect, downloadBackup, setSyncStatus, db } = context
   setSyncStatus('syncing')
   try {
     await downloadBackup(db)
     setSyncStatus('synced')
-    // Disparar eventos para refrescar la UI en toda la app
-    // El timestamp de última sincronización se actualiza dentro de downloadBackup
     window.dispatchEvent(new Event('motoatlas:drive-synced'))
     window.dispatchEvent(new Event('db:changed'))
     console.log('[AuthContext] restoreFromDrive completado exitosamente')
   } catch (err) {
     console.error('[AuthContext] restoreFromDrive error:', err)
-    // Si el token caducó o falta, solicitar renovación con clic del usuario y reintentar
     if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized') || err.message.includes('No hay token de acceso')) {
       try {
         console.log('[AuthContext] Token caducado/falta en restore, renovando con connect()...')
@@ -113,7 +113,6 @@ export const restoreFromDrive = async (context) => {
       throw err
     }
   } finally {
-    setIsSyncing(false)
     console.log('[AuthContext] restoreFromDrive finally: isSyncing = false')
   }
 }

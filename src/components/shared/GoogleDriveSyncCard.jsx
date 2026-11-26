@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
-import { AuthContext, syncNow, restoreFromDrive } from '../../context/AuthContext';
-import { useDatabase } from '../../hooks/useDatabase';
+import { useAuth, syncNow, restoreFromDrive } from '../../context/AuthContext';
+import { db } from '../../services/db';
 
-export function GoogleDriveSyncCard({ showTitle = true }) {
-  const { db } = useDatabase();
+export function GoogleDriveSyncCard({ showTitle = true, db: propDb }) {
+  const auth = useAuth();
+  const activeDb = propDb || db;
   const {
     isConnected,
     needsReauth,
@@ -20,7 +21,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     setSyncStatus,
     uploadBackup,
     downloadBackup,
-  } = useContext(AuthContext);
+  } = auth;
 
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
 
@@ -63,47 +64,48 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     setSyncStatus('idle');
   };
 
-  const handleSyncNow = async () => {
-    if (!db) return;
-    console.log('[GoogleDriveSyncCard] Pulsado Sincronizar ahora');
+      const handleSyncNow = async () => {
+    console.log('[GoogleDriveSyncCard] Pulsado Sincronizar ahora, db:', activeDb);
+    if (!activeDb) {
+      console.error('[GoogleDriveSyncCard] DB no disponible');
+      return;
+    }
     
     try {
-      // Usar la función syncNow del contexto (maneja renovación de token)
-      // Pasa: db para importar/exportar, uploadBackup para subir, setSyncStatus para feedback visual
-      await syncNow({ db, uploadBackup, setSyncStatus, connect });
+      console.log('[GoogleDriveSyncCard] Llamando a syncNow...');
+      await syncNow({ db: activeDb, uploadBackup, setSyncStatus, connect });
       console.log('[GoogleDriveSyncCard] Sincronización completada exitosamente');
       
-      // Mostrar banner de éxito con la hora actual
       const now = new Date();
       const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setSyncStatus('success');
       console.log(`[GoogleDriveSyncCard] Sincronizado correctamente a las ${timeString}`);
       
-      // Limpiar estado después de 3 segundos
       setTimeout(() => setSyncStatus('idle'), 3000);
     } catch (err) {
       console.error('[GoogleDriveSyncCard] Error en sincronización:', err);
       setSyncStatus('error');
-      
-      // Limpiar estado después de 3 segundos
       setTimeout(() => setSyncStatus('idle'), 3000);
     }
   };
 
   const handleRestore = async () => {
-    if (!db) return;
-    console.log('[GoogleDriveSyncCard] Pulsado Restaurar');
-    // Mostrar confirmación inline antes de ejecutar
+    console.log('[GoogleDriveSyncCard] Pulsado Restaurar, db:', activeDb);
+    if (!activeDb) {
+      console.error('[GoogleDriveSyncCard] DB no disponible');
+      return;
+    }
     setShowRestoreConfirm(true);
   };
   const handleRestoreConfirm = async () => {
-    if (!db) return;
+    if (!activeDb) return;
     console.log('[GoogleDriveSyncCard] Confirmada restauración desde Google Drive');
     
     setShowRestoreConfirm(false);
     
     try {
-      await restoreFromDrive({ db, downloadBackup, setSyncStatus, connect });
+      console.log('[GoogleDriveSyncCard] restoreFromDrive args:', { db: activeDb, downloadBackup, setSyncStatus, connect });
+      await restoreFromDrive({ db: activeDb, downloadBackup, setSyncStatus, connect });
       // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
       console.log('[GoogleDriveSyncCard] Restauración completada exitosamente');
       
@@ -144,12 +146,13 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     setShowRestoreConfirm(true);
   };
 
-  const handleRestoreConfirmAction = async () => {
-    if (!db) return;
+    const handleRestoreConfirmAction = async () => {
+    if (!activeDb) return;
     setShowRestoreConfirm(false);
     setRestoreConfirmMessage('');
     try {
-      await restoreFromDrive({ db, downloadBackup, setSyncStatus, connect });
+      console.log('[GoogleDriveSyncCard] restoreFromDrive args:', { db: activeDb, downloadBackup, setSyncStatus, connect });
+      await restoreFromDrive({ db: activeDb, downloadBackup, setSyncStatus, connect });
       setRestoreConfirmMessage('Datos restaurados desde Google Drive');
       // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
     } catch (err) {
