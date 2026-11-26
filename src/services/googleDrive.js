@@ -92,7 +92,9 @@ function getClientId() {
  */
 export function initGoogleClient(clientId) {
   if (!window.google || !window.google.accounts) {
-    throw new Error('Google Identity Services no cargado. Asegúrate de incluir el script en index.html.')
+    console.warn('[Google Drive] Google Identity Services aún no cargado, reintentando en 500ms...');
+    setTimeout(() => initGoogleClient(clientId), 500);
+    return;
   }
 
   tokenClient = window.google.accounts.oauth2.initTokenClient({

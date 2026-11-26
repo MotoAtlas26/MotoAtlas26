@@ -265,8 +265,7 @@ export const AuthProvider = ({ children }) => {
             }
           }
         } catch (err) {
-          console.warn('[AuthContext] Error inicializando Google Client:', err)
-          // NO desconectar - mantener estado de localStorage
+          console.warn('[Google Drive] Error inicializando Google Client:', err)
         }
       }
     }
