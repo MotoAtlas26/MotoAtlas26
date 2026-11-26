@@ -29,6 +29,70 @@ export const useAuth = () => {
 }
 
 /**
+ * Sincroniza los datos actuales con Google Drive
+ * - Sube la copia de seguridad de la base de datos
+ * - Actualiza el timestamp de última sincronización
+ * - Establece syncStatus = 'synced' en caso de éxito
+ * - Si el token caducó, solicita renovación y reintenta
+ */
+export const syncNow = async (context) => {
+  const { connect, uploadBackup, setSyncStatus } = context
+  setSyncStatus('syncing')
+  try {
+    await uploadBackup(context.db)
+    setSyncStatus('synced')
+    // El timestamp de última sincronización se actualiza en googleDrive.js
+    // y el evento 'motoatlas:drive-synced' refresca la UI en toda la app
+    console.log('[AuthContext] syncNow completado exitosamente')
+  } catch (err) {
+    // Si el token caducó, intentar renovación
+    if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
+      try {
+        await context.reconnectWithConsent()
+        await uploadBackup(context.db)
+        setSyncStatus('synced')
+        console.log('[AuthContext] syncNow reintentado tras renovación de token')
+      } catch (renewErr) {
+        setSyncStatus('error')
+        console.error('[AuthContext] syncNow falló tras renovación:', renewErr)
+        throw renewErr
+      }
+    } else {
+      setSyncStatus('error')
+      console.error('[AuthContext] syncNow falló:', err)
+      throw err
+    }
+  }
+}
+
+/**
+ * Restaura los datos desde Google Drive
+ * - Descarga el backup de la base de datos
+ * - Ejecuta db.importAll(...) para restaurar los datos en Dexie
+ * - Restaura preferencias visuales
+ * - Actualiza el timestamp de última sincronización
+ * - Dispara evento 'motoatlas:drive-synced' para refrescar la app
+ * - Dispara evento 'db:changed' para notificar cambios
+ */
+export const restoreFromDrive = async (context) => {
+  const { downloadBackup, setSyncStatus, db } = context
+  setSyncStatus('syncing')
+  try {
+    await downloadBackup(db)
+    setSyncStatus('synced')
+    // Disparar eventos para refrescar la UI en toda la app
+    // El timestamp de última sincronización se actualiza dentro de downloadBackup
+    window.dispatchEvent(new Event('motoatlas:drive-synced'))
+    window.dispatchEvent(new Event('db:changed'))
+    console.log('[AuthContext] restoreFromDrive completado exitosamente')
+  } catch (err) {
+    setSyncStatus('error')
+    console.error('[AuthContext] restoreFromDrive falló:', err)
+    throw err
+  }
+}
+
+/**
  * Provider de autenticación con Google Drive
  * - Maneja login/logout
  * - Sincronización inicial al conectar (si Drive está vacío, sube datos locales)

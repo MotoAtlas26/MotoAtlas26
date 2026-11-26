@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext, syncNow, restoreFromDrive } from '../../context/AuthContext';
 import { useDatabase } from '../../hooks/useDatabase';
 
 export function GoogleDriveSyncCard({ showTitle = true }) {
@@ -15,10 +15,6 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     connect,
     disconnect,
     renewSession,
-    uploadBackup,
-    downloadBackup,
-    clearError,
-    reconnectWithConsent,
     syncStatus,
     setSyncStatus,
   } = useContext(AuthContext);
@@ -66,15 +62,9 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
 
   const handleSyncNow = async () => {
     if (!db) return;
-    setSyncStatus('syncing');
-    try {
-      await uploadBackup(db);
-      setSyncStatus('success');
-      setTimeout(() => setSyncStatus('idle'), 3000);
-    } catch (err) {
-      setSyncStatus('error');
-      setTimeout(() => setSyncStatus('idle'), 3000);
-    }
+    // Usar la función syncNow del contexto (maneja renovación de token)
+    await syncNow({ db, connect, setSyncStatus });
+    // Feedback visual: el setSyncStatus lo maneja syncNow internamente
   };
 
   const handleRestore = async () => {
@@ -87,13 +77,41 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     setSyncStatus('syncing');
     setShowRestoreConfirm(false);
     try {
-      await downloadBackup(db);
-      setSyncStatus('success');
-      setTimeout(() => setSyncStatus('idle'), 3000);
+      await restoreFromDrive({ db, downloadBackup, setSyncStatus });
+      // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
+      console.log('[GoogleDriveSyncCard] Restauración completada');
     } catch (err) {
       setSyncStatus('error');
-      setTimeout(() => setSyncStatus('idle'), 3000);
+      console.error('[GoogleDriveSyncCard] Restauración falló:', err);
     }
+  };
+
+  // Manejo del diálogo de confirmación de restauración
+  const [restoreConfirmMessage, setRestoreConfirmMessage] = useState('');
+
+  const handleRestoreShowConfirm = () => {
+    setRestoreConfirmMessage(
+      '¿Sobrescribir datos locales con la copia de Google Drive?'
+    );
+    setShowRestoreConfirm(true);
+  };
+
+  const handleRestoreConfirmAction = async () => {
+    if (!db) return;
+    setShowRestoreConfirm(false);
+    setRestoreConfirmMessage('');
+    try {
+      await restoreFromDrive({ db, downloadBackup, setSyncStatus });
+      setRestoreConfirmMessage('Datos restaurados desde Google Drive');
+      // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
+    } catch (err) {
+      setRestoreConfirmMessage('Error al restaurar: ' + err.message);
+    }
+  };
+
+  const handleRestoreCancel = () => {
+    setShowRestoreConfirm(false);
+    setRestoreConfirmMessage('');
   };
 
   const formatLastSynced = (timestamp) => {
@@ -536,14 +554,31 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
         </button>
       </div>
 
-      {error && <p style={errorStyle} role="alert">{error}</p>}
+      {/* Feedback visual después de sincronizar/restaurar */}
+      {syncStatus === 'success' && (
+        <div style={warningStyle}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px', flexShrink: 0, marginRight: '0.5rem' }}>
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          <span style={warningTextStyle}>Sincronizado con Google Drive a las {lastSync ? formatLastSynced(lastSync) : 'ahora'}</span>
+        </div>
+      )}
 
-      {/* Restore confirmation modal */}
-      {showRestoreConfirm && (
+      {syncStatus === 'error' && (
+        <div style={errorStyle} role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px', flexShrink: 0, marginRight: '0.5rem' }}>
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          <span style={{ ...warningTextStyle, color: '#991b1b' }}>Error: {error || 'Error desconocido'}</span>
+        </div>
+      )}
+
+      {/* Diálogo de confirmación de restauración inline */}
+      {showRestoreConfirm && restoreConfirmMessage === '' && (
         <div style={modalOverlayStyle} onClick={() => setShowRestoreConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="restore-modal-title">
           <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
             <h4 id="restore-modal-title" style={modalTitleStyle}>Confirmar restauración</h4>
-            <p style={modalTextStyle}>Esto reemplazará todos los datos locales con la copia de Google Drive. ¿Continuar?</p>
+            <p style={modalTextStyle}>¿Sobrescribir datos locales con la copia de Google Drive? Esta acción reemplazará todos los datos locales con la copia de seguridad de Google Drive.</p>
             <div style={modalActionsStyle}>
               <button
                 style={btnSecondaryStyle}
@@ -553,10 +588,30 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
               </button>
               <button
                 style={{ ...btnDangerStyle, ...(isSyncing ? disabledStyle : {}) }}
-                onClick={handleRestoreConfirm}
+                onClick={handleRestoreConfirmAction}
                 disabled={isSyncing}
               >
-                Restaurar
+                Confirmar restauración
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRestoreConfirm && restoreConfirmMessage !== '' && (
+        <div style={modalOverlayStyle} onClick={() => setShowRestoreConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="restore-modal-title">
+          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+            <h4 id="restore-modal-title" style={modalTitleStyle}>Confirmar restauración</h4>
+            <p style={modalTextStyle}>{restoreConfirmMessage}</p>
+            <div style={modalActionsStyle}>
+              <button
+                style={btnSecondaryStyle}
+                onClick={() => {
+                  setShowRestoreConfirm(false);
+                  setRestoreConfirmMessage('');
+                }}
+              >
+                Cerrar
               </button>
             </div>
           </div>
