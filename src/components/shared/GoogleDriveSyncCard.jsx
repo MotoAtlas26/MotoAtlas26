@@ -62,28 +62,76 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
 
   const handleSyncNow = async () => {
     if (!db) return;
-    // Usar la función syncNow del contexto (maneja renovación de token)
-    await syncNow({ db, connect, setSyncStatus });
-    // Feedback visual: el setSyncStatus lo maneja syncNow internamente
+    console.log('[GoogleDriveSyncCard] Pulsado Sincronizar ahora');
+    
+    // Poner estado de carga local
+    setSyncStatus('syncing');
+    
+    try {
+      // Usar la función syncNow del contexto (maneja renovación de token)
+      await syncNow({ db, connect, setSyncStatus });
+      console.log('[GoogleDriveSyncCard] Sincronización completada exitosamente');
+      
+      // Mostrar banner de éxito con la hora actual
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setSyncStatus('success');
+      console.log(`[GoogleDriveSyncCard] Sincronizado correctamente a las ${timeString}`);
+      
+      // Limpiar estado después de 3 segundos
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } catch (err) {
+      console.error('[GoogleDriveSyncCard] Error en sincronización:', err);
+      setSyncStatus('error');
+      
+      // Limpiar estado después de 3 segundos
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    }
   };
 
   const handleRestore = async () => {
     if (!db) return;
+    console.log('[GoogleDriveSyncCard] Pulsado Restaurar');
     setShowRestoreConfirm(true);
   };
 
   const handleRestoreConfirm = async () => {
     if (!db) return;
+    console.log('[GoogleDriveSyncCard] Confirmada restauración desde Google Drive');
+    
     setSyncStatus('syncing');
     setShowRestoreConfirm(false);
+    
     try {
       await restoreFromDrive({ db, downloadBackup, setSyncStatus });
       // Los eventos 'motoatlas:drive-synced' y 'db:changed' se disparan dentro de restoreFromDrive
-      console.log('[GoogleDriveSyncCard] Restauración completada');
+      console.log('[GoogleDriveSyncCard] Restauración completada exitosamente');
+      
+      // Mostrar mensaje de confirmación visual
+      setRestoreConfirmMessage('Datos restaurados desde Google Drive');
+      
+      // Limpiar mensaje después de 3 segundos
+      setTimeout(() => {
+        setRestoreConfirmMessage('');
+        setSyncStatus('idle');
+      }, 3000);
     } catch (err) {
+      console.error('[GoogleDriveSyncCard] Error en restauración:', err);
       setSyncStatus('error');
-      console.error('[GoogleDriveSyncCard] Restauración falló:', err);
+      setRestoreConfirmMessage('Error al restaurar: ' + err.message);
+      
+      // Limpiar mensaje después de 3 segundos
+      setTimeout(() => {
+        setRestoreConfirmMessage('');
+        setSyncStatus('idle');
+      }, 3000);
     }
+  };
+
+  const handleRestoreCancel = () => {
+    console.log('[GoogleDriveSyncCard] Cancelada restauración');
+    setShowRestoreConfirm(false);
+    setRestoreConfirmMessage('');
   };
 
   // Manejo del diálogo de confirmación de restauración
@@ -107,11 +155,6 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     } catch (err) {
       setRestoreConfirmMessage('Error al restaurar: ' + err.message);
     }
-  };
-
-  const handleRestoreCancel = () => {
-    setShowRestoreConfirm(false);
-    setRestoreConfirmMessage('');
   };
 
   const formatLastSynced = (timestamp) => {
@@ -532,6 +575,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
 
       <div style={buttonsStyle}>
         <button
+          type="button"
           style={{ ...btnPrimaryStyle, ...(isSyncing ? disabledStyle : {}) }}
           onClick={handleSyncNow}
           disabled={isSyncing}
@@ -539,6 +583,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
           {isSyncing ? 'Sincronizando...' : 'Sincronizar ahora'}
         </button>
         <button
+          type="button"
           style={{ ...btnSecondaryStyle, ...(isSyncing ? disabledStyle : {}) }}
           onClick={handleRestore}
           disabled={isSyncing}
@@ -546,6 +591,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
           Restaurar
         </button>
         <button
+          type="button"
           style={btnOutlineStyle}
           onClick={handleDisconnect}
           disabled={false}
@@ -578,20 +624,22 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
         <div style={modalOverlayStyle} onClick={() => setShowRestoreConfirm(false)} role="dialog" aria-modal="true" aria-labelledby="restore-modal-title">
           <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
             <h4 id="restore-modal-title" style={modalTitleStyle}>Confirmar restauración</h4>
-            <p style={modalTextStyle}>¿Sobrescribir datos locales con la copia de Google Drive? Esta acción reemplazará todos los datos locales con la copia de seguridad de Google Drive.</p>
+            <p style={modalTextStyle}>¿Restaurar copia desde Google Drive? Esta acción reemplazará todos los datos locales con la copia de seguridad de Google Drive.</p>
             <div style={modalActionsStyle}>
               <button
+                type="button"
                 style={btnSecondaryStyle}
-                onClick={() => setShowRestoreConfirm(false)}
+                onClick={handleRestoreCancel}
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 style={{ ...btnDangerStyle, ...(isSyncing ? disabledStyle : {}) }}
-                onClick={handleRestoreConfirmAction}
+                onClick={handleRestoreConfirm}
                 disabled={isSyncing}
               >
-                Confirmar restauración
+                Confirmar
               </button>
             </div>
           </div>
@@ -605,6 +653,7 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
             <p style={modalTextStyle}>{restoreConfirmMessage}</p>
             <div style={modalActionsStyle}>
               <button
+                type="button"
                 style={btnSecondaryStyle}
                 onClick={() => {
                   setShowRestoreConfirm(false);
