@@ -1,25 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { db } from '../services/db'
 import {
-  signIn,
-  signOut,
-  getCurrentUser,
   loadSessionFromStorage,
   syncFromDrive,
   syncToDrive,
   getConnectionStatus,
   getLastSync,
-  ensureValidToken,
   renewTokenSilently,
-  forceReconnect,
   clearSessionFromStorage
 } from '../services/googleDrive'
 
 const AuthContext = createContext()
 
-/**
- * Hook personalizado para acceder al contexto de autenticación
- */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
@@ -28,37 +20,19 @@ export const useAuth = () => {
   return context
 }
 
-/**
- * Sincroniza los datos actuales con Google Drive
- * - Sube la copia de seguridad de la base de datos
- * - Actualiza el timestamp de última sincronización
- * - Establece syncStatus = 'synced' en caso de éxito
- * - Si el token caducó, solicita renovación y reintenta
- */
 export const syncNow = async (context) => {
-  console.log('[AuthContext] syncNow INVOKED', context);
-
-  console.log('[AuthContext] syncNow INVOKED from GoogleDriveSyncCard', context);
-
-  console.log('[AuthContext] syncNow llamado')
   const { connect, uploadBackup, setSyncStatus, db } = context
   setSyncStatus('syncing')
   try {
     await uploadBackup(db)
     setSyncStatus('synced')
-    // El timestamp de última sincronización se actualiza en googleDrive.js
-    // y el evento 'motoatlas:drive-synced' refresca la UI en toda la app
-    console.log('[AuthContext] syncNow completado exitosamente')
   } catch (err) {
     console.error('[AuthContext] syncNow error:', err)
-    // Si el token caducó o falta, solicitar renovación con clic del usuario y reintentar
     if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized') || err.message.includes('No hay token de acceso')) {
       try {
-        console.log('[AuthContext] Token caducado/falta, renovando con connect()...')
         await connect()
         await uploadBackup(db)
         setSyncStatus('synced')
-        console.log('[AuthContext] syncNow reintentado tras connect() y renovación de token')
       } catch (renewErr) {
         setSyncStatus('error')
         console.error('[AuthContext] syncNow falló tras connect():', renewErr)
@@ -69,22 +43,10 @@ export const syncNow = async (context) => {
       console.error('[AuthContext] syncNow falló:', err)
       throw err
     }
-  } finally {
-    console.log('[AuthContext] syncNow finally: isSyncing = false')
   }
 }
 
-/**
- * Restaura los datos desde Google Drive
- * - Descarga el backup de la base de datos
- * - Ejecuta db.importAll(...) para restaurar los datos en Dexie
- * - Restaura preferencias visuales
- * - Actualiza el timestamp de última sincronización
- * - Dispara evento 'motoatlas:drive-synced' para refrescar la app
- * - Dispara evento 'db:changed' para notificar cambios
- */
 export const restoreFromDrive = async (context) => {
-  console.log('[AuthContext] restoreFromDrive INVOKED', context);
   const { connect, downloadBackup, setSyncStatus, db } = context
   setSyncStatus('syncing')
   try {
@@ -92,16 +54,13 @@ export const restoreFromDrive = async (context) => {
     setSyncStatus('synced')
     window.dispatchEvent(new Event('motoatlas:drive-synced'))
     window.dispatchEvent(new Event('db:changed'))
-    console.log('[AuthContext] restoreFromDrive completado exitosamente')
   } catch (err) {
     console.error('[AuthContext] restoreFromDrive error:', err)
     if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized') || err.message.includes('No hay token de acceso')) {
       try {
-        console.log('[AuthContext] Token caducado/falta en restore, renovando con connect()...')
         await connect()
         await downloadBackup(db)
         setSyncStatus('synced')
-        console.log('[AuthContext] restoreFromDrive reintentado tras connect() y renovación de token')
       } catch (renewErr) {
         setSyncStatus('error')
         console.error('[AuthContext] restoreFromDrive falló tras connect():', renewErr)
@@ -112,18 +71,9 @@ export const restoreFromDrive = async (context) => {
       console.error('[AuthContext] restoreFromDrive falló:', err)
       throw err
     }
-  } finally {
-    console.log('[AuthContext] restoreFromDrive finally: isSyncing = false')
   }
 }
 
-/**
- * Provider de autenticación con Google Drive
- * - Maneja login/logout
- * - Sincronización inicial al conectar (si Drive está vacío, sube datos locales)
- * - Auto-sync con debounce tras cambios en la DB
- * - Persistencia de sesión en localStorage
- */
 export const AuthProvider = ({ children }) => {
   const [clientId, setClientId] = useState(null)
   const [user, setUser] = useState(null)
@@ -133,58 +83,44 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null)
   const [isInstalled, setIsInstalled] = useState(false)
   const [needsReauth, setNeedsReauth] = useState(false)
-  const [syncStatus, setSyncStatus] = useState('idle') // 'idle' | 'syncing' | 'synced' | 'error'
-  const [isLoading, setIsLoading] = useState(false) // Para operaciones de conexión (login, reconexión)
+  const [syncStatus, setSyncStatus] = useState('idle')
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Asegurar que isSyncing empiece siempre en false y syncStatus en 'idle' al iniciar
-  // Esto evita que el Estado quede colgado en 'Sincronizando...' después de recargar la página
   useEffect(() => {
     setIsSyncing(false)
     setSyncStatus('idle')
-  }, []) // Reseteo inicial al montar
+  }, [])
 
-  // Timer para debounce de auto-sync
   const syncTimerRef = useRef(null)
   const initDoneRef = useRef(false)
 
-  // Debounced sync function (top-level hook, stable reference)
   const debouncedSync = useCallback(() => {
     if (syncTimerRef.current) {
       clearTimeout(syncTimerRef.current)
     }
 
     syncTimerRef.current = setTimeout(async () => {
-      // No sincronizar si la sesión necesita reautenticación
-      if (needsReauth) {
-        console.log('[AuthContext] Auto-sync omitido: sesión necesita reautenticación')
-        return
-      }
+      if (needsReauth) return
       
       try {
         const { getConnectionStatus, syncToDrive } = await import('../services/googleDrive')
         const status = getConnectionStatus()
-        if (!status.hasToken) {
-          console.log('[AuthContext] No hay token para auto-sync')
-          return
-        }
+        if (!status.hasToken) return
         
         setIsSyncing(true)
         await syncToDrive(db)
         setLastSync(new Date())
       } catch (err) {
         console.error('[AuthContext] Error en auto-sync:', err)
-        // NO desconectar en error de auto-sync - mantener sesión
-        // Si es 401, marcar para renovación
         if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
           setNeedsReauth(true)
         }
       } finally {
         setIsSyncing(false)
       }
-    }, 2500) // 2.5 segundos de debounce
+    }, 2500)
   }, [db, needsReauth, setLastSync, setNeedsReauth])
 
-  // Detectar si la app está instalada como PWA
   useEffect(() => {
     const isStandaloneMode =
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -194,352 +130,113 @@ export const AuthProvider = ({ children }) => {
     setIsInstalled(isStandaloneMode)
   }, [])
 
-  // Cargar Client ID desde variable de entorno
   useEffect(() => {
     const clientIdFromEnv = import.meta.env.VITE_GOOGLE_CLIENT_ID
     if (clientIdFromEnv) {
       setClientId(clientIdFromEnv)
     } else {
-      console.warn('[AuthContext] VITE_GOOGLE_CLIENT_ID no configurado. Google Drive no disponible.')
+      console.warn('[AuthContext] VITE_GOOGLE_CLIENT_ID no configurado.')
     }
   }, [])
 
-  // Inicialización UNA SOLA VEZ al montar: restaurar sesión desde localStorage e inicializar Google Client
   useEffect(() => {
     if (initDoneRef.current) return
     initDoneRef.current = true
 
     const initAuth = async () => {
-      // 1. Restaurar sesión desde localStorage (síncrono)
       const storedSession = loadSessionFromStorage()
       if (storedSession && storedSession.connected && storedSession.user) {
         setUser(storedSession.user)
         setIsConnected(true)
         
-        // Cargar último sync desde localStorage
         const lastSyncDate = getLastSync()
-        if (lastSyncDate) {
-          setLastSync(lastSyncDate)
-        }
+        if (lastSyncDate) setLastSync(lastSyncDate)
         
-        // **NUEVO**: También leer el accessToken desde googleDrive.js estado interno
-        // para que AuthContext sepa del token aunque localStorage no tenga la sesión completa
         try {
-          const { accessToken: driveAccessToken, hasStoredSession, getConnectionStatus } = await import('../services/googleDrive')
+          const { accessToken: driveAccessToken, getConnectionStatus } = await import('../services/googleDrive')
           const status = getConnectionStatus()
           if (status.hasToken && driveAccessToken) {
-            // Hay token en googleDrive.js - sincronizarlo al contexto
-            accessToken = driveAccessToken
-            console.log('[AuthContext] accessToken sincronizado desde googleDrive.js al restaurar sesión')
+            // accessToken = driveAccessToken
           }
         } catch (err) {
-          console.warn('[AuthContext] No se pudo sincronizar accessToken desde googleDrive.js:', err)
+          console.warn('[AuthContext] No se pudo sincronizar accessToken:', err)
         }
         
-        // Verificar si el token está caducado
         const now = Date.now()
         const expiresAt = storedSession.expiresAt || 0
         if (now >= expiresAt - 120000) {
-          // Token caducado o a punto de caducar - marcar para renovación
           setNeedsReauth(true)
-          console.log('[AuthContext] Sesión restaurada, token caducado - se renovará al usar')
-        } else {
-          console.log('[AuthContext] Sesión restaurada desde localStorage (token válido):', storedSession.user.email)
-        }
-      }
-
-      // 2. Inicializar cliente Google si hay clientId
-      const currentClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-      if (currentClientId) {
-        try {
-          const { initGoogleClient } = await import('../services/googleDrive')
-          initGoogleClient(currentClientId)
-          
-          // Si teníamos sesión guardada y token válido, verificar que sigue funcionando
-          if (storedSession && storedSession.connected && storedSession.user && !needsReauth) {
-            const hasValidToken = await ensureValidToken()
-            if (!hasValidToken) {
-              setNeedsReauth(true)
-              console.log('[AuthContext] Token no válido tras init, marcado para renovación')
-            }
-          }
-        } catch (err) {
-          console.warn('[Google Drive] Error inicializando Google Client:', err)
         }
       }
     }
-
     initAuth()
-  }, []) // Solo al montar
+  }, [])
 
-  // Sincronización inicial al conectar (después de signIn exitoso)
-  useEffect(() => {
-    if (!isConnected || !clientId) return
-
-    let cancelled = false
-
-    const performInitialSync = async () => {
-      try {
-        setSyncStatus('syncing')
-        setError(null)
-
-        // Verificar estado de conexión
-        const status = getConnectionStatus()
-        if (!status.hasToken) {
-          console.log('[AuthContext] No hay token de acceso, esperando signIn...')
-          return
-        }
-
-        // Buscar carpeta y archivo
-        const { ensureMotoAtlasFolder, findOrCreateDBFile, readDBFile } = await import('../services/googleDrive')
-        const folder = await ensureMotoAtlasFolder()
-        const file = await findOrCreateDBFile(folder.id)
-
-        // Leer archivo para ver si tiene contenido
-        const data = await readDBFile(file.id)
-        
-        if (cancelled) return
-
-        // Si el archivo es nuevo/vacío y hay datos locales, subir primero
-        if (!data || Object.keys(data).length === 0) {
-          console.log('[AuthContext] Archivo nuevo/vacío en Drive. Subiendo datos locales...')
-          await syncToDrive(db)
-        } else {
-          // Si el archivo existe, leer y restaurar
-          console.log('[AuthContext] Archivo existe en Drive. Sincronizando desde Drive...')
-          await syncFromDrive(db)
-        }
-
-        if (cancelled) return
-        setSyncStatus('synced')
-        setLastSync(new Date())
-      } catch (err) {
-        if (cancelled) return
-        console.error('[AuthContext] Error en sincronización inicial:', err)
-        // NO desconectar en error de sync inicial - mantener sesión
-        // Si es 401, marcar para renovación
-        if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
-          setNeedsReauth(true)
-        }
-        setError(err.message)
-        setSyncStatus('error')
-      }
-    }
-
-    performInitialSync()
-
-    return () => {
-      cancelled = true
-    }
-  }, [isConnected, clientId])
-
-  // Auto-sync con debounce tras cambios en la DB (2.5 segundos)
-  useEffect(() => {
-    if (!isConnected || !clientId) return
-
-    // Suscribirse a eventos de cambio en la DB
-    const handleDBChange = () => {
-      debouncedSync()
-    }
-
-    // También escuchar cambios en preferencias visuales
-    const handlePreferencesChange = () => {
-      debouncedSync()
-    }
-
-    window.addEventListener('db:changed', handleDBChange)
-    window.addEventListener('storage', handlePreferencesChange)
-
-    return () => {
-      window.removeEventListener('db:changed', handleDBChange)
-      window.removeEventListener('storage', handlePreferencesChange)
-      if (syncTimerRef.current) {
-        clearTimeout(syncTimerRef.current)
-      }
-    }
-  }, [isConnected, clientId, debouncedSync, needsReauth])
-
-  // Funciones públicas
   const connect = async () => {
-    if (!clientId) {
-      throw new Error('VITE_GOOGLE_CLIENT_ID no configurado')
-    }
-
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      setError(null)
-      setNeedsReauth(false)
-      const user = await signIn(clientId)
-      setUser(user)
-      setIsConnected(true)
-      setIsSyncing(false)
-    } catch (err) {
-      // NO desconectar ni limpiar localStorage en error de conexión
-      // El usuario puede reintentar
-      setError(err.message)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Renovar token manualmente (cuando el usuario pulsa en el aviso de sesión caducada)
-  const renewSession = async () => {
-    if (!clientId) {
-      throw new Error('VITE_GOOGLE_CLIENT_ID no configurado')
-    }
-
-    try {
-      setIsLoading(true)
-      setError(null)
-      const { renewTokenSilently, getCurrentUser, forceReconnect } = await import('../services/googleDrive')
-      const renewed = await renewTokenSilently()
-      if (renewed) {
-        const user = await getCurrentUser()
-        setUser(user)
-        setNeedsReauth(false)
-        setIsSyncing(false)
-        return user
-      } else {
-        // No desconectar - mantener sesión guardada, solo marcar para renovación
-        setNeedsReauth(true)
-        throw new Error('No se pudo renovar la sesión silenciosamente. Pulsa "Reconectar sesión" para autorizar.')
-      }
-    } catch (err) {
-      setError(err.message)
-      setNeedsReauth(true)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Reconexión forzada con interacción del usuario (prompt: 'consent')
-  const reconnectWithConsent = async () => {
-    if (!clientId) {
-      throw new Error('VITE_GOOGLE_CLIENT_ID no configurado')
-    }
-
-    try {
-      setIsLoading(true)
-      setError(null)
-      const { forceReconnect, getCurrentUser } = await import('../services/googleDrive')
-      const user = await forceReconnect(clientId)
-      setUser(user)
+      const { initGoogleClient } = await import('../services/googleDrive')
+      const client = initGoogleClient(clientId)
+      client.requestAccessToken()
       setIsConnected(true)
       setNeedsReauth(false)
-      setIsSyncing(false)
-      return user
     } catch (err) {
-      setError(err.message)
-      setNeedsReauth(true)
-      throw err
+      console.error('[AuthContext] Error conectando:', err)
+      setError(err)
     } finally {
       setIsLoading(false)
     }
   }
 
   const disconnect = async () => {
-    try {
-      await signOut() // signOut limpia localStorage
-      setUser(null)
-      setIsConnected(false)
-      setIsSyncing(false)
-      setLastSync(null)
-      setError(null)
+    clearSessionFromStorage()
+    setIsConnected(false)
+    setUser(null)
+    setLastSync(null)
+    setSyncStatus('idle')
+  }
+
+  const reconnectWithConsent = async () => {
+    const { renewTokenSilently } = await import('../services/googleDrive')
+    const success = await renewTokenSilently()
+    if (success) {
       setNeedsReauth(false)
-    } catch (err) {
-      console.error('[AuthContext] Error al cerrar sesión:', err)
-      // Aun en error, limpiar estado local
-      setUser(null)
-      setIsConnected(false)
-      setIsSyncing(false)
-      setLastSync(null)
-      setNeedsReauth(false)
-      setError(err.message)
+    } else {
+      await connect()
     }
   }
 
-  const uploadBackup = async () => {
-    if (!isConnected) {
-      throw new Error('No estás conectado a Google Drive')
-    }
-    if (needsReauth) {
-      throw new Error('La sesión ha caducado. Renueva la sesión antes de sincronizar.')
-    }
-
-    try {
-      setIsSyncing(true)
-      setError(null)
-      await syncToDrive(db)
-      setLastSync(new Date())
-    } catch (err) {
-      console.error('[AuthContext] Error en sync manual:', err)
-      // NO desconectar en error de sync - mantener sesión
-      // Si es 401, marcar para renovación
-      if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
-        setNeedsReauth(true)
-      }
-      setError(err.message)
-      throw err
-    } finally {
-      setIsSyncing(false)
-    }
+  const uploadBackup = async (db) => {
+    const { syncToDrive } = await import('../services/googleDrive')
+    await syncToDrive(db)
+    setLastSync(new Date())
   }
 
-  const downloadBackup = async () => {
-    if (!isConnected) {
-      throw new Error('No estás conectado a Google Drive')
-    }
-    if (needsReauth) {
-      throw new Error('La sesión ha caducado. Renueva la sesión antes de restaurar.')
-    }
-
-    try {
-      setIsSyncing(true)
-      setError(null)
-      await syncFromDrive(db)
-      setLastSync(new Date())
-    } catch (err) {
-      console.error('[AuthContext] Error en restore manual:', err)
-      // NO desconectar en error de sync - mantener sesión
-      // Si es 401, marcar para renovación
-      if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
-        setNeedsReauth(true)
-      }
-      setError(err.message)
-      throw err
-    } finally {
-      setIsSyncing(false)
-    }
+  const downloadBackup = async (db) => {
+    const { syncFromDrive } = await import('../services/googleDrive')
+    await syncFromDrive(db)
+    setLastSync(new Date())
   }
 
-  const clearError = () => {
-    setError(null)
-  }
-
-  const value = {
-    clientId,
-    user,
-    isConnected,
-    isSyncing,
-    isLoading,
-    lastSync,
-    error,
-    isInstalled,
-    needsReauth,
-    syncStatus,
-    setSyncStatus,
-    connect,
-    disconnect,
-    uploadBackup,
-    downloadBackup,
-    renewSession,
-    reconnectWithConsent,
-    clearError
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{
+      isConnected,
+      needsReauth,
+      isSyncing,
+      isLoading,
+      user,
+      lastSync,
+      error,
+      connect,
+      disconnect,
+      reconnectWithConsent,
+      syncStatus,
+      setSyncStatus,
+      uploadBackup,
+      downloadBackup,
+      debouncedSync
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
-
-export { AuthContext }
