@@ -36,25 +36,28 @@ export const useAuth = () => {
  * - Si el token caducó, solicita renovación y reintenta
  */
 export const syncNow = async (context) => {
-  const { connect, uploadBackup, setSyncStatus } = context
+  console.log('[AuthContext] syncNow llamado')
+  const { connect, uploadBackup, setSyncStatus, db } = context
   setSyncStatus('syncing')
   try {
-    await uploadBackup(context.db)
+    await uploadBackup(db)
     setSyncStatus('synced')
     // El timestamp de última sincronización se actualiza en googleDrive.js
     // y el evento 'motoatlas:drive-synced' refresca la UI en toda la app
     console.log('[AuthContext] syncNow completado exitosamente')
   } catch (err) {
-    // Si el token caducó, intentar renovación
-    if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized')) {
+    console.error('[AuthContext] syncNow error:', err)
+    // Si el token caducó o falta, solicitar renovación con clic del usuario y reintentar
+    if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized') || err.message.includes('No hay token de acceso')) {
       try {
-        await context.reconnectWithConsent()
-        await uploadBackup(context.db)
+        console.log('[AuthContext] Token caducado/falta, renovando con connect()...')
+        await connect()
+        await uploadBackup(db)
         setSyncStatus('synced')
-        console.log('[AuthContext] syncNow reintentado tras renovación de token')
+        console.log('[AuthContext] syncNow reintentado tras connect() y renovación de token')
       } catch (renewErr) {
         setSyncStatus('error')
-        console.error('[AuthContext] syncNow falló tras renovación:', renewErr)
+        console.error('[AuthContext] syncNow falló tras connect():', renewErr)
         throw renewErr
       }
     } else {
@@ -62,6 +65,9 @@ export const syncNow = async (context) => {
       console.error('[AuthContext] syncNow falló:', err)
       throw err
     }
+  } finally {
+    setIsSyncing(false)
+    console.log('[AuthContext] syncNow finally: isSyncing = false')
   }
 }
 
@@ -75,6 +81,7 @@ export const syncNow = async (context) => {
  * - Dispara evento 'db:changed' para notificar cambios
  */
 export const restoreFromDrive = async (context) => {
+  console.log('[AuthContext] restoreFromDrive llamado')
   const { downloadBackup, setSyncStatus, db } = context
   setSyncStatus('syncing')
   try {
@@ -86,9 +93,28 @@ export const restoreFromDrive = async (context) => {
     window.dispatchEvent(new Event('db:changed'))
     console.log('[AuthContext] restoreFromDrive completado exitosamente')
   } catch (err) {
-    setSyncStatus('error')
-    console.error('[AuthContext] restoreFromDrive falló:', err)
-    throw err
+    console.error('[AuthContext] restoreFromDrive error:', err)
+    // Si el token caducó o falta, solicitar renovación con clic del usuario y reintentar
+    if (err.message.includes('401') || err.message.includes('token') || err.message.includes('unauthorized') || err.message.includes('No hay token de acceso')) {
+      try {
+        console.log('[AuthContext] Token caducado/falta en restore, renovando con connect()...')
+        await connect()
+        await downloadBackup(db)
+        setSyncStatus('synced')
+        console.log('[AuthContext] restoreFromDrive reintentado tras connect() y renovación de token')
+      } catch (renewErr) {
+        setSyncStatus('error')
+        console.error('[AuthContext] restoreFromDrive falló tras connect():', renewErr)
+        throw renewErr
+      }
+    } else {
+      setSyncStatus('error')
+      console.error('[AuthContext] restoreFromDrive falló:', err)
+      throw err
+    }
+  } finally {
+    setIsSyncing(false)
+    console.log('[AuthContext] restoreFromDrive finally: isSyncing = false')
   }
 }
 
@@ -110,6 +136,13 @@ export const AuthProvider = ({ children }) => {
   const [needsReauth, setNeedsReauth] = useState(false)
   const [syncStatus, setSyncStatus] = useState('idle') // 'idle' | 'syncing' | 'synced' | 'error'
   const [isLoading, setIsLoading] = useState(false) // Para operaciones de conexión (login, reconexión)
+
+  // Asegurar que isSyncing empiece siempre en false y syncStatus en 'idle' al iniciar
+  // Esto evita que el Estado quede colgado en 'Sincronizando...' después de recargar la página
+  useEffect(() => {
+    setIsSyncing(false)
+    setSyncStatus('idle')
+  }, []) // Reseteo inicial al montar
 
   // Timer para debounce de auto-sync
   const syncTimerRef = useRef(null)
@@ -188,6 +221,20 @@ export const AuthProvider = ({ children }) => {
         const lastSyncDate = getLastSync()
         if (lastSyncDate) {
           setLastSync(lastSyncDate)
+        }
+        
+        // **NUEVO**: También leer el accessToken desde googleDrive.js estado interno
+        // para que AuthContext sepa del token aunque localStorage no tenga la sesión completa
+        try {
+          const { accessToken: driveAccessToken, hasStoredSession, getConnectionStatus } = await import('../services/googleDrive')
+          const status = getConnectionStatus()
+          if (status.hasToken && driveAccessToken) {
+            // Hay token en googleDrive.js - sincronizarlo al contexto
+            accessToken = driveAccessToken
+            console.log('[AuthContext] accessToken sincronizado desde googleDrive.js al restaurar sesión')
+          }
+        } catch (err) {
+          console.warn('[AuthContext] No se pudo sincronizar accessToken desde googleDrive.js:', err)
         }
         
         // Verificar si el token está caducado

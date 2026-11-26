@@ -17,6 +17,8 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     renewSession,
     syncStatus,
     setSyncStatus,
+    uploadBackup,
+    downloadBackup,
   } = useContext(AuthContext);
 
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
@@ -64,12 +66,10 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     if (!db) return;
     console.log('[GoogleDriveSyncCard] Pulsado Sincronizar ahora');
     
-    // Poner estado de carga local
-    setSyncStatus('syncing');
-    
     try {
       // Usar la función syncNow del contexto (maneja renovación de token)
-      await syncNow({ db, connect, setSyncStatus });
+      // Pasa: db para importar/exportar, uploadBackup para subir, setSyncStatus para feedback visual
+      await syncNow({ db, uploadBackup, setSyncStatus });
       console.log('[GoogleDriveSyncCard] Sincronización completada exitosamente');
       
       // Mostrar banner de éxito con la hora actual
@@ -99,7 +99,6 @@ export function GoogleDriveSyncCard({ showTitle = true }) {
     if (!db) return;
     console.log('[GoogleDriveSyncCard] Confirmada restauración desde Google Drive');
     
-    setSyncStatus('syncing');
     setShowRestoreConfirm(false);
     
     try {
