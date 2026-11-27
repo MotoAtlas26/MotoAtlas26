@@ -269,7 +269,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
           Cancelar
         </button>
         <button type="submit" className="btn btn-primary" disabled={saving}>
-          {saving ? 'Guardando...' : editingManual ? 'Actualizar' : 'Crear'}
+          {saving ? 'Guardando...' : initialData ? 'Actualizar' : 'Crear'}
         </button>
       </div>
     </form>
