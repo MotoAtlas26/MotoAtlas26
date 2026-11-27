@@ -263,6 +263,19 @@ export function useDatabase() {
     return await db.deleteDocumentType(id)
   }, [])
 
+  // Document Types
+  const getAllDocumentTypes = useCallback(async () => {
+    return await db.getAllDocumentTypes()
+  }, [])
+
+  const saveDocumentType = useCallback(async (data) => {
+    return await db.saveDocumentType(data)
+  }, [])
+
+  const updateDocumentType = useCallback(async (id, updates) => {
+    return await db.updateDocumentType(id, updates)
+  }, [])
+
   return {
     db,
     saveTrack,
