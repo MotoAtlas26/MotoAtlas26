@@ -4,6 +4,18 @@ import { PlusIcon, BookIcon, WrenchIcon, TrashIcon, EditIcon, EyeIcon } from '..
 import ManualForm from './ManualForm';
 import ManualViewerModal from './ManualViewerModal';
 
+// Estilo compartido para inputs y selects (modo oscuro compatible)
+const inputStyle = {
+  background: 'var(--color-card, #16171B)',
+  color: 'var(--color-text-primary, #F2F2F3)',
+  border: '1px solid var(--color-card-border, #2A2D35)',
+  borderRadius: '8px',
+  padding: '0.6rem 0.85rem',
+  width: '100%',
+  boxSizing: 'border-box',
+  fontSize: '0.875rem',
+};
+
 // Helper para obtener specs (nuevo formato o migrado desde campos antiguos)
 const getSpecs = (manual) => {
   if (Array.isArray(manual.specs) && manual.specs.length > 0) {
@@ -177,7 +189,11 @@ export default function Manuales({ selectedMoto = null }) {
       {/* Selector rápido de moto si hay varias */}
       {motos.length > 1 && (
         <div style={{ marginBottom: '1.25rem', maxWidth: '320px' }}>
-          <select value={activeMotoId} onChange={(e) => setActiveMotoId(e.target.value)}>
+          <select
+            value={activeMotoId}
+            onChange={(e) => setActiveMotoId(e.target.value)}
+            style={inputStyle}
+          >
             {motos.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.brand} {m.model} {m.plate ? `(${m.plate})` : ''}
@@ -244,20 +260,28 @@ export default function Manuales({ selectedMoto = null }) {
         </div>
       </div>
 
-      {/* Filtros para Guías DIY */}
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <input
+            {/* Filtros para Guías DIY */}
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>        <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar guía, par de apriete o tarea..."
-          style={{ flex: '1 1 220px' }}
+          style={{ ...inputStyle, flex: '1 1 220px' }}
         />
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={{ width: 'auto', minWidth: '180px' }}>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          style={{ ...inputStyle, width: 'auto', minWidth: '180px' }}
+        >
           <option value="Todas">Todas las categorías</option>
           <option value="Aceite y filtros">Aceite y filtros</option>
           <option value="Cadena y transmisión">Cadena y transmisión</option>
           <option value="Frenos">Frenos</option>
+          <option value="Suspensiones">Suspensiones</option>
+          <option value="Neumáticos">Neumáticos</option>
+          <option value="Motor y refrigeración">Motor y refrigeración</option>
+          <option value="Electricidad">Electricidad</option>
+          <option value="General">General</option>
         </select>
       </div>
 
