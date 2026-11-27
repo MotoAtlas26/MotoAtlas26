@@ -323,6 +323,12 @@ export function useDatabase() {
     getAllDocumentTypes,
     saveDocumentType,
     updateDocumentType,
-    deleteDocumentType
+    deleteDocumentType,
+    // Manuals
+    saveManual,
+    getManual,
+    getAllManuals,
+    updateManual,
+    deleteManual
   }
 }
