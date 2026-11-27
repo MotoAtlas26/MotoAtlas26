@@ -20,6 +20,18 @@ const createEmptySpec = () => ({
   comment: '',
 });
 
+// Estilo compartido para inputs, selects y textareas (modo oscuro compatible)
+const inputStyle = {
+  background: 'var(--color-bg, #111318)',
+  color: 'var(--color-text-primary, #f4f4f5)',
+  border: '1px solid var(--color-card-border)',
+  borderRadius: '8px',
+  padding: '0.55rem 0.75rem',
+  width: '100%',
+  boxSizing: 'border-box',
+  fontSize: '0.875rem',
+};
+
 export default function ManualForm({ motos = [], initialData = null, defaultType = 'diy', onSave, onCancel }) {
   const [motoId, setMotoId] = useState('');
   const [manualType, setManualType] = useState(defaultType);
@@ -142,10 +154,15 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
         {initialData ? 'Editar Manual / Guía' : 'Nuevo Manual o Guía de Taller'}
       </h3>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
         <div className="form-group">
           <label>Moto *</label>
-          <select value={motoId} onChange={(e) => setMotoId(e.target.value)} required>
+          <select
+            value={motoId}
+            onChange={(e) => setMotoId(e.target.value)}
+            required
+            style={inputStyle}
+          >
             <option value="">Selecciona una moto...</option>
             {motos.map((m) => (
               <option key={m.id} value={m.id}>
@@ -157,7 +174,11 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
 
         <div className="form-group">
           <label>Tipo de documento *</label>
-          <select value={manualType} onChange={(e) => setManualType(e.target.value)}>
+          <select
+            value={manualType}
+            onChange={(e) => setManualType(e.target.value)}
+            style={inputStyle}
+          >
             <option value="diy">Guía de Mantenimiento en Casa (DIY)</option>
             <option value="owner">Manual Oficial del Propietario</option>
             <option value="workshop">Manual de Taller / Servicio</option>
@@ -172,21 +193,17 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ej. Cambio de aceite y filtro 15.000 km"
             required
+            style={inputStyle}
           />
         </div>
 
         <div className="form-group">
           <label>Categoría técnica</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Categoría técnica</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={inputStyle}
+          >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
@@ -210,7 +227,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
               key={spec.id}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr auto',
+                gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) auto',
                 gap: '0.5rem',
                 alignItems: 'end',
               }}
@@ -222,7 +239,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
                   value={spec.screw}
                   onChange={(e) => handleSpecChange(spec.id, 'screw', e.target.value)}
                   placeholder="Ej. Tapón vaciado aceite"
-                  style={{ fontSize: '0.875rem' }}
+                  style={inputStyle}
                 />
               </div>
               <div className="form-group" style={{ margin: 0 }}>
@@ -232,7 +249,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
                   value={spec.torque}
                   onChange={(e) => handleSpecChange(spec.id, 'torque', e.target.value)}
                   placeholder="Ej. 25 Nm"
-                  style={{ fontSize: '0.875rem' }}
+                  style={inputStyle}
                 />
               </div>
               <div className="form-group" style={{ margin: 0 }}>
@@ -242,7 +259,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
                   value={spec.pageRef}
                   onChange={(e) => handleSpecChange(spec.id, 'pageRef', e.target.value)}
                   placeholder="Ej. Pág. 142"
-                  style={{ fontSize: '0.875rem' }}
+                  style={inputStyle}
                 />
               </div>
               <div className="form-group" style={{ margin: 0 }}>
@@ -252,7 +269,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
                   value={spec.comment}
                   onChange={(e) => handleSpecChange(spec.id, 'comment', e.target.value)}
                   placeholder="Ej. Cambiar arandela"
-                  style={{ fontSize: '0.875rem' }}
+                  style={inputStyle}
                 />
               </div>
               {specs.length > 1 && (
@@ -287,7 +304,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
               }
             }}
             placeholder="Ej. Calentar motor 3 min y retirar tapón de vaciado..."
-            style={{ flex: 1 }}
+            style={{ ...inputStyle, flex: 1 }}
           />
           <button type="button" className="btn btn-secondary" onClick={handleAddStep}>
             <PlusIcon width={16} height={16} /> Añadir paso
@@ -357,6 +374,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Herramientas necesarias, recambios o advertencias..."
+            style={inputStyle}
           />
         </div>
       </div>
