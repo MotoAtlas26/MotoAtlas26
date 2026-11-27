@@ -100,7 +100,7 @@ export class MotoAtlas26DB extends Dexie {
       documentTypes: '++id, code, name, hasExpiration, isInsurance, createdAt'
     })
 
-    // Version 10: Add separate front/rear brand/model fields to tires table for per-wheel tire specs
+    // Version 10: Add manuals table for DIY maintenance guides
     this.version(10).stores({
       tracks: '++id, name, date, distance, elevationGain, duration, createdAt, updatedAt',
       trackPoints: '++id, trackId, lat, lng, elevation, timestamp, sequence',
@@ -115,8 +115,20 @@ export class MotoAtlas26DB extends Dexie {
       invoices: '++id, motoId, workshopId, date, odometerKm, invoiceNumber, totalAmount, items, notes, fileName, fileMimeType, fileDataUrl, createdAt',
       maintenances: '++id, motoId, workshopId, date, odometerKm, type, title, cost, details, suspensionSetup, createdAt',
       motoDocuments: '++id, motoId, docType, title, expirationDate, policyNumber, assistancePhone, insurerName, notes, fileName, fileMimeType, fileDataUrl, createdAt',
-      tires: '++id, brand, model, frontBrand, frontModel, frontSize, rearBrand, rearModel, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt',
-      documentTypes: '++id, code, name, hasExpiration, isInsurance, createdAt'
+      tires: '++id, brand, model, frontSize, rearSize, recommendedFrontBar, recommendedRearBar, notes, createdAt',
+      documentTypes: '++id, code, name, hasExpiration, isInsurance, createdAt',
+      manuals: '++id, motoId, title, manualType, category, fileName, fileType, fileData, pageRef, torqueSpecs, steps, notes, createdAt'
+    })
+    
+    this.manuals.hook('creating', (primKey, obj, trans) => {
+      obj.createdAt = new Date()
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.manuals.hook('updating', (modifications, primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
+    })
+    this.manuals.hook('deleting', (primKey, obj, trans) => {
+      window.dispatchEvent(new CustomEvent('db:changed'))
     })
     
     this.tracks.hook('creating', (primKey, obj, trans) => {
@@ -702,6 +714,7 @@ export class MotoAtlas26DB extends Dexie {
       this.motoDocuments,
       this.tires,
       this.documentTypes,
+      this.manuals,
       async () => {
         await Promise.all([
           this.tracks.clear(),
@@ -718,7 +731,8 @@ export class MotoAtlas26DB extends Dexie {
           this.maintenances.clear(),
           this.motoDocuments.clear(),
           this.tires.clear(),
-          this.documentTypes.clear()
+          this.documentTypes.clear(),
+          this.manuals.clear()
         ])
       }
     )
@@ -735,12 +749,13 @@ export class MotoAtlas26DB extends Dexie {
     const motoDocuments = await this.motoDocuments.count()
     const tires = await this.tires.count()
     const documentTypes = await this.documentTypes.count()
+    const manuals = await this.manuals.count()
 
-    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments, tires, documentTypes }
+    return { tracks, points, images, maintenance, workshops, invoices, maintenances, motoDocuments, tires, documentTypes, manuals }
   }
 
   async exportAll() {
-    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments, tires, documentTypes] = await Promise.all([
+    const [tracks, trackPoints, images, maintenance, motoProfile, settings, uploads, workshops, motorcycles, customThemes, invoices, maintenances, motoDocuments, tires, documentTypes, manuals] = await Promise.all([
       this.tracks.toArray(),
       this.trackPoints.toArray(),
       this.images.toArray(),
@@ -755,11 +770,12 @@ export class MotoAtlas26DB extends Dexie {
       this.maintenances.toArray(),
       this.motoDocuments.toArray(),
       this.tires.toArray(),
-      this.documentTypes.toArray()
+      this.documentTypes.toArray(),
+      this.manuals.toArray()
     ])
 
     return {
-      version: 9,
+      version: 10,
       exportedAt: new Date().toISOString(),
       tracks,
       trackPoints,
@@ -775,7 +791,8 @@ export class MotoAtlas26DB extends Dexie {
       maintenances,
       motoDocuments,
       tires,
-      documentTypes
+      documentTypes,
+      manuals
     }
   }
 
@@ -796,6 +813,7 @@ export class MotoAtlas26DB extends Dexie {
       this.motoDocuments,
       this.tires,
       this.documentTypes,
+      this.manuals,
       async () => {
         await Promise.all([
           this.tracks.bulkPut(data.tracks || []),
@@ -812,10 +830,36 @@ export class MotoAtlas26DB extends Dexie {
           this.maintenances.bulkPut(data.maintenances || []),
           this.motoDocuments.bulkPut(data.motoDocuments || []),
           this.tires.bulkPut(data.tires || []),
-          this.documentTypes.bulkPut(data.documentTypes || [])
+          this.documentTypes.bulkPut(data.documentTypes || []),
+          this.manuals.bulkPut(data.manuals || [])
         ])
       }
     )
+  }
+
+  // Manual CRUD methods
+  async saveManual(manualData) {
+    if (manualData.id) {
+      return await this.manuals.update(manualData.id, manualData)
+    } else {
+      return await this.manuals.add(manualData)
+    }
+  }
+
+  async getManual(id) {
+    return await this.manuals.get(id)
+  }
+
+  async getAllManuals() {
+    return await this.manuals.toArray()
+  }
+
+  async updateManual(id, updates) {
+    return await this.manuals.update(id, updates)
+  }
+
+  async deleteManual(id) {
+    return await this.manuals.delete(id)
   }
 }
 

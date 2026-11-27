@@ -1,6 +1,6 @@
 # MotoLog - Contexto Estructural del Proyecto
 
-> Generado el 11/25/2026, 3:56:12 PM
+> Generado el 11/27/2026, 10:59:49 AM
 > Para agentes de IA. No editar. Regenerar: npm run graph:generate
 
 ## Estructura de Directorios
@@ -40,6 +40,10 @@
       📄 MantenimientoForm.jsx
       📄 MantenimientoList.jsx
       📄 SuspensionSetupForm.jsx
+    📁 manuales
+      📄 ManualForm.jsx
+      📄 ManualViewerModal.jsx
+      📄 Manuales.jsx
   📁 settings
     📄 CatalogDetailView.jsx
     📄 Settings.jsx
@@ -194,6 +198,18 @@
 - Archivo: src/components/moto/mantenimiento/SuspensionSetupForm.jsx
 - Exports: SuspensionSetupForm
 
+### ManualForm
+- Archivo: src/components/moto/manuales/ManualForm.jsx
+- Exports: ManualForm, function
+
+### ManualViewerModal
+- Archivo: src/components/moto/manuales/ManualViewerModal.jsx
+- Exports: ManualViewerModal, function
+
+### Manuales
+- Archivo: src/components/moto/manuales/Manuales.jsx
+- Exports: Manuales, function
+
 ### CatalogDetailView
 - Archivo: src/components/settings/CatalogDetailView.jsx
 - Exports: CatalogDetailView, CatalogDetailView
@@ -272,7 +288,7 @@
 
 ### googleDrive
 - Archivo: src/services/googleDrive.js
-- Exports: clearSessionFromStorage, initGoogleClient, hasStoredSession, getConnectionStatus, getLastSync, tokenClient, accessToken, currentUser, loadSessionFromStorage
+- Exports: loadSessionFromStorage, clearSessionFromStorage, initGoogleClient, getConnectionStatus, getLastSync, loadSessionFromStorageExport
 
 ### invoiceParser
 - Archivo: src/utils/invoiceParser.js
@@ -469,6 +485,18 @@
 - Importa **React** desde `react`
 - Importa **{ SUSPENSION_FIELDS }** desde `./MantenimientoConstants`
 
+### src/components/moto/manuales/ManualForm.jsx
+- Importa **{ TrashIcon, PlusIcon, UploadIcon }** desde `../../shared/Icons`
+
+### src/components/moto/manuales/ManualViewerModal.jsx
+- Importa **{ CheckIcon, DownloadIcon, XIcon }** desde `../../shared/Icons`
+
+### src/components/moto/manuales/Manuales.jsx
+- Importa **{ useDatabase }** desde `../../../hooks/useDatabase`
+- Importa **{ PlusIcon, BookIcon, WrenchIcon, TrashIcon, EditIcon, EyeIcon }** desde `../../shared/Icons`
+- Importa **ManualForm** desde `./ManualForm`
+- Importa **ManualViewerModal** desde `./ManualViewerModal`
+
 ### src/components/settings/CatalogDetailView.jsx
 - Importa **{ MotoIcon, WrenchIcon, PaletteIcon, PlusIcon, EditIcon, TrashIcon, ChevronLeftIcon, ShieldIcon, CircleIcon }** desde `../shared/Icons`
 
@@ -494,8 +522,8 @@
 
 ### src/components/shared/GoogleDriveSyncCard.jsx
 - Importa **{ useContext, useEffect, useState }** desde `react`
-- Importa **{ AuthContext }** desde `../../context/AuthContext`
-- Importa **{ useDatabase }** desde `../../hooks/useDatabase`
+- Importa **{ useAuth, syncNow, restoreFromDrive }** desde `../../context/AuthContext`
+- Importa **{ db }** desde `../../services/db`
 
 ### src/components/shared/Icons.jsx
 - Importa **React** desde `react`
@@ -550,7 +578,7 @@
 
 ### src/context/AuthContext.jsx
 - Importa **{ db }** desde `../services/db`
-- Importa **{ signIn, signOut, getCurrentUser, loadSessionFromStorage, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, ensureValidToken, renewTokenSilently, forceReconnect, clearSessionFromStorage }** desde `../services/googleDrive`
+- Importa **{ loadSessionFromStorage, syncFromDrive, syncToDrive, getConnectionStatus, getLastSync, renewTokenSilently, clearSessionFromStorage }** desde `../services/googleDrive`
 
 ### src/context/GPXContext.jsx
 - Importa **{ db, initDB }** desde `../services/db`

@@ -304,4 +304,18 @@ export const CircleIcon = ({ size = 24, color = 'currentColor' }) => (
   </svg>
 )
 
-export default { HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, SettingsIcon, TrashIcon, ImageIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ShieldIcon, FileTextIcon, FileIcon, PhoneIcon, EyeIcon, AlertIcon, CalendarIcon, ChevronLeftIcon, CircleIcon }
+export const BookIcon = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+)
+
+export const XIcon = ({ size = 24, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+)
+
+export default { HomeIcon, MapIcon, UploadIcon, TracksIcon, SunIcon, MoonIcon, CFMotoGoldIcon, CFMotoNeutralIcon, MotoIcon, RouteIcon, SettingsIcon, TrashIcon, ImageIcon, FolderIcon, RefreshCwIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, DownloadIcon, EditIcon, WrenchIcon, UserIcon, PaletteIcon, PlusIcon, CloudIcon, CloudOffIcon, SyncIcon, LogOutIcon, UserCircleIcon, ShieldIcon, FileTextIcon, FileIcon, PhoneIcon, EyeIcon, AlertIcon, CalendarIcon, ChevronLeftIcon, CircleIcon, BookIcon, CheckIcon, XIcon }

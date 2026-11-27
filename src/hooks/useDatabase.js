@@ -238,17 +238,25 @@ export function useDatabase() {
     return await db.deleteTire(id)
   }, [])
 
-  // Document Types (Guantera Digital)
-  const getAllDocumentTypes = useCallback(async () => {
-    return await db.getAllDocumentTypes()
+  // Manuals
+  const saveManual = useCallback(async (manualData) => {
+    return await db.saveManual(manualData)
   }, [])
 
-  const saveDocumentType = useCallback(async (data) => {
-    return await db.saveDocumentType(data)
+  const getManual = useCallback(async (id) => {
+    return await db.getManual(id)
   }, [])
 
-  const updateDocumentType = useCallback(async (id, updates) => {
-    return await db.updateDocumentType(id, updates)
+  const getAllManuals = useCallback(async () => {
+    return await db.getAllManuals()
+  }, [])
+
+  const updateManual = useCallback(async (id, updates) => {
+    return await db.updateManual(id, updates)
+  }, [])
+
+  const deleteManual = useCallback(async (id) => {
+    return await db.deleteManual(id)
   }, [])
 
   const deleteDocumentType = useCallback(async (id) => {

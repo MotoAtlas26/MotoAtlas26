@@ -9,7 +9,8 @@ import { Mantenimiento } from './Mantenimiento'
 import Documentacion from './Documentacion'
 import { MotoDashboard } from './MotoDashboard'
 import { Facturas } from './Facturas'
-import { TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon } from '../shared/Icons'
+import Manuales from './manuales/Manuales'
+import { TrashIcon, UploadIcon, FileTextIcon, PlusIcon, HomeIcon, WrenchIcon, FolderIcon, ShieldIcon, BookIcon } from '../shared/Icons'
 
 export const Moto = () => {
   const { selectedMoto } = useGPX()
@@ -25,6 +26,7 @@ export const Moto = () => {
     { id: 'facturas', label: 'Facturas', icon: FileTextIcon },
     { id: 'mantenimiento', label: 'Mantenimiento', icon: WrenchIcon },
     { id: 'documentacion', label: 'Documentación', icon: ShieldIcon },
+    { id: 'manuales', label: 'Manuales', icon: BookIcon },
   ]
 
   return (
@@ -75,6 +77,13 @@ export const Moto = () => {
       {view === 'documentacion' && (
         <div id="panel-documentacion" role="tabpanel" aria-labelledby="tab-documentacion">
           <Documentacion />
+        </div>
+      )}
+
+      {/* Vista de Manuales */}
+      {view === 'manuales' && (
+        <div id="panel-manuales" role="tabpanel" aria-labelledby="tab-manuales">
+          <Manuales selectedMoto={selectedMoto} />
         </div>
       )}
 
