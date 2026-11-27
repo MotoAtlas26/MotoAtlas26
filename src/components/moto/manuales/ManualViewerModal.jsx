@@ -20,6 +20,27 @@ export default function ManualViewerModal({
   const isPdf = manual.fileType?.includes('pdf') || manual.fileName?.toLowerCase().endsWith('.pdf');
   const isImage = manual.fileType?.startsWith('image/');
 
+  // Obtener specs: nuevo formato (array) o migrar desde campos antiguos
+  const getSpecs = () => {
+    if (Array.isArray(manual.specs) && manual.specs.length > 0) {
+      return manual.specs.filter(s => s.screw?.trim() || s.torque?.trim() || s.pageRef?.trim() || s.comment?.trim());
+    }
+    // Migración desde campos antiguos
+    const legacySpecs = [];
+    if (manual.torqueSpecs?.trim() || manual.pageRef?.trim()) {
+      legacySpecs.push({
+        screw: '',
+        torque: manual.torqueSpecs?.trim() || '',
+        pageRef: manual.pageRef?.trim() || '',
+        comment: '',
+      });
+    }
+    return legacySpecs;
+  };
+
+  const specs = getSpecs();
+  const hasSpecs = specs.length > 0;
+
   const handleRegister = async () => {
     await onRegisterMaintenance(manual);
     setRegisteredMsg('Mantenimiento registrado en el historial de la moto.');
@@ -64,13 +85,10 @@ export default function ManualViewerModal({
           </button>
         </div>
 
-        {/* Datos técnicos */}
-        {(manual.pageRef || manual.torqueSpecs || manual.notes) && (
+        {/* Datos técnicos - Pares de apriete y referencias */}
+        {hasSpecs && (
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '0.75rem',
               padding: '0.9rem 1rem',
               borderRadius: '10px',
               background: 'rgba(255,255,255,0.03)',
@@ -79,24 +97,46 @@ export default function ManualViewerModal({
               fontSize: '0.875rem',
             }}
           >
-            {manual.pageRef && (
-              <div>
-                <strong style={{ color: 'var(--color-text-secondary)' }}>Referencia manual:</strong>
-                <div style={{ color: 'var(--color-text-primary)', marginTop: '0.2rem' }}>{manual.pageRef}</div>
-              </div>
-            )}
-            {manual.torqueSpecs && (
-              <div>
-                <strong style={{ color: 'var(--color-text-secondary)' }}>Pares de apriete / Datos:</strong>
-                <div style={{ color: 'var(--color-text-primary)', marginTop: '0.2rem' }}>{manual.torqueSpecs}</div>
-              </div>
-            )}
-            {manual.notes && (
-              <div style={{ gridColumn: '1 / -1' }}>
-                <strong style={{ color: 'var(--color-text-secondary)' }}>Notas:</strong>
-                <div style={{ color: 'var(--color-text-primary)', marginTop: '0.2rem' }}>{manual.notes}</div>
-              </div>
-            )}
+            <strong style={{ color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
+              Pares de apriete y referencias por tornillo ({specs.length})
+            </strong>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--color-card-border)' }}>
+                    <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>Tornillo / Pieza</th>
+                    <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>Par / Dato</th>
+                    <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>Pág. ref.</th>
+                    <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600 }}>Comentario</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {specs.map((spec, idx) => (
+                    <tr key={spec.id || idx} style={{ borderBottom: '1px solid var(--color-card-border)' }}>
+                      <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-text-primary)' }}>{spec.screw || <em style={{ opacity: 0.4 }}>—</em>}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-text-primary)', fontFamily: 'monospace' }}>{spec.torque || <em style={{ opacity: 0.4 }}>—</em>}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-text-primary)' }}>{spec.pageRef || <em style={{ opacity: 0.4 }}>—</em>}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', color: 'var(--color-text-primary)' }}>{spec.comment || <em style={{ opacity: 0.4 }}>—</em>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {manual.notes && !hasSpecs && (
+          <div
+            style={{
+              padding: '0.9rem 1rem',
+              borderRadius: '10px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid var(--color-card-border)',
+              marginBottom: '1.25rem',
+              fontSize: '0.875rem',
+            }}
+          >
+            <strong style={{ color: 'var(--color-text-secondary)' }}>Notas:</strong>
+            <div style={{ color: 'var(--color-text-primary)', marginTop: '0.2rem' }}>{manual.notes}</div>
           </div>
         )}
 

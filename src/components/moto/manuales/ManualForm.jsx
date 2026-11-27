@@ -12,13 +12,20 @@ const CATEGORIES = [
   'General',
 ];
 
+const createEmptySpec = () => ({
+  id: Date.now() + Math.random(),
+  screw: '',
+  torque: '',
+  pageRef: '',
+  comment: '',
+});
+
 export default function ManualForm({ motos = [], initialData = null, defaultType = 'diy', onSave, onCancel }) {
   const [motoId, setMotoId] = useState('');
   const [manualType, setManualType] = useState(defaultType);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('General');
-  const [pageRef, setPageRef] = useState('');
-  const [torqueSpecs, setTorqueSpecs] = useState('');
+  const [specs, setSpecs] = useState([]);
   const [steps, setSteps] = useState([]);
   const [newStepText, setNewStepText] = useState('');
   const [fileName, setFileName] = useState('');
@@ -34,8 +41,25 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
       setManualType(initialData.manualType || defaultType);
       setTitle(initialData.title || '');
       setCategory(initialData.category || 'General');
-      setPageRef(initialData.pageRef || '');
-      setTorqueSpecs(initialData.torqueSpecs || '');
+      
+      // Migrar datos antiguos: si existe specs (nuevo formato), usarlo; si no, migrar de torqueSpecs/pageRef
+      if (Array.isArray(initialData.specs) && initialData.specs.length > 0) {
+        setSpecs(initialData.specs.map(s => ({ ...s, id: s.id || Date.now() + Math.random() })));
+      } else {
+        const migratedSpecs = [];
+        if (initialData.torqueSpecs?.trim() || initialData.pageRef?.trim()) {
+          migratedSpecs.push(createEmptySpec());
+          // Intentar parsear torqueSpecs si tiene formato "Tornillo: valor"
+          const torqueText = initialData.torqueSpecs?.trim() || '';
+          const pageText = initialData.pageRef?.trim() || '';
+          migratedSpecs[0].torque = torqueText;
+          migratedSpecs[0].pageRef = pageText;
+        } else {
+          migratedSpecs.push(createEmptySpec());
+        }
+        setSpecs(migratedSpecs);
+      }
+      
       setSteps(Array.isArray(initialData.steps) ? initialData.steps : []);
       setFileName(initialData.fileName || '');
       setFileType(initialData.fileType || '');
@@ -44,6 +68,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
     } else {
       setMotoId(motos[0]?.id ?? '');
       setManualType(defaultType);
+      setSpecs([createEmptySpec()]);
     }
   }, [initialData, defaultType, motos]);
 
@@ -56,6 +81,18 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
 
   const handleRemoveStep = (id) => {
     setSteps((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleAddSpec = () => {
+    setSpecs((prev) => [...prev, createEmptySpec()]);
+  };
+
+  const handleRemoveSpec = (id) => {
+    setSpecs((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleSpecChange = (id, field, value) => {
+    setSpecs((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
   };
 
   const handleFileChange = (e) => {
@@ -84,8 +121,7 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
         manualType,
         title: title.trim(),
         category,
-        pageRef: pageRef.trim(),
-        torqueSpecs: torqueSpecs.trim(),
+        specs: specs.filter(s => s.screw.trim() || s.torque.trim() || s.pageRef.trim() || s.comment.trim()),
         steps,
         fileName,
         fileType,
@@ -149,23 +185,88 @@ export default function ManualForm({ motos = [], initialData = null, defaultType
         </div>
 
         <div className="form-group">
-          <label>Página de referencia en manual</label>
-          <input
-            type="text"
-            value={pageRef}
-            onChange={(e) => setPageRef(e.target.value)}
-            placeholder="Ej. Manual Taller Pág. 142-145"
-          />
+          <label>Categoría técnica</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
+      </div>
 
-        <div className="form-group">
-          <label>Pares de apriete / Datos clave</label>
-          <input
-            type="text"
-            value={torqueSpecs}
-            onChange={(e) => setTorqueSpecs(e.target.value)}
-            placeholder="Ej. Vaciado: 25 Nm · Filtro: 17 Nm · 3.2L 10W40"
-          />
+      {/* Pares de apriete y referencias por tornillo */}
+      <div style={{ marginBottom: '1rem', padding: '1rem', borderRadius: '10px', border: '1px solid var(--color-card-border)', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <label style={{ fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+            Pares de apriete y referencias por tornillo ({specs.filter(s => s.screw.trim() || s.torque.trim() || s.pageRef.trim() || s.comment.trim()).length})
+          </label>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddSpec}>
+            <PlusIcon width={14} height={14} /> Añadir tornillo / par
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {specs.map((spec, idx) => (
+            <div
+              key={spec.id}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr auto',
+                gap: '0.5rem',
+                alignItems: 'end',
+              }}
+            >
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Tornillo / Pieza</label>
+                <input
+                  type="text"
+                  value={spec.screw}
+                  onChange={(e) => handleSpecChange(spec.id, 'screw', e.target.value)}
+                  placeholder="Ej. Tapón vaciado aceite"
+                  style={{ fontSize: '0.875rem' }}
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Par / Dato</label>
+                <input
+                  type="text"
+                  value={spec.torque}
+                  onChange={(e) => handleSpecChange(spec.id, 'torque', e.target.value)}
+                  placeholder="Ej. 25 Nm"
+                  style={{ fontSize: '0.875rem' }}
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Pág. manual</label>
+                <input
+                  type="text"
+                  value={spec.pageRef}
+                  onChange={(e) => handleSpecChange(spec.id, 'pageRef', e.target.value)}
+                  placeholder="Ej. Pág. 142"
+                  style={{ fontSize: '0.875rem' }}
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Comentario</label>
+                <input
+                  type="text"
+                  value={spec.comment}
+                  onChange={(e) => handleSpecChange(spec.id, 'comment', e.target.value)}
+                  placeholder="Ej. Cambiar arandela"
+                  style={{ fontSize: '0.875rem' }}
+                />
+              </div>
+              {specs.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveSpec(spec.id)}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.4rem 0.5rem', height: 'fit-content' }}
+                  title="Eliminar"
+                >
+                  <TrashIcon width={16} height={16} />
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
