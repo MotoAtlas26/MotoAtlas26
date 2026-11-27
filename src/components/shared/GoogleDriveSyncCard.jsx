@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useAuth, syncNow, restoreFromDrive } from '../../context/AuthContext';
 import { db } from '../../services/db';
 
-export function GoogleDriveSyncCard({ showTitle = true, db: propDb }) {
+export function GoogleDriveSyncCard({ showTitle = true, showDescription = false, db: propDb }) {
   const auth = useAuth();
   const activeDb = propDb || db;
   const {
@@ -108,9 +108,11 @@ export function GoogleDriveSyncCard({ showTitle = true, db: propDb }) {
   };
 
   const cardStyle = { maxWidth: '420px', margin: '0 auto', textAlign: 'center' };
-  const headerStyle = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' };
+  const headerStyle = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', marginBottom: '1rem' };
   const iconStyle = { width: '36px', height: '36px', flexShrink: 0, color: 'var(--color-primary, #3b82f6)' };
   const titleStyle = { margin: 0, fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-text-primary, #1f2937)' };
+  const descriptionStyle = { margin: 0, fontSize: '0.875rem', color: 'var(--color-text-secondary, #6b7280)', lineHeight: 1.5 };
+  const buttonStyle = { padding: '0.6rem 1.15rem', borderRadius: '10px', fontWeight: 600 };
   const badgeStyle = (variant) => {
     const base = { display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.75rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0 };
     const variants = {
@@ -127,22 +129,23 @@ export function GoogleDriveSyncCard({ showTitle = true, db: propDb }) {
       {showTitle && (
         <div style={headerStyle}>
           <div style={iconStyle}>☁️</div>
-          <h2 style={titleStyle}>Google Drive</h2>
+          <h2 style={titleStyle}>Sincronización Google Drive</h2>
+          {showDescription && <p style={descriptionStyle}>Tus datos se sincronizan automáticamente entre dispositivos.</p>}
         </div>
       )}
 
       {!isConnected ? (
-        <button onClick={handleConnect} className="btn-primary">Conectar Google Drive</button>
+        <button onClick={handleConnect} className="btn btn-primary">Conectar Google Drive</button>
       ) : (
         <>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
             <span style={badgeStyle('connected')}>Conectado</span>
           </div>
           
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-            <button onClick={handleSyncNow} className="btn-secondary" disabled={isSyncing}>Sincronizar ahora</button>
-            <button onClick={handleRestore} className="btn-secondary" disabled={isSyncing}>Restaurar</button>
-            <button onClick={handleDisconnect} className="btn-ghost">Desconectar</button>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={handleSyncNow} className="btn btn-primary" disabled={isSyncing} style={buttonStyle}>Sincronizar ahora</button>
+            <button onClick={handleRestore} className="btn btn-secondary" disabled={isSyncing} style={buttonStyle}>Restaurar</button>
+            <button onClick={handleDisconnect} className="btn btn-outline" style={buttonStyle}>Desconectar</button>
           </div>
 
           <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--color-text-muted, #6b7280)' }}>
@@ -165,9 +168,9 @@ export function GoogleDriveSyncCard({ showTitle = true, db: propDb }) {
           <div className="modal-content">
             <h3>¿Restaurar datos?</h3>
             <p>Esto sobrescribirá tus datos locales con la copia de Google Drive.</p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <button onClick={handleRestoreConfirmAction} className="btn-primary">Confirmar</button>
-              <button onClick={handleRestoreCancel} className="btn-ghost">Cancelar</button>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <button onClick={handleRestoreConfirmAction} className="btn btn-primary">Confirmar</button>
+              <button onClick={handleRestoreCancel} className="btn btn-outline">Cancelar</button>
             </div>
           </div>
         </div>
